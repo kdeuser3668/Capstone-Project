@@ -11,5 +11,5 @@ app.use(express.json());
 // Routes
 app.use("/tasks", tasksRouter);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5300;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
