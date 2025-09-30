@@ -17,3 +17,27 @@ connection.connect(err => {
 });
 
 module.exports = connection;
+
+const express = require('express');
+const router = express.Router();
+
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  // check DB for matching user
+  connection.query(
+    'SELECT * FROM users WHERE username = ? AND password = ?',
+    [username, password],
+    (err, results) => {
+      if (err) return res.status(500).send('DB error');
+      if (results.length > 0) {
+        res.send('Login successful');
+      } else {
+        res.status(401).send('Invalid credentials');
+      }
+    }
+  );
+});
+
+module.exports = router;
+
