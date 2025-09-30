@@ -1,8 +1,8 @@
 // LoginForm.js
-import React, {useState} from 'react';
+import {useState} from 'react';
 
 
-function LoginForm() {
+export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -11,16 +11,23 @@ function LoginForm() {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://your-cloudfront-url/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("https://your-eb-domain.us-east-1.elasticbeanstalk.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const text = await response.text();
-      setMessage(text);
-    } catch (errorMessage('Error connecting to server');
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
     }
+
   };
 
   return (
@@ -45,5 +52,3 @@ function LoginForm() {
     </form>
   );
 }
-
-export default LoginForm;
