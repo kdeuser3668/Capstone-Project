@@ -74,7 +74,7 @@ const styles = {
         boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
         textAlign: "center",
         width: "300px",
-        height: "300px",
+        maxWidth: "90%",
         display: "flex",          
         flexDirection: "column",
         justifyContent: "center",
