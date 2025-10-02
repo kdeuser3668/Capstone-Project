@@ -34,13 +34,14 @@ export default function LoginForm() {
     <div style={styles.page}>
         <div style={styles.card}>
             <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} style={styles.form}>
             <input
                 type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                styles={styles.input}
             />
             <input
                 type="password"
@@ -48,8 +49,9 @@ export default function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                styles={styles.input}
             />
-            <button type="submit">Login</button>
+            <button type="submit" style={styles.button}>Login</button>
         </form>
         <p>{message}</p>
         </div>
@@ -69,7 +71,7 @@ const styles = {
         backgroundColor: "#fff",
         padding: "2rem",
         borderRadius: "12px",      
-        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
         textAlign: "center",
         width: "300px",
         height: "300px",
@@ -79,17 +81,19 @@ const styles = {
     },
     form: {
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "column", 
         gap: "1rem",
     },
     input: {
         padding: "0.5rem",
         fontSize: "1rem",
+        width: "100%",
+        boxSizing: "border-box",
     },
     button:{
-        padding: "0.7rem",
+        padding: ".5rem",
         fontSize: "1rem",
-        backgroundColor: "#007bff",
+        backgroundColor: "#ee6dd5",
         color: "white",
         border: "none",
         borderRadius: "6px",
