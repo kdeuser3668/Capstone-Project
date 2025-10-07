@@ -11,7 +11,7 @@ export default function LoginForm() {
     e.preventDefault();
 
     try {
-      const res = await fetch("https://your-eb-domain.us-east-1.elasticbeanstalk.com/login", {
+      const res = await fetch("http://plannerpal.us-east-2.elasticbeanstalk.com/)", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
