@@ -5,12 +5,12 @@ import LoginForm from './LoginForm';
 
 function App() {
   return (
-    <Router>
+    //<Router>
     <div className="App">
       <LoginForm />
 
     </div>
-    </Router>
+    //</Router>
   );
 }
 
