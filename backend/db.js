@@ -1,4 +1,4 @@
-const sql = require("mssql");
+const mysql = require("mysql2");
 
 const config = {
   user: process.env.DB_USER,
@@ -11,6 +11,15 @@ const config = {
   },
 };
 
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+bcrypt.hash('Test123!', saltRounds, function(err, hash) {
+  if (err) throw err;
+  console.log('Hashed password:', hash);
+});
+
+
 async function getPool() {
   try {
     return await sql.connect(config);
@@ -21,3 +30,5 @@ async function getPool() {
 }
 
 module.exports = { sql, getPool };
+
+

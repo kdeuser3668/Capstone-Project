@@ -1,7 +1,10 @@
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+import bcrypt from "bcrypt";
 
-bcrypt.hash('Test123!', saltRounds, function(err, hash) {
-  if (err) throw err;
-  console.log('Hashed password:', hash);
-});
+export async function hashPassword(password) {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
+}
+
+export async function comparePassword(password, hash) {
+  return bcrypt.compare(password, hash);
+}
