@@ -1,23 +1,18 @@
-const sql = require("mssql");
+import mysql from "mysql2";
 
-const config = {
+export const db = mysql.createPool({
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  server: process.env.DB_HOST,
-  options: {
-    encrypt: true, // AWS requires this
-    trustServerCertificate: false,
-  },
-};
+  port: process.env.DB_PORT || 3306
+});
 
-async function getPool() {
-  try {
-    return await sql.connect(config);
-  } catch (err) {
-    console.error("SQL connection error:", err);
-    throw err;
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error("Database connection failed:", err);
+  } else {
+    console.log("Connected to database.");
+    connection.release();
   }
-}
-
-module.exports = { sql, getPool };
+});
