@@ -1,5 +1,6 @@
 // LoginForm.js
 //need to include a checkoff stating the user must be 13+ and have the user agree
+//need to incliude a toggle to change from login to sign up
 import {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
