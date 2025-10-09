@@ -1,4 +1,5 @@
 // LoginForm.js
+//need to include a checkoff stating the user must be 13+ and have the user agree
 import {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,10 +10,19 @@ export default function LoginForm() {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    //Test email and password to make sure the navigation to dashboard works
+    if (email == 'example@email.com' && password == 'password123!'){
+      localStorage.setItem('isAuthenticated', 'true');
+      navigate('/dashboard')
+    }else{
+      //console.error(err);
+      alert("Something went wrong");
+    }
+
+    /*
     try {
       const res = await fetch("http://plannerpal.us-east-2.elasticbeanstalk.com/)", {
         method: "POST",
@@ -33,7 +43,7 @@ export default function LoginForm() {
       console.error(err);
       alert("Something went wrong");
     }
-
+    */
   };
 
   return (
