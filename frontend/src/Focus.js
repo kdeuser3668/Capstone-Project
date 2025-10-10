@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
@@ -22,6 +22,7 @@ return (
         <div style={styles.page}>
             <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Focus</h1>
             <h3 style={styles.h3}>{theDate}</h3>
+            <Timer /> 
         </div>
     </div>
     )
@@ -40,23 +41,23 @@ const Timer = () => {
 
         setDays(Math.floor(time / (1000 * 60 * 60 * 24)));
         setHours(Math.floor((time / (1000 * 60 * 60)) % 24));
-        setMinutes(Math.floor((time / 1000) % 60));
+        setMinutes(Math.floor((time / 1000 / 60) % 60));
         setSeconds(Math.floor((time / 1000) % 60));
     }
 
     useEffect(() => {
-        const interval = setINterval(() => getTime(deadline), 1000);
+        const interval = setInterval(() => getTime(deadline), 1000);
 
-        return () => clearInterval(internal);
+        return () => clearInterval(interval);
     }, []);
 
     return (
         <div className="timer">
+            {days}d {hours}h {minutes}m {seconds}s
         </div> 
     );
 };
 
-Timer()
 
 const styles = {
     page: {
