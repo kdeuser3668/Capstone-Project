@@ -1,8 +1,13 @@
 import './App.css';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginForm from './LoginForm';
 import Dashboard from './Dashboard';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-
+import Calendar from './Calendar';
+import Focus from './Focus';
+import Notes from './Notes';
+import Progress from './Progress';
+import Tasks from './Tasks';
+import Settings from './Settings';
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -23,6 +28,54 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/focus"
+            element={
+              <ProtectedRoute>
+                <Focus />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notes"
+            element={
+              <ProtectedRoute>
+                <Notes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <Progress />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <Tasks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />
