@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import pool from '../db.js';  // mysql2 connection pool
-import hashPassword from '../hashPW.js'; // password hasher
+import { db } from '../db.js';  // mysql2 connection pool
+import { hashPassword } from '../hashPW.js'; // password hasher
 
 const router = express.Router();
 
