@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 
-function Dashboard(){
+function Settings(){
     const navigate = useNavigate();
     var today = new Date();
 
@@ -52,4 +52,4 @@ const styles = {
     }
 }
 
-export default Dashboard;
+export default Settings;
