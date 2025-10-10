@@ -5,6 +5,19 @@ import { useNavigate } from 'react-router-dom';
 
 function Dashboard(){
     const navigate = useNavigate();
+    var today = new Date();
+
+    // Array of month names
+    var monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+    ];
+
+    var dd = today.getDate(); // Day of the month
+    var mm = monthNames[today.getMonth()]; // Month name
+    var yyyy = today.getFullYear();
+
+    const theDate = mm + ' ' + dd + ', ' + yyyy;
 
     const handleLogout = async (e) => {
         e.preventDefault();
@@ -16,7 +29,8 @@ function Dashboard(){
     }; 
 return (
     <div>
-        <h1>Congrats, you logged input!</h1>
+        <h1>Dashboard</h1>
+        <h3 style={styles.h3}>{theDate}</h3>
         <button type="submit" onClick={handleLogout} style={styles.button}>Log Out</button>
     </div>
     )
@@ -31,6 +45,9 @@ const styles = {
         border: "none",
         borderRadius: "6px",
         cursor: "pointer",
+    },
+    h3:{
+        fontWeight: "normal",
     },
 }
 
