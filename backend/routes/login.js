@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
     }
 
     // Find user
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (rows.length === 0) {
       return res.status(404).json({ message: 'User not found.' });
     }

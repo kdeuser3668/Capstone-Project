@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
     }
 
     // Check if email already exists
-    const [existingUser] = await pool.query(
+    const [existingUser] = await db.query(
       'SELECT id FROM users WHERE email = ?',
       [email]
     );
@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
     const hashedPassword = await hashPassword(password);
 
     // Insert new user
-    await pool.query(
+    await db.query(
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
       [username, email, hashedPassword]
     );
