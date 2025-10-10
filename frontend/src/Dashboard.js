@@ -21,7 +21,7 @@ return (
     <div style={{ display: "flex" }}>
         <Sidebar />
         <div style={styles.page}>
-            <h1>Dashboard</h1>
+            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Dashboard</h1>
             <h3 style={styles.h3}>{theDate}</h3>
         </div>
     </div>
@@ -47,8 +47,10 @@ const styles = {
     },
     h3:{
         fontWeight: "normal",
-
-    },
+        textAlign: "left", 
+        padding: "10px",
+        marginTop: "0px",
+    }
 }
 
 export default Dashboard;
