@@ -8,6 +8,7 @@ function Dashboard(){
     const navigate = useNavigate();
     var today = new Date();
 
+
     // Array of month names
     var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     var dd = today.getDate(); // Day of the month
@@ -16,17 +17,18 @@ function Dashboard(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
-
-return (
+  return (
     <div style={{ display: "flex" }}>
-        <Sidebar />
-        <div style={styles.page}>
-            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Dashboard</h1>
-            <h3 style={styles.h3}>{theDate}</h3>
-        </div>
+      <Sidebar />
+      <div style={styles.page}>
+        <h1 style={{ textAlign: "left", padding: "10px", marginBottom: "0px" }}>
+          Dashboard
+        </h1>
+        <h3 style={styles.h3}>{theDate}</h3>
+      </div>
     </div>
-    )
-};
+  );
+}
 
 const styles = {
     page: {

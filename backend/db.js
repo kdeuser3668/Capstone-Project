@@ -1,18 +1,27 @@
-import mysql from "mysql2";
+import sql from "mssql";
+import dotenv from "dotenv";
+dotenv.config();
 
-export const db = mysql.createPool({
-  host: process.env.DB_HOST,
+const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306
-});
-
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("Database connection failed:", err);
-  } else {
-    console.log("Connected to database.");
-    connection.release();
+  server: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT) || 1433,
+  options: {
+    encrypt: true,
+    trustServerCertificate: true
   }
-});
+};
+
+const pool = await sql.connect(config);
+
+pool.connect()
+  .then(() => {
+    console.log("Connected to database.");
+  })
+  .catch(err => {
+    console.error("Database connection failed:", err);
+  });
+
+export const db = pool;

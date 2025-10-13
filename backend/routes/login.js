@@ -1,7 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import pool from '../db.js';
-
+import { db } from '../db.js';
 const router = express.Router();
 
 router.post('/', async (req, res) => {
@@ -13,16 +12,19 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Missing email or password.' });
     }
 
-    // Find user
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
+    const result = await db
+      .request()
+      .input('email', email)
+      .query('SELECT * FROM dbo.users WHERE email = @email');
+
+    if (result.recordset.length === 0) {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    const user = rows[0];
+    const user = result.recordset[0];
 
     // Compare password
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.hashed_password);
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid password.' });
     }
