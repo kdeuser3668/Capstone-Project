@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
@@ -25,38 +25,107 @@ return (
             <Timer /> 
         </div>
     </div>
-    )
-};
+    );
+}
 
-const Timer = () => {
-    const [days, setDays] = useState(0);
-    const [hours, setHours] = useState(0);
-    const [minutes, setMinutes] = useState(0);
-    const [seconds, setSeconds] = useState(0);
+//Timer function
 
-    const deadline = "December, 31, 2025"
+//To-do: 
+//add number wheels to select time, 
+//add default options for quick selection - done but need to format
 
-    const getTime = () => {
-        const time = Date.parse(deadline) - Date.now();
+function Timer () {
+    const intervalRef = useRef(null);
+    const [remaining, setRemaining] = useState(0);
+    const [isActive, setIsActive] = useState(false);
+    const [inputSeconds, setInputSeconds] = useState("");
 
-        setDays(Math.floor(time / (1000 * 60 * 60 * 24)));
-        setHours(Math.floor((time / (1000 * 60 * 60)) % 24));
-        setMinutes(Math.floor((time / 1000 / 60) % 60));
-        setSeconds(Math.floor((time / 1000) % 60));
-    }
+    const getTime = (secs) => {
+        const hours = Math.floor(secs / 3600);
+        const minutes = Math.floor((secs % 3600) / 60);
+        const seconds = secs % 60;
+        return `${hours.toString().padStart(1, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    };
 
     useEffect(() => {
-        const interval = setInterval(() => getTime(deadline), 1000);
+        if (isActive && remaining > 0) {
+            intervalRef.current = setInterval(() => {
+                setRemaining((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(intervalRef.current);
+                        setIsActive(false);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
 
-        return () => clearInterval(interval);
-    }, []);
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [isActive]);
+
+    const handleStart = () => {
+        let secs = parseInt(inputSeconds, 10);
+        if (!isNaN(secs) && secs > 0) {
+            setRemaining(secs);
+            setIsActive(true);
+        }
+    };
+
+    const handlePause = () => {
+        setIsActive(false);
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+    };
+
+    const handleResume = () => {
+        if (remaining > 0) {
+            setIsActive(true);
+        }
+    };
+
+    const handleReset = () => {
+        setIsActive(false);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setRemaining(0);
+    };
 
     return (
-        <div className="timer">
-            {days}d {hours}h {minutes}m {seconds}s
-        </div> 
+        <div style={styles.page}>
+            <div style={styles.card}>
+                <input 
+                    type="number"
+                    placeholder="Enter Time (Seconds)"
+                    value={inputSeconds}
+                    onChange={(e) => setInputSeconds(e.target.value)}
+                />
+                <button onClick={handleStart}>Start Timer</button>
+
+                <h2>{getTime(remaining)}</h2>
+                {isActive ? (
+                    <button onClick={handlePause}>Pause Timer</button>
+                ) : (
+                    <button onClick={handleResume} disabled={remaining === 0}> Resume timer </button>
+                )}
+                <button onClick={handleReset}> Reset Timer </button>
+            </div>
+            <div style={{ ...styles.card, width: "10%"}}>
+                <button onClick={() => setRemaining(15 * 60)}>Quick Study</button>
+                <button onClick={() => setRemaining(25 * 60)}>Pomodoro</button>
+                <button onClick={() => setRemaining(50 * 60)}>Deep Focus</button>
+            </div>
+        </div>
     );
-};
+}
+
+   
+
+
+
+
 
 
 const styles = {
@@ -66,6 +135,7 @@ const styles = {
         height: "100vh",
         width: "200vh",
         backgroundColor:"white",
+        marginLeft: "50px",
     },
     button:{
         padding: ".5rem",
@@ -75,6 +145,20 @@ const styles = {
         border: "none",
         borderRadius: "6px",
         cursor: "pointer",
+    },
+    card: {
+        backgroundColor: "#fff",
+        padding: "2rem",
+        borderRadius: "12px",      
+        boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
+        textAlign: "center",
+        width: "50%",
+        maxWidth: "800px",
+        display: "flex",          
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: "15px", 
     },
     h3:{
         fontWeight: "normal",
