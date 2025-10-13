@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
@@ -25,9 +25,13 @@ function Settings(){
         const newColor = event.target.value;
         setTextColor(newColor);
         window.localStorage.setItem("textColor", newColor);
+        document.documentElement.style.setProperty("--text-color", newColor);
       };
     
-
+      useEffect(() => {
+        const savedColor = window.localStorage.getItem("textColor") || "#000000";
+        document.documentElement.style.setProperty("--text-color", savedColor);
+      }, []);
 
 return (
     <div style={{ display: "flex" }}>
@@ -67,7 +71,7 @@ const styles = {
         cursor: "pointer",
     },
     h3:{
-        color: "textColor",
+        color: "var(--text-color)",
         fontWeight: "normal",
         textAlign: "left", 
         padding: "10px",
