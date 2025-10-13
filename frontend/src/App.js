@@ -37,6 +37,11 @@ function App() {
     document.documentElement.style.setProperty("--background-color", savedBackgroundColor);
   }, []);
 
+  useEffect(() => {
+    const savedSidebarColor = window.localStorage.getItem("sidebarColor") || "#f5f5f5";
+    document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
+    }, []);
+
   return (
     <Router>
       <div className="App">

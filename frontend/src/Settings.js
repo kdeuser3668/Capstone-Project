@@ -29,6 +29,11 @@ function Settings(){
           ? window.localStorage.getItem("backgroundColor") || "white"
           : "white"
     );
+    const [sidebarColor, setSidebarColor] = useState(
+        typeof window !== "undefined" && window.localStorage
+          ? window.localStorage.getItem("sidebarColor") || "#f5f5f5"
+          : "#f5f5f5"
+    );
 
     // Array of month names
     var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -78,7 +83,7 @@ function Settings(){
         document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
         }, []);
 
-        //saves and applies shadow changes across all pages when using boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)" the second color is a fallback color
+    //saves and applies page color changes across all pages when using backgroundColor: "var(--background-color, #ffffff)" the second color is a fallback color
     const handleBackgroundChange = (event) => {
         const newBackgroundColor = event.target.value;
         setBackgroundColor(newBackgroundColor);
@@ -89,6 +94,19 @@ function Settings(){
     useEffect(() => {
         const savedBackgroundColor = window.localStorage.getItem("backgroundColor") || "#ffffff";
         document.documentElement.style.setProperty("--background-color", savedBackgroundColor);
+        }, []);
+    
+    //saves and applies page color changes across all pages when using backgroundColor: "var(--sidebar-color, #f5f5f5)" the second color is a fallback color
+    const handleSidebarChange = (event) => {
+        const newSidebarColor = event.target.value;
+        setSidebarColor(newSidebarColor);
+        window.localStorage.setItem("sidebarColor", newSidebarColor);
+        document.documentElement.style.setProperty("--sidebar-color", newSidebarColor);
+        };
+
+    useEffect(() => {
+        const savedSidebarColor = window.localStorage.getItem("sidebarColor") || "#f5f5f5";
+        document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
         }, []);
         
 return (
@@ -128,6 +146,14 @@ return (
                     </label>
                     <input type="color" id="backgroundColor" value={backgroundColor} onChange={handleBackgroundChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: backgroundColor }}>{backgroundColor}</strong>
+                    </p>
+                </div>
+                <div style={styles.card}>
+                <label htmlFor="sidebarColor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
+                    Select your sidebar color:
+                    </label>
+                    <input type="color" id="sidebarColor" value={sidebarColor} onChange={handleSidebarChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
+                    <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: sidebarColor }}>{sidebarColor}</strong>
                     </p>
                 </div>
             </div>

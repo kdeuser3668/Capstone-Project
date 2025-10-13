@@ -18,7 +18,7 @@ const Sidebar = () => {
   return (
     <div style={{
       height: "100vh", 
-      backgroundColor: "#f5f5f5",
+      backgroundColor: "var(--sidebar-color, #f5f5f5)",
       padding: "1rem",
       boxSizing: "border-box",
       border: "black",
