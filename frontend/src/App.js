@@ -32,6 +32,10 @@ function App() {
     document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
   }, []);
     
+  useEffect(() => {
+    const savedBackgroundColor = window.localStorage.getItem("backgroundColor") || "#ffffff";
+    document.documentElement.style.setProperty("--background-color", savedBackgroundColor);
+  }, []);
 
   return (
     <Router>
