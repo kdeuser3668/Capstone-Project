@@ -27,6 +27,12 @@ function App() {
     document.documentElement.style.setProperty("--button-color", savedButtonColor);
   }, []);
 
+  useEffect(() => {
+    const savedShadowColor = window.localStorage.getItem("shadowColor") || "#eb59c199";
+    document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
+  }, []);
+    
+
   return (
     <Router>
       <div className="App">

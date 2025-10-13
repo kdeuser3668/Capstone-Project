@@ -11,10 +11,17 @@ function Settings(){
           ? window.localStorage.getItem("textColor") || "#000000"
           : "#000000"
       );
+
     const [buttonColor, setButtonColor] = useState(
         typeof window !== "undefined" && window.localStorage
           ? window.localStorage.getItem("buttonColor") || "#ee6dd5"
           : "#ee6dd5"
+      );
+
+    const [shadowColor, setShadowColor] = useState(
+        typeof window !== "undefined" && window.localStorage
+          ? window.localStorage.getItem("shadowColor") || "0 4px 8px rgba(235, 89, 193, 0.6)"
+          : "0 4px 8px rgba(235, 89, 193, 0.6)"
       );
 
     // Array of month names
@@ -25,7 +32,7 @@ function Settings(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
-    //saves and applies text changes across all pages when using "var(--text-color)"
+    //saves and applies text changes across all pages when using color: "var(--text-color)"
     const handleColorChange = (event) => {
         const newColor = event.target.value;
         setTextColor(newColor);
@@ -38,7 +45,8 @@ function Settings(){
         document.documentElement.style.setProperty("--text-color", savedColor);
       }, []);
 
-    //saves and applies button changes across all pages when using "var(--button-color, #ee6dd5)" the second color is a fallback color
+    
+      //saves and applies button changes across all pages when using background: "var(--button-color, #ee6dd5)" the second color is a fallback color
     const handleButtonChange = (event) => {
         const newButtonColor = event.target.value;
         setButtonColor(newButtonColor);
@@ -50,7 +58,20 @@ function Settings(){
         const savedButtonColor = window.localStorage.getItem("buttonColor") || "#ee6dd5";
         document.documentElement.style.setProperty("--button-color", savedButtonColor);
       }, []);
-    
+
+    //saves and applies shadow changes across all pages when using boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)" the second color is a fallback color
+    const handleShadowChange = (event) => {
+        const newShadowColor = event.target.value;
+        setShadowColor(newShadowColor);
+        window.localStorage.setItem("shadowColor", newShadowColor);
+        document.documentElement.style.setProperty("--shadow-color", newShadowColor);
+        };
+
+    useEffect(() => {
+        const savedShadowColor = window.localStorage.getItem("shadowColor") || "#eb59c199";
+        document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
+        }, []);
+        
 return (
     <div style={{ display: "flex" }}>
         <Sidebar />
@@ -71,6 +92,14 @@ return (
                 </label>
                 <input type="color" id="buttonColor" value={buttonColor} onChange={handleButtonChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
                 <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: buttonColor }}>{buttonColor}</strong>
+                </p>
+            </div>
+            <div style={styles.card}>
+            <label htmlFor="shadowcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
+                Select your drop shadow color:
+                </label>
+                <input type="color" id="shadowColor" value={shadowColor} onChange={handleShadowChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
+                <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: shadowColor }}>{shadowColor}</strong>
                 </p>
             </div>
         </div>
@@ -107,7 +136,7 @@ const styles = {
         backgroundColor: "#fff",
         padding: "2rem",
         borderRadius: "12px",    
-        boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
+        boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)",
         textAlign: "center",
         width: "300px",
         maxWidth: "90%",
