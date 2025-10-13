@@ -29,7 +29,7 @@ return (
                     <Timer />  
                 </div>
 
-                <div styles={styles.card}>
+                <div style={styles.card}>
                     <h3>Music Selection</h3>
                     <MusicPlayer />
                 </div>
@@ -51,7 +51,9 @@ function Timer () {
     const intervalRef = useRef(null);
     const [remaining, setRemaining] = useState(0);
     const [isActive, setIsActive] = useState(false);
-    const [inputSeconds, setInputSeconds] = useState("");
+    const [hours, setHours] = useState("");
+    const [minutes, setMinutes] = useState("");
+    const [hasStarted, setHasStarted] = useState(false);
 
     const getTime = (secs) => {
         const hours = Math.floor(secs / 3600);
@@ -80,40 +82,60 @@ function Timer () {
     }, [isActive]);
 
     const startTimer = () => {
-        let secs = parseInt(inputSeconds, 10);
-        if (!isNaN(secs) && secs > 0) {
-            setRemaining(secs);
+        if (!hasStarted) {
+            const h = parseInt(hours, 10) || 0;
+            const m = parseInt(minutes, 10) || 0;
+            const totalSeconds = h * 3600 + m * 60
+
+            if (totalSeconds > 0) {
+                setRemaining(totalSeconds);
+                setIsActive(true);
+                setHasStarted(true);
+                setHours("");
+                setMinutes("");
+            }
+        } else {
+            if (remaining > 0) {
+                setIsActive(true);
+            }
         }
-        if (remaining > 0) {
-            setIsActive(true);
-        }
+        
     };
 
     const pauseTimer = () => {
         setIsActive(false);
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
+        clearInterval(intervalRef.current);
     };
 
     const resetTimer = () => {
         setIsActive(false);
-        if (intervalRef.current) clearInterval(intervalRef.current);
+        clearInterval(intervalRef.current);
         setRemaining(0);
+        setHasStarted(false);
     };
+
 //Make timer selection in scroller/dropdown menu
     return (
         <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
             <div>
-                <input 
+                <input
                     type="number"
-                    placeholder="Enter Time (Seconds)"
-                    value={inputSeconds}
-                    onChange={(e) => setInputSeconds(e.target.value)}
-                    style={{marginBottom: "10px", padding: "5px"}}
+                    placeholder="Hours"
+                    min="0"
+                    value={hours}
+                    onChange={(e) => setHours(e.target.value)}
+                    style={styles.input}
+                />
+                <input
+                    type="number"
+                    placeholder="Minutes"
+                    min="0"
+                    value={minutes}
+                    onChange={(e) => setMinutes(e.target.value)}
+                    style={styles.input}
                 />
 
-                <h2>{getTime(remaining)}</h2>
+                <h2 style={{fontSize: "50px"}}>{getTime(remaining)}</h2>
                 {isActive ? (
                     <button style={styles.button} onClick={pauseTimer}>Pause Timer</button>
                 ) : (
@@ -131,6 +153,7 @@ function Timer () {
     );
 }
 
+//Music player function - could add an option to let users upload their own mp3 files
 function MusicPlayer () {
     const audioRef = useRef(null);
     const [selectedTrack, setSelectedTrack] = useState("/Calm_Meditation_Music.mp3");
@@ -141,6 +164,9 @@ function MusicPlayer () {
                 <option>Select Track</option>
                 <option value="/Calm_Meditation_Music.mp3">Calm Meditation</option>
                 <option value="/Immersive_Meditation_Music.mp3">Immersive Meditation</option>
+                <option value="/Lofi_Focus_Music.mp3">Lofi Focus</option>
+                <option value="/Rainy_Cafe_Music.mp3">Rainy Cafe</option>
+                <option value="/The_Longest_Journey.mp3">The Longest Journey</option>
             </select>
 
             <audio ref={audioRef} src={selectedTrack} loop controls/>
@@ -148,7 +174,10 @@ function MusicPlayer () {
     )
 }
    
-
+function focusSession () {
+    //add function to create focus sessions and add them to calendar
+    //also have upcoming focus sessions displayed
+}
 
 const styles = {
     page: {
@@ -209,6 +238,18 @@ const styles = {
     }, 
     select: {
         marginBottom: "20px",
+        width: "60%",
+        textAlign: "center",
+    },
+    input: {
+        border: "1px",
+        border: "solid",
+        borderColor: "#b1b1b1ff",
+        gap: "2px",
+        textAlign: "center",
+        padding: "2px",
+        width: "30%",
+        margin: "2px",
     }
 }
 
