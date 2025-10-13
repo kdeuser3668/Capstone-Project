@@ -22,6 +22,11 @@ function App() {
     document.documentElement.style.setProperty("--text-color", savedColor);
   }, []);
 
+  useEffect(() => {
+    const savedButtonColor = window.localStorage.getItem("buttonColor") || "#ee6dd5";
+    document.documentElement.style.setProperty("--button-color", savedButtonColor);
+  }, []);
+
   return (
     <Router>
       <div className="App">

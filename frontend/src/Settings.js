@@ -11,6 +11,11 @@ function Settings(){
           ? window.localStorage.getItem("textColor") || "#000000"
           : "#000000"
       );
+    const [buttonColor, setButtonColor] = useState(
+        typeof window !== "undefined" && window.localStorage
+          ? window.localStorage.getItem("buttonColor") || "#ee6dd5"
+          : "#ee6dd5"
+      );
 
     // Array of month names
     var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -20,7 +25,7 @@ function Settings(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
-    //not saving or applying changed across all pages, need to adjust this.
+    //saves and applies text changes across all pages when using "var(--text-color)"
     const handleColorChange = (event) => {
         const newColor = event.target.value;
         setTextColor(newColor);
@@ -33,6 +38,19 @@ function Settings(){
         document.documentElement.style.setProperty("--text-color", savedColor);
       }, []);
 
+    //saves and applies button changes across all pages when using "var(--button-color, #ee6dd5)" the second color is a fallback color
+    const handleButtonChange = (event) => {
+        const newButtonColor = event.target.value;
+        setButtonColor(newButtonColor);
+        window.localStorage.setItem("buttonColor", newButtonColor);
+        document.documentElement.style.setProperty("--button-color", newButtonColor);
+      };
+    
+      useEffect(() => {
+        const savedButtonColor = window.localStorage.getItem("buttonColor") || "#ee6dd5";
+        document.documentElement.style.setProperty("--button-color", savedButtonColor);
+      }, []);
+    
 return (
     <div style={{ display: "flex" }}>
         <Sidebar />
@@ -45,6 +63,14 @@ return (
                 </label>
                 <input type="color" id="textcolor" value={textColor} onChange={handleColorChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
                 <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: textColor }}>{textColor}</strong>
+                </p>
+            </div>
+            <div style={styles.card}>
+            <label htmlFor="buttoncolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
+                Select your button color:
+                </label>
+                <input type="color" id="buttonColor" value={buttonColor} onChange={handleButtonChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
+                <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: buttonColor }}>{buttonColor}</strong>
                 </p>
             </div>
         </div>
@@ -64,7 +90,7 @@ const styles = {
     button:{
         padding: ".5rem",
         fontSize: "1rem",
-        backgroundColor: "#ee6dd5",
+        backgroundColor: "var(--button-color, #ee6dd5)",
         color: "white",
         border: "none",
         borderRadius: "6px",

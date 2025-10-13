@@ -12,7 +12,7 @@ const Sidebar = () => {
   };
 
   const activeStyle = {
-    backgroundColor: "rgba(235, 89, 193, 0.6)"
+    backgroundColor: "var(--button-color, #ee6dd5)"
   };
 
   return (
