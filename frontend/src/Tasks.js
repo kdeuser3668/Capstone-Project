@@ -1,10 +1,9 @@
-///PlannerPal dashboard
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 
-function Dashboard(){
+function Tasks(){
     const navigate = useNavigate();
     var today = new Date();
 
@@ -21,7 +20,7 @@ return (
     <div style={{ display: "flex" }}>
         <Sidebar />
         <div style={styles.page}>
-            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Dashboard</h1>
+            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Tasks</h1>
             <h3 style={styles.h3}>{theDate}</h3>
         </div>
     </div>
@@ -53,4 +52,4 @@ const styles = {
     }
 }
 
-export default Dashboard;
+export default Tasks;
