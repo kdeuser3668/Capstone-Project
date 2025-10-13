@@ -14,6 +14,7 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    /*
     //Test email and password to make sure the navigation to dashboard works
     if (email == 'example@email.com' && password == 'password123!'){
       localStorage.setItem('isAuthenticated', 'true');
@@ -22,10 +23,10 @@ export default function LoginForm() {
       //console.error(err);
       alert("Something went wrong");
     }
+    */
 
-    /*
     try {
-      const res = await fetch("http://plannerpal.us-east-2.elasticbeanstalk.com/)", {
+      const res = await fetch("http://localhost:5050/login", { // hits local backend, will be changed in deployment
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -44,7 +45,6 @@ export default function LoginForm() {
       console.error(err);
       alert("Something went wrong");
     }
-    */
   };
 
   return (
