@@ -14,7 +14,7 @@ const config = {
   }
 };
 
-const pool = new sql.ConnectionPool(config);
+const pool = await sql.connect(config);
 
 pool.connect()
   .then(() => {
