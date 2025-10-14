@@ -16,6 +16,12 @@ function Settings({ weekStart, setWeekStart }) {
   const yyyy = today.getFullYear();
   const theDate = `${mm} ${dd}, ${yyyy}`;
 
+    const [textColor, setTextColor] = useState(
+        typeof window !== "undefined" && window.localStorage
+        ? window.localStorage.getItem("textColor") || "#000000"
+        : "#000000"
+    );
+
     const [buttonColor, setButtonColor] = useState(
         typeof window !== "undefined" && window.localStorage
           ? window.localStorage.getItem("buttonColor") || "#ee6dd5"
