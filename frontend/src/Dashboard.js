@@ -10,12 +10,12 @@ function Dashboard(){
 
 
     // Array of month names
-    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    var dd = today.getDate(); // Day of the month
-    var mm = monthNames[today.getMonth()]; // Month name
-    var yyyy = today.getFullYear();
+    var monthNamesDate = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var ddd = today.getDate(); // Day of the month
+    var mmm = monthNamesDate[today.getMonth()]; // Month name
+    var yyyyy = today.getFullYear();
 
-    const theDate = mm + ' ' + dd + ', ' + yyyy;
+    const theDate = mmm + ' ' + ddd + ', ' + yyyyy;
 
   return (
     <div style={styles.container}>
