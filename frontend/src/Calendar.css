@@ -128,3 +128,47 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+
+.react-calendar__navigation__label {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+.react-calendar__navigation {
+  justify-content: center;
+}
+.react-calendar__navigation__arrow {
+  font-size: 1.5rem;
+  color: #ee6dd5;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.year-dropdown {
+  font-size: 1rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background-color: #ee6dd5;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.react-calendar__navigation {
+  display: none;
+}
+
+
+
+.daypilot-calendar,
+.daypilot-month {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+.daypilot-month .month-header {
+  display: none !important;
+}
+

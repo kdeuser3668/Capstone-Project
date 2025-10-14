@@ -1,5 +1,6 @@
-import './App.css';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import LoginForm from './LoginForm';
 import Dashboard from './Dashboard';
 import Calendar from './Calendar';
@@ -8,21 +9,18 @@ import Notes from './Notes';
 import Progress from './Progress';
 import Tasks from './Tasks';
 import Settings from './Settings';
+import ProtectedRoute from './ProtectedRoute'; // ⬅️ This one is often forgotten
 
-function ProtectedRoute({ children }) {
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
-  return isAuthenticated ? children : <Navigate to="/" replace />;
-}
 
 function App() {
+  const [weekStart, setWeekStart] = useState('sunday'); // ⬅️ Shared state
+  
+
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Public route */}
           <Route path="/" element={<LoginForm />} />
-
-          {/* Protected dashboard route */}
           <Route
             path="/dashboard"
             element={
@@ -35,7 +33,7 @@ function App() {
             path="/calendar"
             element={
               <ProtectedRoute>
-                <Calendar />
+                <Calendar weekStart={weekStart} />
               </ProtectedRoute>
             }
           />
@@ -75,16 +73,15 @@ function App() {
             path="/settings"
             element={
               <ProtectedRoute>
-                <Settings />
+                <Settings weekStart={weekStart} setWeekStart={setWeekStart} />
               </ProtectedRoute>
             }
           />
-
-          {/* Redirect all unknown routes to login */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
   );
 }
+
 export default App;
