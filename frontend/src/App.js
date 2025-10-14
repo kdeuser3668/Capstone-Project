@@ -20,6 +20,26 @@ function App() {
     document.documentElement.style.setProperty("--text-color", savedColor);
   }, []);
 
+  useEffect(() => {
+    const savedButtonColor = window.localStorage.getItem("buttonColor") || "#ee6dd5";
+    document.documentElement.style.setProperty("--button-color", savedButtonColor);
+  }, []);
+
+  useEffect(() => {
+    const savedShadowColor = window.localStorage.getItem("shadowColor") || "#eb59c199";
+    document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
+  }, []);
+    
+  useEffect(() => {
+    const savedBackgroundColor = window.localStorage.getItem("backgroundColor") || "#ffffff";
+    document.documentElement.style.setProperty("--background-color", savedBackgroundColor);
+  }, []);
+
+  useEffect(() => {
+    const savedSidebarColor = window.localStorage.getItem("sidebarColor") || "#f5f5f5";
+    document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
+    }, []);
+
   return (
     <Router>
       <div className="App">

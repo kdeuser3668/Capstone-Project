@@ -18,10 +18,10 @@ function Dashboard(){
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
   return (
-    <div style={{ display: "flex" }}>
+    <div style={styles.container}>
       <Sidebar />
-      <div style={styles.page}>
-        <h1 style={{ textAlign: "left", padding: "10px", marginBottom: "0px" }}>
+      <div style={styles.mainContent}>
+        <h1 style={styles.h1}>
           Dashboard
         </h1>
         <h3 style={styles.h3}>{theDate}</h3>
@@ -31,27 +31,57 @@ function Dashboard(){
 }
 
 const styles = {
+    container: {
+        display: "flex",
+        flexDirection: "row", 
+        height: "100vh", 
+        width: "100vw", 
+      },
+    mainContent: {
+        flex: 1, 
+        padding: "2rem",
+        backgroundColor: "var(--background-color, #ffffff)",
+        overflowY: "auto", 
+    },
     page: {
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        width: "200vh",
-        backgroundColor:"white",
+        flex: 1,
+        padding: "2rem",
+    },
+    grid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+        gap: "1.5rem",
+        marginTop: "1rem",
     },
     button:{
         padding: ".5rem",
         fontSize: "1rem",
-        backgroundColor: "#ee6dd5",
+        backgroundColor: "var(--button-color, #ee6dd5)",
         color: "white",
         border: "none",
         borderRadius: "6px",
         cursor: "pointer",
     },
+    h1:{
+        textAlign: "left", 
+        marginBottom: "0px", 
+        color: "var(--text-color)"
+    },
     h3:{
+        color: "var(--text-color)",
         fontWeight: "normal",
         textAlign: "left", 
-        padding: "10px",
         marginTop: "0px",
+    },
+    card: {
+        backgroundColor: "#fff",
+        padding: "2rem",
+        borderRadius: "12px",    
+        boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)",
+        textAlign: "center",
+        maxWidth: "90%",
+        display: "flex",          
+        flexDirection: "column",
     }
 }
 
