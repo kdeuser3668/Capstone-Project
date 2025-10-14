@@ -1,4 +1,5 @@
 import './App.css';
+import { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginForm from './LoginForm';
 import Dashboard from './Dashboard';
@@ -15,6 +16,12 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+
+  useEffect(() => {
+    const savedColor = window.localStorage.getItem("textColor") || "#000000";
+    document.documentElement.style.setProperty("--text-color", savedColor);
+  }, []);
+
   return (
     <Router>
       <div className="App">

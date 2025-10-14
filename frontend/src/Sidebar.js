@@ -5,7 +5,7 @@ const Sidebar = () => {
     const linkStyle = {
     display: "block",
     padding: "1rem 1.5rem",
-    color: "black",
+    color: "var(--text-color)",
     textDecoration: "none",
     marginBottom: "0.5rem",
     borderRadius: "6px"
@@ -24,7 +24,7 @@ const Sidebar = () => {
       boxSizing: "border-box",
       border: "black",
     }}>
-      <h2 style={{ color: "black", marginBottom: "2rem" }}>PlannerPal</h2>
+      <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>PlannerPal</h2>
 
       <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Dashboard</NavLink>
       <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Calendar</NavLink>
