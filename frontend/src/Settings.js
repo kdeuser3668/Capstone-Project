@@ -39,19 +39,6 @@ function Settings({ weekStart, setWeekStart }) {
           : "#f5f5f5"
     );
 
-    // Array of month names
-    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    var dd = today.getDate(); // Day of the month
-    var mm = monthNames[today.getMonth()]; // Month name
-    var yyyy = today.getFullYear();
-
-  const handleColorChange = (event) => {
-    const newColor = event.target.value;
-    setTextColor(newColor);
-    window.localStorage.setItem("textColor", newColor);
-    document.documentElement.style.setProperty("--text-color", newColor);
-  };
-
     //saves and applies text changes across all pages when using color: "var(--text-color)"
     const handleColorChange = (event) => {
         const newColor = event.target.value;
@@ -178,7 +165,6 @@ return (
             </div>
         </div>
       </div>
-    </div>
   );
 }
 
