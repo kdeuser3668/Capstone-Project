@@ -71,7 +71,6 @@ const styles = {
         color: "var(--text-color)",
         fontWeight: "normal",
         textAlign: "left", 
-        padding: "10px",
         marginTop: "0px",
     },
     card: {

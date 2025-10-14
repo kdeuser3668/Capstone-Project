@@ -108,13 +108,22 @@ function Settings(){
         const savedSidebarColor = window.localStorage.getItem("sidebarColor") || "#f5f5f5";
         document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
         }, []);
+
+    // profile
+    // font/font size
+    // change email/pass
+    // reset colors
+    // notifications
+    // timezone & schedule?
+    // categories
+    // course management
         
 return (
     <div style={styles.container}>
     <Sidebar />
         <div style={styles.mainContent}>
         <h1 style={styles.h1}>Settings</h1>
-        <h3 style={styles.h3}>{theDate}</h3>
+        <h3 style={styles.h3}>Customize your productivity app experience</h3>
             <div style={styles.grid}>
                 <div style={styles.card}>
                 <label htmlFor="textcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
@@ -203,7 +212,6 @@ const styles = {
         color: "var(--text-color)",
         fontWeight: "normal",
         textAlign: "left", 
-        padding: "10px",
         marginTop: "0px",
     },
     card: {
