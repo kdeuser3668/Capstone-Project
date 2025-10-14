@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import './Calendar.css';
 
+function Settings({ weekStart, setWeekStart }) {
+  const navigate = useNavigate();
+  const today = new Date();
 
-function Settings(){
-    const navigate = useNavigate();
-    var today = new Date();
-    const [textColor, setTextColor] = useState(
-        typeof window !== "undefined" && window.localStorage
-          ? window.localStorage.getItem("textColor") || "#000000"
-          : "#000000"
-      );
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const dd = today.getDate();
+  const mm = monthNames[today.getMonth()];
+  const yyyy = today.getFullYear();
+  const theDate = `${mm} ${dd}, ${yyyy}`;
 
     const [buttonColor, setButtonColor] = useState(
         typeof window !== "undefined" && window.localStorage
@@ -41,7 +45,12 @@ function Settings(){
     var mm = monthNames[today.getMonth()]; // Month name
     var yyyy = today.getFullYear();
 
-    const theDate = mm + ' ' + dd + ', ' + yyyy;
+  const handleColorChange = (event) => {
+    const newColor = event.target.value;
+    setTextColor(newColor);
+    window.localStorage.setItem("textColor", newColor);
+    document.documentElement.style.setProperty("--text-color", newColor);
+  };
 
     //saves and applies text changes across all pages when using color: "var(--text-color)"
     const handleColorChange = (event) => {
@@ -168,9 +177,10 @@ return (
                 </div>
             </div>
         </div>
+      </div>
     </div>
-    )
-};
+  );
+}
 
 const styles = {
     container: {
