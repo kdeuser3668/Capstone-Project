@@ -110,13 +110,14 @@ function Settings(){
         }, []);
 
     // profile
+        // change email/pass
     // font/font size
-    // change email/pass
     // reset colors
     // notifications
-    // timezone & schedule?
     // categories
     // course management
+    // privacy policy
+    // timezone & schedule?
         
 return (
     <div style={styles.container}>
