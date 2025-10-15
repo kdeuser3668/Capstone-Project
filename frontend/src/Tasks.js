@@ -23,9 +23,89 @@ return (
             <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Task Manager</h1>
             <h3 style={styles.h3}>{theDate}</h3>
         </div>
+        <div style={{ ...styles.card, }}>
+            <TaskManager />
+        </div>
     </div>
     )
 };
+
+function TaskManager() {
+    const [tasks, setTasks] = useState([
+        {
+            id: 1, 
+            text: 'Doctor Appt.',
+            completed: true
+        },
+        {
+            id: 2,
+            text: 'School Meeting',
+            completed: false
+        }
+    ]);
+
+    const [text, setText] = useState('');
+    function addTask(text) {
+        const newTask = {
+            id: Date.now(),
+            text,
+            completed: false
+        };
+        setTasks([...tasks, newTask]);
+        setText('');
+    }
+
+    function deleteTask(id) {
+        setTasks(tasks.filter(task => task.id !== id));
+    }
+
+    function toggleCompleted(id) {
+        setTasks(tasks.map(task => {
+            if (task.id === id) {
+                return {...task, completed: !task.completed};
+            } else {
+                return task;
+            }
+        }));
+    }
+    return (
+        <div className="todo-list">
+            {tasks.map(task => (
+                <TodoItem 
+                key={task.id}
+                task={task}
+                deleteTask={deleteTask}
+                toggleCompleted={toggleCompleted}
+                />
+            ))}
+            <input
+            value={text}
+            onChange={e => setText(e.target.value)}
+            />
+            <button onClick={() => addTask(text)}>Add</button>
+        </div>
+    );
+}
+
+function TodoItem({ task, deleteTask, toggleCompleted }) {
+    function handleChange() {
+        toggleCompleted(task.id);
+    }
+
+    return (
+        <div className="todo-item">
+            <input
+                type="checkbox"
+                check={task.completed}
+                onChange={handleChange}
+            />
+            <p>{task.text}</p>
+            <button onClick={() => deleteTask(task.id)}>
+                X
+            </button>
+        </div>
+    );
+}
 
 const styles = {
     page: {
@@ -49,6 +129,20 @@ const styles = {
         textAlign: "left", 
         padding: "10px",
         marginTop: "0px",
+    },
+    card: {
+        backgroundColor: "#fff",
+        padding: "2rem",
+        borderRadius: "12px",      
+        boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
+        textAlign: "center",
+        width: "80%",
+        maxWidth: "600px",
+        display: "flex",          
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: "15px"
     }
 }
 
