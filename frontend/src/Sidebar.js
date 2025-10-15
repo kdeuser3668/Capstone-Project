@@ -12,14 +12,13 @@ const Sidebar = () => {
   };
 
   const activeStyle = {
-    backgroundColor: "rgba(235, 89, 193, 0.6)"
+    backgroundColor: "var(--button-color, #ee6dd5)"
   };
 
   return (
     <div style={{
-      width: "200px",
-      height: "100vh",
-      backgroundColor: "#f5f5f5",
+      height: "100vh", 
+      backgroundColor: "var(--sidebar-color, #f5f5f5)",
       padding: "1rem",
       boxSizing: "border-box",
       border: "black",
