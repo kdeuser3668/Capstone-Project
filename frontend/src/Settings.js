@@ -119,7 +119,6 @@ function Settings({ weekStart, setWeekStart }) {
     // categories
     // course management
     // privacy policy
-    // timezone & schedule?
         
 return (
     <div style={styles.container}>
@@ -223,8 +222,7 @@ const styles = {
         borderRadius: "12px",    
         boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)",
         textAlign: "center",
-        maxWidth: "90%",
-        display: "flex",          
+        maxWidth: "90%",        
         flexDirection: "column",
     }
 }
