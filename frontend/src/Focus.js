@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import './App.css';
 
 function Focus(){
     const navigate = useNavigate();
