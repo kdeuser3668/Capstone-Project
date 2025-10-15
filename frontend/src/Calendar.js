@@ -11,6 +11,7 @@ function Calendar({ weekStart }) {
   const [value, setValue] = useState(new Date());
   const [view, setView] = useState("month");
 
+
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -26,6 +27,28 @@ function Calendar({ weekStart }) {
     { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
   ]);
 
+  const renderNavigationBar = () => {
+  const handleNavigation = (direction) => {
+    const newDate = new Date(value);
+    if (view === "day") {
+      newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+    } else if (view === "week") {
+      newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : direction === "prev" ? -7 : 0));
+    } else if (view === "month") {
+      newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+    }
+    setValue(newDate);
+  };
+
+  return (
+    <div style={styles.navBar}>
+      <button style={styles.navButton} onClick={() => handleNavigation("prev")}>← Prev</button>
+      <button style={styles.navButton} onClick={() => handleNavigation("today")}>Today</button>
+      <button style={styles.navButton} onClick={() => handleNavigation("next")}>Next →</button>
+    </div>
+  );
+};
+
   return (
     <div style={{ display: "flex" }}>
       <Sidebar />
@@ -38,6 +61,7 @@ function Calendar({ weekStart }) {
         </div>
 
         <div style={styles.viewTabs}>
+            {renderNavigationBar()}
           {["day", "week", "month", "year"].map((v) => (
             <button
               key={v}
@@ -236,7 +260,22 @@ const styles = {
     fontWeight: "bold",
     color: "#333",
     marginBottom: "10px"
-  }
+  },
+  navBar: {
+  display: "flex",
+  justifyContent: "center",
+  gap: "10px",
+  marginBottom: "10px"
+},
+navButton: {
+  padding: "6px 12px",
+  fontSize: "0.9rem",
+  backgroundColor: "#e0e0e0",
+  border: "1px solid #ccc",
+  borderRadius: "6px",
+  cursor: "pointer",
+  color: "#333"
+}
 };
 
 export default Calendar;
