@@ -5,6 +5,7 @@ import CalendarComponent from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './Calendar.css';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
+import './App.css';
 
 function Calendar({ weekStart }) {
   const navigate = useNavigate();

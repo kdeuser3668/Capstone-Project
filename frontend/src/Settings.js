@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import './Calendar.css';
+import './App.css';
 
 function Settings({ weekStart, setWeekStart }) {
   const navigate = useNavigate();
@@ -121,13 +122,13 @@ function Settings({ weekStart, setWeekStart }) {
     // privacy policy
         
 return (
-    <div style={styles.container}>
+    <div className="container">
     <Sidebar />
-        <div style={styles.mainContent}>
-        <h1 style={styles.h1}>Settings</h1>
-        <h3 style={styles.h3}>Customize your productivity app experience</h3>
-            <div style={styles.grid}>
-                <div style={styles.card}>
+        <div className="main-content">
+        <h1 className="h1">Settings</h1>
+        <h3 className="h3">Customize your productivity app experience</h3>
+            <div className="grid">
+                <div className="card">
                 <label htmlFor="textcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
                     Select your text color:
                     </label>
@@ -135,7 +136,7 @@ return (
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: textColor }}>{textColor}</strong>
                     </p>
                 </div>
-                <div style={styles.card}>
+                <div className="card">
                 <label htmlFor="buttoncolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
                     Select your button color:
                     </label>
@@ -143,7 +144,7 @@ return (
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: buttonColor }}>{buttonColor}</strong>
                     </p>
                 </div>
-                <div style={styles.card}>
+                <div className="card">
                 <label htmlFor="shadowcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
                     Select your drop shadow color:
                     </label>
@@ -151,7 +152,7 @@ return (
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: shadowColor }}>{shadowColor}</strong>
                     </p>
                 </div>
-                <div style={styles.card}>
+                <div className="card">
                 <label htmlFor="backgroundColor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
                     Select your background color:
                     </label>
@@ -159,7 +160,7 @@ return (
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: backgroundColor }}>{backgroundColor}</strong>
                     </p>
                 </div>
-                <div style={styles.card}>
+                <div className="card">
                 <label htmlFor="sidebarColor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
                     Select your sidebar color:
                     </label>
@@ -173,58 +174,5 @@ return (
   );
 }
 
-const styles = {
-    container: {
-        display: "flex",
-        flexDirection: "row", 
-        height: "100vh", 
-        width: "100vw", 
-      },
-    mainContent: {
-        flex: 1, 
-        padding: "2rem",
-        backgroundColor: "var(--background-color, #ffffff)",
-        overflowY: "auto", 
-    },
-    page: {
-        flex: 1,
-        padding: "2rem",
-    },
-    grid: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-        gap: "1.5rem",
-        marginTop: "1rem",
-    },
-    button:{
-        padding: ".5rem",
-        fontSize: "1rem",
-        backgroundColor: "var(--button-color, #ee6dd5)",
-        color: "white",
-        border: "none",
-        borderRadius: "6px",
-        cursor: "pointer",
-    },
-    h1:{
-        textAlign: "left", 
-        marginBottom: "0px", 
-        color: "var(--text-color)"
-    },
-    h3:{
-        color: "var(--text-color)",
-        fontWeight: "normal",
-        textAlign: "left", 
-        marginTop: "0px",
-    },
-    card: {
-        backgroundColor: "#fff",
-        padding: "2rem",
-        borderRadius: "12px",    
-        boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)",
-        textAlign: "center",
-        maxWidth: "90%",        
-        flexDirection: "column",
-    }
-}
 
 export default Settings;
