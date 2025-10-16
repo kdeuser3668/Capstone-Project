@@ -59,6 +59,12 @@ h1 {
   color: var(--text-color);
 }
 
+h2 { /* using this on login page might need to change later */
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #d85bc2;
+}
+
 h3 {
   color: var(--text-color);
   font-weight: normal;
