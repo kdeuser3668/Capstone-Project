@@ -135,7 +135,7 @@ function Timer () {
                     style={styles.input}
                 />
 
-                <h2 style={{fontSize: "50px"}}>{getTime(remaining)}</h2>
+                <h2 style={{color: "#000000ff", fontSize: "50px"}}>{getTime(remaining)}</h2>
                 {isActive ? (
                     <button style={styles.button} onClick={pauseTimer}>Pause Timer</button>
                 ) : (
