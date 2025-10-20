@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import "./App.css";
@@ -16,6 +16,7 @@ function Tasks(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
+    //Need to add local storage for tasks then to backend
 
 return (
     <div style={{ display: "flex" }}>
@@ -37,10 +38,20 @@ function TaskManager() {
     const [tasks, setTasks] = useState([]);
     const [completedTasks, setCompletedTasks] = useState([]);
     const [task, setTask] = useState("");
-    const [priority, setPriority] = useState("top");
+    const [priority, setPriority] = useState("High");
     const [deadline, setDeadline] = useState("");
     const [showForm, setShowForm] = useState(false);
 
+    useEffect(() =>{
+        const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        const savedComplete = JSON.parse(localStorage.getItem("completedTasks")) || [];
+        setTasks(savedTasks);
+        setCompletedTasks(savedComplete);
+    }, []);
+
+    useEffect(() =>{
+
+    }, []);
 
     const handleTaskChange = (e) => {setTask(e.target.value);};
 
@@ -70,6 +81,16 @@ function TaskManager() {
         setPriority("High");
         setDeadline("");
     };
+
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return dateStr;
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${month}-${day}-${year}`
+    }
+
 
     const markDone = (id) => {
         //const updatedTasks = tasks.map((t) => (t.id === id ? { ...t, done: true } : t));
@@ -113,9 +134,9 @@ function TaskManager() {
                         onChange={(e) => setPriority(e.target.value)}
                         style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
                     >
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
                     </select>
                     <input
                         type="date"
@@ -150,7 +171,7 @@ function TaskManager() {
                             <tr key={t.id}>
                                 <td>{t.task}</td>
                                 <td>{t.priority}</td>
-                                <td>{t.deadline}</td>
+                                <td>{formatDate(t.deadline)}</td>
                                 <td>{!t.done && <button onClick={() => markDone(t.id)}>Mark Done</button>}</td>
                             </tr>
                         ))}
@@ -171,7 +192,7 @@ function TaskManager() {
                             <tr key={ct.id}>
                                 <td>{ct.task}</td>
                                 <td>{ct.priority}</td>
-                                <td>{ct.deadline}</td>
+                                <td>{formatDate(ct.deadline)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -182,45 +203,6 @@ function TaskManager() {
     );
 }
 
-
-const styles = {
-    page: {
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        width: "200vh",
-        backgroundColor:"white",
-    },
-    button:{
-        padding: ".5rem",
-        fontSize: "1rem",
-        backgroundColor: "#ee6dd5",
-        color: "white",
-        border: "none",
-        borderRadius: "6px",
-        cursor: "pointer",
-    },
-    h3:{
-        fontWeight: "normal",
-        textAlign: "left", 
-        padding: "10px",
-        marginTop: "0px",
-    },
-    card: {
-        backgroundColor: "#fff",
-        padding: "2rem",
-        borderRadius: "12px",      
-        boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
-        textAlign: "center",
-        width: "80%",
-        maxWidth: "600px",
-        display: "flex",          
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: "15px"
-    }
-}
 
 export default Tasks;
 
