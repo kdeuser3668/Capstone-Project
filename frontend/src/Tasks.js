@@ -16,6 +16,7 @@ function Tasks(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
+    //Need to add local storage for tasks then to backend
 
 return (
     <div style={{ display: "flex" }}>
@@ -70,6 +71,16 @@ function TaskManager() {
         setPriority("top");
         setDeadline("");
     };
+
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return dateStr;
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${month}-${day}-${year}`
+    }
+
 
     const markDone = (id) => {
         //const updatedTasks = tasks.map((t) => (t.id === id ? { ...t, done: true } : t));
@@ -150,7 +161,7 @@ function TaskManager() {
                             <tr key={t.id}>
                                 <td>{t.task}</td>
                                 <td>{t.priority}</td>
-                                <td>{t.deadline}</td>
+                                <td>{formatDate(t.deadline)}</td>
                                 <td>{!t.done && <button onClick={() => markDone(t.id)}>Mark Done</button>}</td>
                             </tr>
                         ))}
@@ -171,7 +182,7 @@ function TaskManager() {
                             <tr key={ct.id}>
                                 <td>{ct.task}</td>
                                 <td>{ct.priority}</td>
-                                <td>{ct.deadline}</td>
+                                <td>{formatDate(ct.deadline)}</td>
                             </tr>
                         ))}
                     </tbody>
