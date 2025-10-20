@@ -67,7 +67,7 @@ function TaskManager() {
         setTasks(updatedTasks);
 
         setTask("");
-        setPriority("top");
+        setPriority("High");
         setDeadline("");
     };
 
