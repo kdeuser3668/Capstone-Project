@@ -41,17 +41,12 @@ function TaskManager() {
     const [deadline, setDeadline] = useState("");
     const [showForm, setShowForm] = useState(false);
 
-    const handleTaskChange = (e) => {
-        setTask(e.target.value);
-    };
 
-    const handlePriorityChange = (e) => {
-        setPriority(e.target.value);
-    };
+    const handleTaskChange = (e) => {setTask(e.target.value);};
 
-    const handleDeadlineChange = (e) => {
-        setDeadline(e.target.value);
-    };
+    const handlePriorityChange = (e) => {setPriority(e.target.value);};
+
+    const handleDeadlineChange = (e) => {setDeadline(e.target.value);};
 
     const addTask = () => {
         if (task.trim() === "" || deadline === "") {
@@ -67,23 +62,30 @@ function TaskManager() {
             return;
         }
 
-        const newTask = { id: tasks.length + 1, task, priority, deadline, done: false};
-        setTasks([...tasks, newTask]);
+        const newTask = { id: Date.now(), task, priority, deadline, done: false};
+        const updatedTasks = [...tasks, newTask].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        setTasks(updatedTasks);
 
-        setTasks([...tasks, newTask]);
         setTask("");
         setPriority("top");
         setDeadline("");
     };
 
     const markDone = (id) => {
-        const updatedTasks = tasks.map((t) => (t.id === id ? { ...t, done: true } : t));
-        setTasks(updatedTasks);
+        //const updatedTasks = tasks.map((t) => (t.id === id ? { ...t, done: true } : t));
+        //setTasks(updatedTasks);
 
         const completedTask = tasks.find((t) => t.id === id);
-        if (completedTask) {
-            setCompletedTasks([...completedTasks, completedTask]);
-        }
+        if (!completedTask) return;
+
+        const updatedTask = {...completedTask, done:true};
+        const remainingTasks = tasks.filter((t) => t.id !== id);
+
+        const sortedRemaining = [...remainingTasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+        setTasks(sortedRemaining);
+        setCompletedTasks([...completedTasks, updatedTask].sort ((a, b) => new Date(a.deadline) - new Date(b.deadline)));
+
     };
 
     const upcomingTasks = tasks.filter((t) => !t.done);
@@ -132,7 +134,7 @@ function TaskManager() {
                 </div>
             )}
 
-            {tasks.lenth > 0 && (
+            {(tasks.length > 0 || completedTasks.length > 0) && (
                 <>
                 <h2>Upcoming Tasks</h2>
                 <table style={{marginTop: "1rem", width: "100%"}}>
@@ -141,7 +143,6 @@ function TaskManager() {
                             <th>Task Name</th>
                             <th>Priority</th>
                             <th>Deadline</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
