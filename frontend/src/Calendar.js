@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 import Sidebar from './Sidebar';
 import CalendarComponent from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -23,10 +24,26 @@ function Calendar({ weekStart }) {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  const [events, setEvents] = useState([
-    { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
-    { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
-  ]);
+
+// ...
+
+const [events, setEvents] = useState([]);
+
+useEffect(() => {
+  axios.get("http://localhost:5050/api/calendar")
+    .then((res) => {
+      // Map DB event structure to DayPilot event format
+      const formattedEvents = res.data.map(event => ({
+        id: event.id,
+        text: event.title,
+        start: event.start_time,
+        end: event.end_time
+      }));
+      setEvents(formattedEvents);
+    })
+    .catch((err) => console.error("Error fetching events:", err));
+}, []);
+
 
   const renderNavigationBar = () => {
   const handleNavigation = (direction) => {
