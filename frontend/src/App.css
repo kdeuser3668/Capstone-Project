@@ -57,6 +57,7 @@ h1 {
   text-align: left;
   margin-bottom: 0;
   color: var(--text-color);
+  padding: 10px;
 }
 
 h2 { /* using this on login page might need to change later */
