@@ -16,7 +16,6 @@ function Tasks(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
-    //Need to add local storage for tasks then to backend
 
 return (
     <div style={{ display: "flex" }}>
@@ -25,7 +24,7 @@ return (
             <h1>Task Manager</h1>
             <h3>{theDate}</h3>
             <div className="page" style={{display: "flex", justifyContent: "center"}}>
-                <div className="card" style={{maxWidth: "600px", width: "100%"}}>
+                <div className="card" style={{maxWidth: "500px", width: "100%"}}>
                     <TaskManager />
                 </div>
             </div>
@@ -50,13 +49,15 @@ function TaskManager() {
     }, []);
 
     useEffect(() =>{
+        localStorage.setItem("tasks", JSON.stringify(tasks))
+    }, [tasks]);
 
-    }, []);
+    useEffect(() =>{
+        localStorage.setItem("completedTasks", JSON.stringify(completedTasks))
+    }, [completedTasks]);
 
     const handleTaskChange = (e) => {setTask(e.target.value);};
-
     const handlePriorityChange = (e) => {setPriority(e.target.value);};
-
     const handleDeadlineChange = (e) => {setDeadline(e.target.value);};
 
     const addTask = () => {
@@ -109,6 +110,16 @@ function TaskManager() {
 
     };
 
+    const deleteTask = (id, isCompleted = false) => {
+        if (isCompleted){
+            const updatedCompleted = completedTasks.filter((t) => t.id !== id);
+            setCompletedTasks(updatedCompleted);
+        }else{
+            const updatedTasks = tasks.filter((t) => t.id !== id);
+            setTasks(updatedTasks);
+        }
+    };
+
     const upcomingTasks = tasks.filter((t) => !t.done);
 
     return (
@@ -120,19 +131,19 @@ function TaskManager() {
             )}
 
             {showForm && (
-                <div style={{ padding: "1.5rem", borderRadius: "12px", boxShadow: "0 4px 12px", marginTop: "1rem", display: "inline-block", textAlign: "left", width: "100%", maxWidth: "400px"}}>
-                    <h3>Create Task</h3>
+                <div style={{ padding: ".5rem", borderRadius: "5px", marginTop: "1rem", display: "inline-block", width: "100%", maxWidth: "400px"}}>
+                    <h3 className="h3" style={{textAlign: "center"}}>Create Task</h3>
                     <input
                         type="text"
                         placeholder="Task Name"
                         value={task}
-                        onChange={(e) => setTask(e.target.value)}
+                        onChange={handleTaskChange}
                         style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
                     />
                     <select
                         value={priority}
-                        onChange={(e) => setPriority(e.target.value)}
-                        style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+                        onChange={handlePriorityChange}
+                        style={{width: "105%", marginBottom: "0.5rem", padding: "0.5rem"}}
                     >
                         <option value="High">High</option>
                         <option value="Medium">Medium</option>
@@ -141,10 +152,10 @@ function TaskManager() {
                     <input
                         type="date"
                         value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
+                        onChange={handleDeadlineChange}
                         style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
                     />
-                    <div style={{display: "flex", justifyContent: "space-between"}}>
+                    <div style={{display: "flex", justifyContent: "center"}}>
                         <button className="button" onClick={addTask} style={{flex: 1, marginRight: "0.5rem"}}>
                             Add Task
                         </button>
@@ -164,6 +175,7 @@ function TaskManager() {
                             <th>Task Name</th>
                             <th>Priority</th>
                             <th>Deadline</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -172,7 +184,8 @@ function TaskManager() {
                                 <td>{t.task}</td>
                                 <td>{t.priority}</td>
                                 <td>{formatDate(t.deadline)}</td>
-                                <td>{!t.done && <button onClick={() => markDone(t.id)}>Mark Done</button>}</td>
+                                <td>{!t.done && <button className="button" style={{marginRight: "0.5rem"}} onClick={() => markDone(t.id)}>Mark Done</button>}                 
+                                <button className="button" style={{flex: 1, backgroundColor: "#ccc", color: "#000"}} onClick={() => deleteTask(t.id)}>Delete</button></td>
                             </tr>
                         ))}
                     </tbody>
@@ -185,6 +198,7 @@ function TaskManager() {
                             <th>Task Name</th>
                             <th>Priority</th>
                             <th>Deadline</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -193,6 +207,7 @@ function TaskManager() {
                                 <td>{ct.task}</td>
                                 <td>{ct.priority}</td>
                                 <td>{formatDate(ct.deadline)}</td>
+                                <td><button className="button" style={{flex: 1, backgroundColor: "#ccc", color: "#000", marginLeft: "0.5rem"}} onClick={() => deleteTask(ct.id, true)}>Delete</button></td>
                             </tr>
                         ))}
                     </tbody>
