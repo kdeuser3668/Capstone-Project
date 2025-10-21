@@ -171,7 +171,7 @@ function TaskManager() {
                 <h2>Upcoming Tasks</h2>
                 <table style={{marginTop: "1rem", width: "100%"}}>
                     <thead>
-                        <tr>
+                        <tr style={{color: "var(--text-color)"}}>
                             <th>Task Name</th>
                             <th>Priority</th>
                             <th>Deadline</th>
@@ -180,7 +180,7 @@ function TaskManager() {
                     </thead>
                     <tbody>
                         {upcomingTasks.map((t) => (
-                            <tr key={t.id}>
+                            <tr key={t.id} style={{color: "var(--text-color)"}}>
                                 <td>{t.task}</td>
                                 <td>{t.priority}</td>
                                 <td>{formatDate(t.deadline)}</td>
@@ -194,7 +194,7 @@ function TaskManager() {
                 <h2>Completed Tasks</h2>
                 <table style={{marginTop: "1rem", width: "100%"}}>
                     <thead>
-                        <tr>
+                        <tr style={{color: "var(--text-color)"}}>
                             <th>Task Name</th>
                             <th>Priority</th>
                             <th>Deadline</th>
@@ -203,7 +203,7 @@ function TaskManager() {
                     </thead>
                     <tbody>
                         {completedTasks.map((ct) => (
-                            <tr key={ct.id}>
+                            <tr key={ct.id} style={{color: "var(--text-color)"}}>
                                 <td>{ct.task}</td>
                                 <td>{ct.priority}</td>
                                 <td>{formatDate(ct.deadline)}</td>
