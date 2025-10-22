@@ -40,6 +40,7 @@ function TaskManager() {
     const [priority, setPriority] = useState("High");
     const [deadline, setDeadline] = useState("");
     const [showForm, setShowForm] = useState(false);
+    const [editingTaskId, setEditingTaskId] = useState(null);
 
     useEffect(() =>{
         const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
@@ -74,9 +75,19 @@ function TaskManager() {
             return;
         }
 
-        const newTask = { id: Date.now(), task, priority, deadline, done: false};
-        const updatedTasks = [...tasks, newTask].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-        setTasks(updatedTasks);
+        if (editingTaskId) {
+            const updatedTasks = tasks.map((t) =>
+              t.id === editingTaskId ? { ...t, task, priority, deadline } : t
+            );
+            setTasks(updatedTasks);
+            setEditingTaskId(null);
+          } else {
+            const newTask = { id: Date.now(), task, priority, deadline, done: false };
+            const updatedTasks = [...tasks, newTask].sort(
+              (a, b) => new Date(a.deadline) - new Date(b.deadline)
+            );
+            setTasks(updatedTasks);
+          }      
 
         setTask("");
         setPriority("High");
@@ -89,7 +100,7 @@ function TaskManager() {
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const day = String(date.getDate()).padStart(2, "0");
         const year = date.getFullYear();
-        return `${month}-${day}-${year}`
+        return `${month}/${day}/${year}`
     }
 
 
@@ -120,19 +131,33 @@ function TaskManager() {
         }
     };
 
+    const editTask = (id) => {
+        const taskToEdit = tasks.find((t) => t.id === id);
+        if (!taskToEdit) return;
+        setTask(taskToEdit.task);
+        setPriority(taskToEdit.priority);
+        setDeadline(taskToEdit.deadline);
+        setEditingTaskId(id);
+        setShowForm(true);
+      };
+
     const upcomingTasks = tasks.filter((t) => !t.done);
 
     return (
         <div style={{width: "100%", textAlign: "center"}}>
-            {!showForm && (
-            <button className="button" onClick={() => setShowForm(true)}>
-                Create Task
+        {!showForm && (
+            <button
+            className="button"
+            onClick={() => setShowForm(true)}
+            style={{ marginBottom: "1rem" }}
+            >
+            {editingTaskId ? "Edit Task" : "Create Task"}
             </button>
-            )}
+        )}
 
             {showForm && (
                 <div style={{ padding: ".5rem", borderRadius: "5px", marginTop: "1rem", display: "inline-block", width: "100%", maxWidth: "400px"}}>
-                    <h3 className="h3" style={{textAlign: "center"}}>Create Task</h3>
+                    <h3>{editingTaskId ? "Edit Task" : "Create Task"}</h3>
                     <input
                         type="text"
                         placeholder="Task Name"
@@ -155,12 +180,22 @@ function TaskManager() {
                         onChange={handleDeadlineChange}
                         style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
                     />
-                    <div style={{display: "flex", justifyContent: "center"}}>
-                        <button className="button" onClick={addTask} style={{flex: 1, marginRight: "0.5rem"}}>
-                            Add Task
+                    <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem" }}>
+                        <button className="button" onClick={addTask}>
+                        {editingTaskId ? "Save Changes" : "Add Task"}
                         </button>
-                        <button className="button" onClick={() => setShowForm(false)} style={{flex: 1, backgroundColor: "#ccc", color: "#000"}}>
-                            Cancel
+                        <button
+                        className="button"
+                        onClick={() => {
+                            setShowForm(false);
+                            setEditingTaskId(null);
+                            setTask("");
+                            setPriority("High");
+                            setDeadline("");
+                        }}
+                        style={{ backgroundColor: "#ccc", color: "#000" }}
+                        >
+                        Cancel
                         </button>
                     </div>
                 </div>
@@ -184,8 +219,9 @@ function TaskManager() {
                                 <td>{t.task}</td>
                                 <td>{t.priority}</td>
                                 <td>{formatDate(t.deadline)}</td>
-                                <td>{!t.done && <button className="button" style={{marginRight: "0.5rem"}} onClick={() => markDone(t.id)}>Mark Done</button>}                 
-                                <button className="button" style={{flex: 1, backgroundColor: "#ccc", color: "#000"}} onClick={() => deleteTask(t.id)}>Delete</button></td>
+                                <td>{!t.done && <button className="button" style={{marginRight: "0.5rem"}} onClick={() => markDone(t.id)}>Mark Done</button>}
+                                <button className="button" onClick={() => editTask(t.id)} style={{ marginRight: "0.3rem"}}>Edit</button>                 
+                                <button className="button" style={{flex: 1}} onClick={() => deleteTask(t.id)}>Delete</button></td>
                             </tr>
                         ))}
                     </tbody>
@@ -207,7 +243,7 @@ function TaskManager() {
                                 <td>{ct.task}</td>
                                 <td>{ct.priority}</td>
                                 <td>{formatDate(ct.deadline)}</td>
-                                <td><button className="button" style={{flex: 1, backgroundColor: "#ccc", color: "#000", marginLeft: "0.5rem"}} onClick={() => deleteTask(ct.id, true)}>Delete</button></td>
+                                <td><button className="button" style={{flex: 1}} onClick={() => deleteTask(ct.id, true)}>Delete</button></td>
                             </tr>
                         ))}
                     </tbody>
