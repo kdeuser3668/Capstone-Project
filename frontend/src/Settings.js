@@ -117,7 +117,7 @@ function Settings({ weekStart, setWeekStart }) {
         document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
         }, []);
 
-    //saves and applies page color changes across all pages when using backgroundColor: "var(--sidebar-color, #f5f5f5)" the second color is a fallback color
+    //saves and applies card color changes across all pages when using backgroundColor: "var(--card-color, #fff)" the second color is a fallback color
     const handleCardChange = (event) => {
         const newCardColor = event.target.value;
         setCardColor(newCardColor);
@@ -191,7 +191,7 @@ return (
                     Select your card color:
                     </label>
                     <input type="color" id="cardColor" value={cardColor} onChange={handleCardChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: cardColor }}>{cardColor}</strong>
+                    <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: textColor }}>{cardColor}</strong>
                     </p>
                 </div>
             </div>
