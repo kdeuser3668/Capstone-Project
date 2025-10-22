@@ -17,11 +17,11 @@ function Progress(){
 
 
 return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
         <Sidebar />
-        <div style={styles.page}>
-            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Progress</h1>
-            <h3 style={styles.h3}>{theDate}</h3>
+        <div className="main-content">
+            <h1 className="h1">Progress</h1>
+            <h3 h3 className="h3">{theDate}</h3>
         </div>
     </div>
     )

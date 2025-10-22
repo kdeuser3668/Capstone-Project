@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import './App.css';
 
 function Focus(){
     const navigate = useNavigate();
@@ -16,11 +17,11 @@ function Focus(){
 
 
 return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
         <Sidebar />
-        <div style={styles.page}>
-            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Focus</h1>
-            <h3 style={styles.h3}>{theDate}</h3>
+        <div className="main-content">
+            <h1 className="h1">Focus</h1>
+            <h3 h3 className="h3">{theDate}</h3>
 
             <div style={styles.cardContainer}>
                 <div style={styles.card}>
@@ -135,7 +136,7 @@ function Timer () {
                     style={styles.input}
                 />
 
-                <h2 style={{fontSize: "50px"}}>{getTime(remaining)}</h2>
+                <h2 style={{color: "#000000ff", fontSize: "50px"}}>{getTime(remaining)}</h2>
                 {isActive ? (
                     <button style={styles.button} onClick={pauseTimer}>Pause Timer</button>
                 ) : (

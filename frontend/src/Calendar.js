@@ -7,6 +7,7 @@ import './Calendar.css';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import './App.css';
 
+
 function Calendar({ weekStart }) {
   const navigate = useNavigate();
   const [value, setValue] = useState(new Date());
