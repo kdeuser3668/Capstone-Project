@@ -48,10 +48,6 @@
   transition: background-color 0.2s ease;
 }
 
-.button:hover {
-  background-color: #d85bc2;
-}
-
 /* Headings */
 h1 {
   text-align: left;
@@ -75,7 +71,7 @@ h3 {
 
 /* Card component */
 .card {
-  background-color: #fff;
+  background-color: var(--card-color, #fff);
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 8px var(--shadow-color);
