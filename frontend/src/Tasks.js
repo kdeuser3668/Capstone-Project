@@ -225,7 +225,7 @@ function TaskManager() {
 
             {(tasks.length > 0 || completedTasks.length > 0) && (
                 <>
-                <h2 style={{marginTop: "0rem"}}>Upcoming Tasks</h2>
+                <h2 style={{marginTop: "0rem", color: "var(--button-color)"}}>Upcoming Tasks</h2>
                 <table style={{marginTop: "1rem", width: "100%"}}>
                     <thead>
                         <tr style={{color: "var(--text-color)"}}>
@@ -249,7 +249,7 @@ function TaskManager() {
                     </tbody>
                 </table>
 
-                <h2>Completed Tasks</h2>
+                <h2 style={{color: "var(--button-color)"}}>Completed Tasks</h2>
                 <table style={{marginTop: "1rem", width: "100%"}}>
                     <thead>
                         <tr style={{color: "var(--text-color)"}}>
