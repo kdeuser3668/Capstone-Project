@@ -31,7 +31,11 @@ function Calendar({ weekStart }) {
 
   const renderNavigationBar = () => {
   const handleNavigation = (direction) => {
-    const newDate = new Date(value);
+  let newDate;
+  if (direction === "today") {
+    newDate = new Date(); // Snap to current date
+  } else {
+    newDate = new Date(value);
     if (view === "day") {
       newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
     } else if (view === "week") {
@@ -39,8 +43,11 @@ function Calendar({ weekStart }) {
     } else if (view === "month") {
       newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
     }
-    setValue(newDate);
-  };
+  }
+
+  setValue(newDate);
+};
+
 
   return (
     <div style={styles.navBar}>
