@@ -45,6 +45,11 @@ function Settings({ weekStart, setWeekStart }) {
           ? window.localStorage.getItem("sidebarColor") || "#f5f5f5"
           : "#f5f5f5"
     );
+    const [cardColor, setCardColor] = useState(
+        typeof window !== "undefined" && window.localStorage
+          ? window.localStorage.getItem("cardColor") || "#fff"
+          : "#fff"
+    );
 
     //saves and applies text changes across all pages when using color: "var(--text-color)"
     const handleColorChange = (event) => {
@@ -112,6 +117,19 @@ function Settings({ weekStart, setWeekStart }) {
         document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
         }, []);
 
+    //saves and applies page color changes across all pages when using backgroundColor: "var(--sidebar-color, #f5f5f5)" the second color is a fallback color
+    const handleCardChange = (event) => {
+        const newCardColor = event.target.value;
+        setCardColor(newCardColor);
+        window.localStorage.setItem("cardColor", newCardColor);
+        document.documentElement.style.setProperty("--card-color", newCardColor);
+        };
+
+    useEffect(() => {
+        const savedCardColor = window.localStorage.getItem("cardColor") || "#fff";
+        document.documentElement.style.setProperty("--card-color", savedCardColor);
+        }, []);
+    
     // profile
         // change email/pass
     // font/font size
@@ -166,6 +184,14 @@ return (
                     </label>
                     <input type="color" id="sidebarColor" value={sidebarColor} onChange={handleSidebarChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: sidebarColor }}>{sidebarColor}</strong>
+                    </p>
+                </div>
+                <div className="card">
+                <label htmlFor="cardColor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
+                    Select your card color:
+                    </label>
+                    <input type="color" id="cardColor" value={cardColor} onChange={handleCardChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
+                    <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: cardColor }}>{cardColor}</strong>
                     </p>
                 </div>
             </div>
