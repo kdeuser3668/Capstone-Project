@@ -48,10 +48,6 @@
   transition: background-color 0.2s ease;
 }
 
-.button:hover {
-  background-color: #d85bc2;
-}
-
 /* Headings */
 h1 {
   text-align: left;
