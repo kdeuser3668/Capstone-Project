@@ -1,21 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import './Calendar.css';
 import './App.css';
 
-function Settings({ weekStart, setWeekStart }) {
-  const navigate = useNavigate();
-  const today = new Date();
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const dd = today.getDate();
-  const mm = monthNames[today.getMonth()];
-  const yyyy = today.getFullYear();
-  const theDate = `${mm} ${dd}, ${yyyy}`;
+function Settings() {
 
     const [textColor, setTextColor] = useState(
         typeof window !== "undefined" && window.localStorage
