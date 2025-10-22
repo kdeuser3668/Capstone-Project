@@ -60,6 +60,12 @@ function TaskManager() {
     const handleTaskChange = (e) => {setTask(e.target.value);};
     const handlePriorityChange = (e) => {setPriority(e.target.value);};
     const handleDeadlineChange = (e) => {setDeadline(e.target.value);};
+    const normalizeDeadline = (dateStr) => {
+        if (!dateStr) return ""; // if blank, just return empty
+        const parsed = new Date(dateStr);
+        return isNaN(parsed) ? "" : parsed.toISOString().split("T")[0];
+      };    
+
 
     const addTask = () => {
         if (task.trim() === "" || deadline === "") {
@@ -70,19 +76,24 @@ function TaskManager() {
         const selectedDate = new Date(deadline);
         const currentDate = new Date();
 
-        if (selectedDate <= currentDate) {
+        selectedDate.setHours(0, 0, 0, 0);
+        currentDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate < currentDate) {
             alert("Please select a future date for the deadline.");
             return;
         }
 
+        const normalizedDeadline = normalizeDeadline(deadline);
+
         if (editingTaskId) {
             const updatedTasks = tasks.map((t) =>
-              t.id === editingTaskId ? { ...t, task, priority, deadline } : t
+              t.id === editingTaskId ? { ...t, task, priority, deadline: normalizedDeadline } : t
             );
             setTasks(updatedTasks);
             setEditingTaskId(null);
           } else {
-            const newTask = { id: Date.now(), task, priority, deadline, done: false };
+            const newTask = { id: Date.now(), task, priority, deadline: normalizedDeadline, done: false };
             const updatedTasks = [...tasks, newTask].sort(
               (a, b) => new Date(a.deadline) - new Date(b.deadline)
             );
@@ -103,10 +114,7 @@ function TaskManager() {
         return `${month}/${day}/${year}`
     }
 
-
     const markDone = (id) => {
-        //const updatedTasks = tasks.map((t) => (t.id === id ? { ...t, done: true } : t));
-        //setTasks(updatedTasks);
 
         const completedTask = tasks.find((t) => t.id === id);
         if (!completedTask) return;
@@ -134,12 +142,27 @@ function TaskManager() {
     const editTask = (id) => {
         const taskToEdit = tasks.find((t) => t.id === id);
         if (!taskToEdit) return;
+      
+        // 🩹 Convert stored MM/DD/YYYY → YYYY-MM-DD for date input
+        let isoDeadline = "";
+        if (taskToEdit.deadline) {
+          const parts = taskToEdit.deadline.split("/");
+          if (parts.length === 3) {
+            const [month, day, year] = parts;
+            isoDeadline = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+          } else {
+            // if already ISO or empty, keep as is
+            isoDeadline = taskToEdit.deadline;
+          }
+        }
+      
         setTask(taskToEdit.task);
         setPriority(taskToEdit.priority);
-        setDeadline(taskToEdit.deadline);
+        setDeadline(isoDeadline); // ✅ date input now valid
         setEditingTaskId(id);
         setShowForm(true);
       };
+      
 
     const upcomingTasks = tasks.filter((t) => !t.done);
 
@@ -193,7 +216,6 @@ function TaskManager() {
                             setPriority("High");
                             setDeadline("");
                         }}
-                        style={{ backgroundColor: "#ccc", color: "#000" }}
                         >
                         Cancel
                         </button>
