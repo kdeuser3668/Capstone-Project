@@ -41,7 +41,7 @@
   padding: 0.5rem;
   font-size: 1rem;
   background-color: var(--button-color);
-  color: white;
+  color: var(--text-color);
   border: none;
   border-radius: 6px;
   cursor: pointer;
