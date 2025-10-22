@@ -179,8 +179,8 @@ function TaskManager() {
         )}
 
             {showForm && (
-                <div style={{ padding: ".5rem", borderRadius: "5px", marginTop: "1rem", display: "inline-block", width: "100%", maxWidth: "400px"}}>
-                    <h3>{editingTaskId ? "Edit Task" : "Create Task"}</h3>
+                <div style={{ padding: ".5rem", borderRadius: "5px", margin: "1rem", display: "inline-block", width: "100%", maxWidth: "400px"}}>
+                    <h3 style={{textAlign: "center"}}>{editingTaskId ? "Edit Task" : "Create Task"}</h3>
                     <input
                         type="text"
                         placeholder="Task Name"
@@ -201,7 +201,7 @@ function TaskManager() {
                         type="date"
                         value={deadline}
                         onChange={handleDeadlineChange}
-                        style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+                        style={{width: "100%", marginBottom: "1rem", padding: "0.5rem"}}
                     />
                     <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem" }}>
                         <button className="button" onClick={addTask}>
@@ -225,7 +225,7 @@ function TaskManager() {
 
             {(tasks.length > 0 || completedTasks.length > 0) && (
                 <>
-                <h2>Upcoming Tasks</h2>
+                <h2 style={{marginTop: "0rem"}}>Upcoming Tasks</h2>
                 <table style={{marginTop: "1rem", width: "100%"}}>
                     <thead>
                         <tr style={{color: "var(--text-color)"}}>
