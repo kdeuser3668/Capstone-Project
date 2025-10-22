@@ -5,12 +5,13 @@ import CalendarComponent from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './Calendar.css';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
+import './App.css';
 
 function Calendar({ weekStart }) {
   const navigate = useNavigate();
   const [value, setValue] = useState(new Date());
   const [view, setView] = useState("month");
-
+  
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
