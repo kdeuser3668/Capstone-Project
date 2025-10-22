@@ -1,9 +1,9 @@
 import express from "express";
 import {
-  getAllExams,
-  getExamsByDate,
-  addExam,
-  deleteExam,
+  getAllEvents,
+  getEventsByDate,
+  addEvents,
+  deleteEvents,
   getGoogleAuthURL,
   getGoogleEvents
 } from "../controllers/calendarController.js";
@@ -11,10 +11,10 @@ import {
 const router = express.Router();
 
 // local db; exams 
-router.get("/", getAllExams);         // GET all exams
-router.get("/:date", getExamsByDate); // GET exams for a specific date (YYYY-MM-DD)
-router.post("/", addExam);            // POST new exam
-router.delete("/:id", deleteExam);    // DELETE exam by ID
+router.get("/", getAllEvents);         // GET all exams
+router.get("/:date", getEventsByDate); // GET exams for a specific date (YYYY-MM-DD)
+router.post("/", addEvent);            // POST new exam
+router.delete("/:id", deleteEvent);    // DELETE exam by ID
 
 // google calendar 
 router.get("/google/auth", getGoogleAuthURL);

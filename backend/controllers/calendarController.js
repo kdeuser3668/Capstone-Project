@@ -4,21 +4,21 @@ import { google } from "googleapis";
 import dotenv from "dotenv";
 dotenv.config();
 
-//fetch exam functions
-export const getAllExams = async (req, res) => {
+//fetch event functions
+export const getAllEvents = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM tasks ORDER BY start_time ASC");
+    const [rows] = await db.query("SELECT * FROM events ORDER BY start_time ASC");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-export const getExamsByDate = async (req, res) => {
+export const getEventsByDate = async (req, res) => {
   try {
     const { date } = req.params; // expecting YYYY-MM-DD
     const [rows] = await db.query(
-      "SELECT * FROM exams WHERE DATE(start_time) = ?",
+      "SELECT * FROM events WHERE DATE(start_time) = ?",
       [date]
     );
     res.json(rows);
@@ -27,11 +27,11 @@ export const getExamsByDate = async (req, res) => {
   }
 };
 
-export const addExam = async (req, res) => {
+export const addEvent = async (req, res) => {
   try {
     const { title, description, start_time, end_time } = req.body;
     const [result] = await db.query(
-      "INSERT INTO exams (title, description, start_time, end_time) VALUES (?, ?, ?, ?)",
+      "INSERT INTO events (title, description, start_time, end_time) VALUES (?, ?, ?, ?)",
       [title, description, start_time, end_time]
     );
     res.json({ id: result.insertId, title, description, start_time, end_time });
@@ -40,11 +40,11 @@ export const addExam = async (req, res) => {
   }
 };
 
-export const deleteExam = async (req, res) => {
+export const deleteEvents = async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query("DELETE FROM exams WHERE id = ?", [id]);
-    res.json({ message: "Exam deleted successfully" });
+    await db.query("DELETE FROM events WHERE id = ?", [id]);
+    res.json({ message: "Event deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -52,6 +52,7 @@ export const deleteExam = async (req, res) => {
 
 
 // google calendar integration functions
+
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
