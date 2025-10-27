@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import CalendarComponent from 'react-calendar';
@@ -23,10 +23,17 @@ function Calendar({ weekStart }) {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  const [events, setEvents] = useState([
-    { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
-    { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
-  ]);
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5050/api/course-sessions")
+      .then(res => res.json())
+      .then(data => {
+        console.log(data); // check what’s coming in
+        setEvents(data);
+      })
+      .catch(err => console.error("Error fetching events:", err));
+  }, []);
 
   const renderNavigationBar = () => {
   const handleNavigation = (direction) => {
@@ -83,7 +90,7 @@ function Calendar({ weekStart }) {
          {view === "day" && (
         <DayPilotCalendar
             viewType="Day"
-            events={{ list: events }}
+            events={events}
             startDate={value}
             durationBarVisible={false}
             onBeforeHeaderRender={args => {
@@ -97,7 +104,7 @@ function Calendar({ weekStart }) {
         {view === "week" && (
         <DayPilotCalendar
             viewType="Week"
-            events={{ list: events }}
+            events={events}
             startDate={value}
             durationBarVisible={false}
             onBeforeHeaderRender={args => {
@@ -114,7 +121,7 @@ function Calendar({ weekStart }) {
                     {monthNames[value.getMonth()]} {value.getFullYear()}
                   </h3>
                   <DayPilotMonth
-                    events={{ list: events }}
+                    events={events}
                     startDate={value.toISOString().split("T")[0]}
                     onBeforeCellRender={(args) => {
                         const date = new Date(args.cell.start);
@@ -129,7 +136,7 @@ function Calendar({ weekStart }) {
               )}
               {view === "year" && (
                 <div style={styles.placeholder}>
-                  <p>Year view coming soon…</p>
+                  <p>Year view coming soon...</p>
                 </div>
               )}
             </div>
