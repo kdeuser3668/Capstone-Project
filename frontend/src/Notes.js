@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import './App.css';
 
 
-function Dashboard(){
+function Notes(){
     const navigate = useNavigate();
     var today = new Date();
 
@@ -16,6 +16,7 @@ function Dashboard(){
 
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
+    //use the task creation style and populate notes into cards to set up similar to settings
 
 return (
     <div className="container">
@@ -29,4 +30,4 @@ return (
 };
 
 
-export default Dashboard;
+export default Notes;
