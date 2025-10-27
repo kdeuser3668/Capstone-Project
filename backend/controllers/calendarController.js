@@ -1,4 +1,5 @@
 import { db } from "../db.js";
+import sql from "mssql";
 import { google } from "googleapis";
 
 import dotenv from "dotenv";
@@ -7,8 +8,8 @@ dotenv.config();
 //fetch event functions
 export const getAllEvents = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM events ORDER BY start_time ASC");
-    res.json(rows);
+    const result = await db.request().query("SELECT * FROM events ORDER BY start_time ASC");
+    res.json(result.recordset);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -17,11 +18,12 @@ export const getAllEvents = async (req, res) => {
 export const getEventsByDate = async (req, res) => {
   try {
     const { date } = req.params; // expecting YYYY-MM-DD
-    const [rows] = await db.query(
-      "SELECT * FROM events WHERE DATE(start_time) = ?",
-      [date]
-    );
-    res.json(rows);
+    const result = await db
+      .request()
+      .input("date", sql.Date, date)
+      .query("SELECT * FROM events WHERE CONVERT(date, start_time) = @date ORDER BY start_time ASC");
+
+    res.json(result.recordset);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30,20 +32,38 @@ export const getEventsByDate = async (req, res) => {
 export const addEvent = async (req, res) => {
   try {
     const { title, description, start_time, end_time } = req.body;
-    const [result] = await db.query(
-      "INSERT INTO events (title, description, start_time, end_time) VALUES (?, ?, ?, ?)",
-      [title, description, start_time, end_time]
-    );
-    res.json({ id: result.insertId, title, description, start_time, end_time });
+
+    const insertQuery = `
+      INSERT INTO events (title, description, start_time, end_time)
+      OUTPUT INSERTED.id
+      VALUES (@title, @description, @start_time, @end_time)
+    `;
+
+    const result = await db
+      .request()
+      .input("title", sql.VarChar(255), title)
+      .input("description", sql.VarChar(sql.MAX), description)
+      .input("start_time", sql.DateTime, new Date(start_time))
+      .input("end_time", sql.DateTime, new Date(end_time))
+      .query(insertQuery);
+
+    const insertedId = result.recordset[0]?.id;
+
+    res.json({ id: insertedId, title, description, start_time, end_time });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-export const deleteEvents = async (req, res) => {
+export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query("DELETE FROM events WHERE id = ?", [id]);
+
+    await db
+      .request()
+      .input("id", sql.Int, parseInt(id, 10))
+      .query("DELETE FROM events WHERE id = @id");
+
     res.json({ message: "Event deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

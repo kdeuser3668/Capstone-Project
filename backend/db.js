@@ -14,14 +14,11 @@ const config = {
   }
 };
 
-const pool = await sql.connect(config);
+try {
+  await sql.connect(config);
+  console.log("Connected to database.");
+} catch (err) {
+  console.error("Database connection failed:", err);
+}
 
-pool.connect()
-  .then(() => {
-    console.log("Connected to database.");
-  })
-  .catch(err => {
-    console.error("Database connection failed:", err);
-  });
-
-export const db = pool;
+export const db = sql;

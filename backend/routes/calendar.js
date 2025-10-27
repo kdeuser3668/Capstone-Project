@@ -2,8 +2,8 @@ import express from "express";
 import {
   getAllEvents,
   getEventsByDate,
-  addEvents,
-  deleteEvents,
+  addEvent,
+  deleteEvent,
   getGoogleAuthURL,
   getGoogleEvents
 } from "../controllers/calendarController.js";
