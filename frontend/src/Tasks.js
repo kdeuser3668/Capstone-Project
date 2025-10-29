@@ -137,8 +137,7 @@ function Tasks() {
             alignItems: "center",
             width: "100%",
             marginBottom: "1rem",
-          }}
-        >
+          }}>
           <div>
             <h1 style={{ margin: 0 }}>Task Manager</h1>
             <h3 style={{ margin: 0 }}>{theDate}</h3>
@@ -204,17 +203,15 @@ function Tasks() {
                     setTask("");
                     setPriority("High");
                     setDeadline("");
-                  }}
-                >
+                  }}>
                   Cancel
                 </button>
               </div>
             </div>
           )}
 
-          {/* Tables for upcoming and completed tasks */}
           {(tasks.length > 0 || completedTasks.length > 0) && (
-            <>
+            <div className= "main-content">
               <h2 style={{ marginTop: "0rem", color: "var(--button-color)" }}>Upcoming Tasks</h2>
               <table style={{ marginTop: "1rem", width: "100%" }}>
                 <thead>
@@ -233,12 +230,12 @@ function Tasks() {
                       <td>{formatDate(t.deadline)}</td>
                       <td>
                         {!t.done && (
-                          <button className="button" onClick={() => markDone(t.id)}>
+                          <button className="button" style={{margin: ".5rem"}} onClick={() => markDone(t.id)}>
                             Mark Done
                           </button>
                         )}
-                        <button className="button" onClick={() => editTask(t.id)}>Edit</button>
-                        <button className="button" onClick={() => deleteTask(t.id)}>Delete</button>
+                        <button className="button" style={{margin: ".5rem"}} onClick={() => editTask(t.id)}>Edit</button>
+                        <button className="button" style={{margin: ".5rem"}} onClick={() => deleteTask(t.id)}>Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -270,7 +267,7 @@ function Tasks() {
                   ))}
                 </tbody>
               </table>
-            </>
+            </div>
           )}
         </div>
       </div>
