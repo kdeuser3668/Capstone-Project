@@ -35,6 +35,8 @@ return (
                     <h3>Music Selection</h3>
                     <MusicPlayer />
                 </div>
+            </div>
+            <div style={styles.cardContainer}>
                 <div style={styles.card}>
                     <FocusSession />
                 </div>
@@ -238,8 +240,8 @@ function FocusSession () {
                 <p>No upcoming sessions yet.</p>
                 ) : (
                 upcomingSessions.map((s) => (
-                    <div key={s.id} style={styles.sessionBox}>
-                    <h4 style={{ marginBottom: "5px" }}>{s.title}</h4>
+                    <div key={s.id} style={{...styles.card, padding: "10px", margin: "5px "}}>
+                    <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
                     <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
                     <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
                     {s.category && <p><strong>Category:</strong> {s.category}</p>}
