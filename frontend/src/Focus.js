@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import './App.css';
+import { DayPilotCalendar } from "@daypilot/daypilot-lite-react";
 
 function Focus(){
     const navigate = useNavigate();
@@ -33,6 +34,11 @@ return (
                 <div className="card">
                     <h3 style={{textAlign: "center"}}>Music Selection</h3>
                     <MusicPlayer />
+                </div>
+            </div>
+            <div style={styles.cardContainer}>
+                <div style={styles.card}>
+                    <FocusSession />
                 </div>
             </div>
         </div>
@@ -175,9 +181,77 @@ function MusicPlayer () {
     )
 }
    
-function focusSession () {
+function FocusSession () {
     //add function to create focus sessions and add them to calendar
     //also have upcoming focus sessions displayed
+    const [sessions, setSessions] = useState(() => {
+        const saved = localStorage.getItem("focusSessions");
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [form, setForm] = useState({
+        title: "", 
+        start_time: "", 
+        end_time: "", 
+        category: "", 
+        notes: ""
+    });
+
+    useEffect(() => {
+        localStorage.setItem("focusSessions", JSON.stringify(sessions));
+    }, [sessions]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const newSession = {
+            id: Date.now(),
+            title: form.title,
+            start: form.start_time,
+            end: form.end_time,
+            category: form.category, 
+            notes: form.notes
+        };
+
+        setSessions([...sessions, newSession]);
+        setForm({title: "", start_time: "", end_time: "", category: "", notes: ""});
+
+    };
+    const upcomingSessions = sessions
+        .filter((s) => new Date(s.start) >= new Date())
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+    return (
+        <div>
+            <h2>Schedule Focus Session</h2>
+
+            <form onSubmit={handleSubmit}>
+                <input type="text" placeholder="Session Title" value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required/>
+                <input type="datetime-local" value={form.start_time} onChange={(e) => setForm({...form, start_time: e.target.value})} required/>
+                <input type="datetime-local" value={form.end_time} onChange={(e) => setForm({...form, end_time: e.target.value})} required/>
+                <input type="text" placeholder="Category" value={form.category} onChange={(e) => setForm({...form, category: e.target.value})}/>
+                <textarea placeholder="Notes - What do you want to accomplish?" value={form.notes} onChange={(e) => setForm({...form, notes: e.target.value})}></textarea>
+                <button type="submit">Add Session</button>
+            </form>
+
+            <h3>Upcoming Focus Sessions</h3>
+            <div>
+                {upcomingSessions.length === 0 ? (
+                <p>No upcoming sessions yet.</p>
+                ) : (
+                upcomingSessions.map((s) => (
+                    <div key={s.id} style={{...styles.card, padding: "10px", margin: "5px "}}>
+                    <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
+                    <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
+                    <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
+                    {s.category && <p><strong>Category:</strong> {s.category}</p>}
+                    {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
+                    </div>
+                ))
+                )}
+            </div>
+        </div>
+    );
 }
 
 const styles = {
