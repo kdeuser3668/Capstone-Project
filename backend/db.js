@@ -4,10 +4,10 @@ dotenv.config();
 
 const { Pool } = pkg;
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false, // required for neon
+    rejectUnauthorized: false,
   },
 });
 
@@ -19,5 +19,3 @@ try {
 } catch (err) {
   console.error("Database connection failed:", err);
 }
-
-export default pool;
