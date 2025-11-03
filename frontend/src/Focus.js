@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import './App.css';
 
 function Focus(){
     const navigate = useNavigate();
@@ -16,21 +17,21 @@ function Focus(){
 
 
 return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
         <Sidebar />
-        <div style={styles.page}>
-            <h1 style={{textAlign: "left", padding: "10px", marginBottom: "0px"}}>Focus</h1>
-            <h3 style={styles.h3}>{theDate}</h3>
+        <div className="main-content">
+            <h1 className="h1">Focus</h1>
+            <h3 h3 className="h3">{theDate}</h3>
 
             <div style={styles.cardContainer}>
-                <div style={styles.card}>
-                    <h3>Focus Timer</h3>
+                <div className="card">
+                    <h3 style={{textAlign: "center"}}>Focus Timer</h3>
                     <hr style={{color: "#000000ff", width: "70%", borderWidth: "1px"}}/>
                     <Timer />  
                 </div>
 
-                <div style={styles.card}>
-                    <h3>Music Selection</h3>
+                <div className="card">
+                    <h3 style={{textAlign: "center"}}>Music Selection</h3>
                     <MusicPlayer />
                 </div>
             </div>
@@ -135,19 +136,19 @@ function Timer () {
                     style={styles.input}
                 />
 
-                <h2 style={{fontSize: "50px"}}>{getTime(remaining)}</h2>
+                <h2 style={{color: "#000000ff", fontSize: "50px"}}>{getTime(remaining)}</h2>
                 {isActive ? (
-                    <button style={styles.button} onClick={pauseTimer}>Pause Timer</button>
+                    <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={pauseTimer}>Pause Timer</button>
                 ) : (
-                    <button style={styles.button} onClick={startTimer}>Start Timer</button>
+                    <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={startTimer}>Start Timer</button>
                 )}
-                <button style={styles.button} onClick={resetTimer}> Reset Timer </button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={resetTimer}> Reset Timer </button>
             </div>
             <hr style={{color: "#000000ff", width: "100%", borderWidth: "1px"}}/>
             <div style={styles.buttonGroup}>
-                <button style={styles.button} onClick={() => setRemaining(15 * 60)}>Quick Study</button>
-                <button style={styles.button} onClick={() => setRemaining(25 * 60)}>Pomodoro</button>
-                <button style={styles.button} onClick={() => setRemaining(50 * 60)}>Deep Focus</button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => {setRemaining(15 * 60); setHasStarted(true); setIsActive(true);}}>Quick Study</button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => {setRemaining(25 * 60); setHasStarted(true); setIsActive(true);}}>Pomodoro</button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => {setRemaining(50 * 60); setHasStarted(true); setIsActive(true);}}>Deep Focus</button>
             </div>
         </div>
     );
