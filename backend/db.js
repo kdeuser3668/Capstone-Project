@@ -20,4 +20,4 @@ try {
   console.error("Database connection failed:", err);
 }
 
-export const db = pool;
+export default pool;
