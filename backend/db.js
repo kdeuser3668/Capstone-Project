@@ -1,24 +1,23 @@
-import sql from "mssql";
+import pkg from "pg";
 import dotenv from "dotenv";
 dotenv.config();
 
-const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  server: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT) || 1433,
-  options: {
-    encrypt: true,
-    trustServerCertificate: true
-  }
-};
+const { Pool } = pkg;
 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // required for neon
+  },
+});
+
+// tests connection, comment out prior to hosting
 try {
-  await sql.connect(config);
-  console.log("Connected to database.");
+  const client = await pool.connect();
+  console.log("Connected to Neon PostgreSQL database.");
+  client.release();
 } catch (err) {
   console.error("Database connection failed:", err);
 }
 
-export const db = sql;
+export const db = pool;
