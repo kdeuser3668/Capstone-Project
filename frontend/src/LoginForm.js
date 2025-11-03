@@ -31,7 +31,7 @@ export default function LoginForm() {
       alert("You must agree to the Privacy Policy and be 13 years of age or older.");
       return;
     }
-  /*
+
     const endpoint = isLogin ? "login" : "signup";
     const payload = isLogin ? { email, password } : { email, password, username };
 
@@ -55,14 +55,6 @@ export default function LoginForm() {
       console.error(err);
       alert("Something went wrong");
     }
-    */
-   // --- Add this mock logic instead ---
-    console.log(isLogin ? "Mock login..." : "Mock signup...");
-    await new Promise(resolve => setTimeout(resolve, 1000)); // simulate delay
-
-    alert(isLogin ? "Login successful!" : "Signup successful!");
-    localStorage.setItem("isAuthenticated", "true");
-    navigate("/dashboard");
   };
 
   return (
