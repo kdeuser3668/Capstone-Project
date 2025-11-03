@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "./App.css";
 
+//update the date, hardcode in a +1 for the date
+
 function Tasks() {
   const navigate = useNavigate();
   const today = new Date();
@@ -12,7 +14,6 @@ function Tasks() {
   ];
   const theDate = `${monthNames[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
-  // ✅ Move all TaskManager state here
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [task, setTask] = useState("");
@@ -21,7 +22,7 @@ function Tasks() {
   const [showForm, setShowForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
 
-  // ✅ Local storage persistence
+  // Local storage 
   useEffect(() => {
     const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
     const savedComplete = JSON.parse(localStorage.getItem("completedTasks")) || [];
@@ -168,7 +169,7 @@ function Tasks() {
                 maxWidth: "400px",
               }}
             >
-              <h3>{editingTaskId ? "Edit Task" : "Create Task"}</h3>
+              <h3 style={{ textAlign: "center" }}>{editingTaskId ? "Edit Task" : "Create Task"}</h3>
               <input
                 type="text"
                 placeholder="Task Name"
@@ -211,7 +212,7 @@ function Tasks() {
           )}
 
           {(tasks.length > 0 || completedTasks.length > 0) && (
-            <div className= "main-content">
+            <div className= "">
               <h2 style={{ marginTop: "0rem", color: "var(--button-color)" }}>Upcoming Tasks</h2>
               <table style={{ marginTop: "1rem", width: "100%" }}>
                 <thead>
