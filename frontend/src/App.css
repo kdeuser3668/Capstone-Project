@@ -1,4 +1,4 @@
-/* Universal variables (for easy theme editing) */
+/* Universal variables  */
 :root {
   --background-color: #ffffff;
   --button-color: #ee6dd5;
@@ -77,6 +77,5 @@ h3 {
   box-shadow: 0 4px 8px var(--shadow-color);
   text-align: center;
   max-width: 90%;
-
   flex-direction: column;
 }

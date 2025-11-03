@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
 
     const user = result.rows[0];
 
-    const validPassword = await bcrypt.compare(password, user.hashed_password);
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid password.' });
     }

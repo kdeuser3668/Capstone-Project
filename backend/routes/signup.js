@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
     const hashedPassword = await hashPassword(password);
 
     await pool.query(
-      'INSERT INTO users (username, email, hashed_password) VALUES ($1, $2, $3)',
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3)',
       [username, email, hashedPassword]
     );
 
