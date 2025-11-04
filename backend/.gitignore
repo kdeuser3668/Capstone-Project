@@ -11,3 +11,4 @@ coverage/
 *.pem
 *.key
 *.env
+*.client_creds

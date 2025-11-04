@@ -1,21 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import './Calendar.css';
 import './App.css';
 
-function Settings({ weekStart, setWeekStart }) {
-  const navigate = useNavigate();
-  const today = new Date();
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const dd = today.getDate();
-  const mm = monthNames[today.getMonth()];
-  const yyyy = today.getFullYear();
-  const theDate = `${mm} ${dd}, ${yyyy}`;
+function Settings() {
 
     const [textColor, setTextColor] = useState(
         typeof window !== "undefined" && window.localStorage
@@ -44,6 +32,11 @@ function Settings({ weekStart, setWeekStart }) {
         typeof window !== "undefined" && window.localStorage
           ? window.localStorage.getItem("sidebarColor") || "#f5f5f5"
           : "#f5f5f5"
+    );
+    const [cardColor, setCardColor] = useState(
+        typeof window !== "undefined" && window.localStorage
+          ? window.localStorage.getItem("cardColor") || "#fff"
+          : "#fff"
     );
 
     //saves and applies text changes across all pages when using color: "var(--text-color)"
@@ -112,6 +105,19 @@ function Settings({ weekStart, setWeekStart }) {
         document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
         }, []);
 
+    //saves and applies card color changes across all pages when using backgroundColor: "var(--card-color, #fff)" the second color is a fallback color
+    const handleCardChange = (event) => {
+        const newCardColor = event.target.value;
+        setCardColor(newCardColor);
+        window.localStorage.setItem("cardColor", newCardColor);
+        document.documentElement.style.setProperty("--card-color", newCardColor);
+        };
+
+    useEffect(() => {
+        const savedCardColor = window.localStorage.getItem("cardColor") || "#fff";
+        document.documentElement.style.setProperty("--card-color", savedCardColor);
+        }, []);
+    
     // profile
         // change email/pass
     // font/font size
@@ -166,6 +172,14 @@ return (
                     </label>
                     <input type="color" id="sidebarColor" value={sidebarColor} onChange={handleSidebarChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
                     <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: sidebarColor }}>{sidebarColor}</strong>
+                    </p>
+                </div>
+                <div className="card">
+                <label htmlFor="cardColor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
+                    Select your card color:
+                    </label>
+                    <input type="color" id="cardColor" value={cardColor} onChange={handleCardChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
+                    <p style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: textColor }}>{cardColor}</strong>
                     </p>
                 </div>
             </div>
