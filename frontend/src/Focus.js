@@ -20,20 +20,27 @@ function Focus(){
 return (
     <div className="container">
         <Sidebar />
-        <div className="main-content">
+        <div className="main-content" style={{padding: "20px", width: "100%", boxSizing: "border-box",}}>
             <h1 className="h1">Focus</h1>
-            <h3 h3 className="h3">{theDate}</h3>
+            <h3 className="h3">{theDate}</h3>
 
-            <div style={styles.cardContainer}>
-                <div className="card">
-                    <h3 style={{textAlign: "center"}}>Focus Timer</h3>
-                    <hr style={{color: "#000000ff", width: "70%", borderWidth: "1px"}}/>
-                    <Timer />  
+            <div style={styles.twoColumn}>
+                <div style={styles.column}>
+                    <div className="card">
+                        <h3>Focus Timer</h3>
+                        <hr style={{color: "#000000ff", width: "70%", borderWidth: "1px"}}/>
+                        <Timer />  
+                    </div>
+
+                    <div className="card">
+                        <h3>Music Selection</h3>
+                        <MusicPlayer />
+                    </div>
                 </div>
-
-                <div className="card">
-                    <h3 style={{textAlign: "center"}}>Music Selection</h3>
-                    <MusicPlayer />
+                <div style={styles.column}>
+                    <div classname="card">
+                        <FocusSession />
+                    </div>
                 </div>
             </div>
             <div style={styles.cardContainer}>
@@ -298,7 +305,7 @@ const styles = {
         flexDirection: "row", 
         justifyContent: "center",
         alignItems: "flex-start",
-        gap: "40px", 
+        gap: "20px", 
         marginTop: "20px",
         flexWrap: "wrap",
         width: "100%",
@@ -325,6 +332,17 @@ const styles = {
         padding: "2px",
         width: "30%",
         margin: "2px",
+    }, 
+    twoColumn: {
+        display: "flex",
+        gap: "20px",
+        flexWrap: "wrap",
+    },
+    column: {
+        flex: "1 1 400px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
     }
 }
 
