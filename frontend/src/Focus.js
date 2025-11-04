@@ -43,6 +43,11 @@ return (
                     </div>
                 </div>
             </div>
+            <div style={styles.cardContainer}>
+                <div style={styles.card}>
+                    <FocusSession />
+                </div>
+            </div>
         </div>
     </div>
     );

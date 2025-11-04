@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import './App.css';
-
+import { useNavigate } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import "./App.css";
 
 function Notes(){
     const navigate = useNavigate();
@@ -17,7 +16,7 @@ function Notes(){
     const theDate = mm + ' ' + dd + ', ' + yyyy;
 
 
-return (
+  return (
     <div className="container">
         <Sidebar />
         <div className="main-content">
