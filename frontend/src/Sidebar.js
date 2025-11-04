@@ -35,7 +35,7 @@ const Sidebar = () => {
 
     }}>
       <div>
-        <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>PlannerPal</h2>
+        <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>{isCollapsed ? "" : "PlannerPal"}</h2>
 
         <button
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -43,12 +43,12 @@ const Sidebar = () => {
         title={isCollapsed ? "Expand" : "Collapse"}
         >{isCollapsed ? "›" : "‹"}</button>
 
-        <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Dashboard</NavLink>
-        <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Calendar</NavLink>
-        <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Focus</NavLink>
-        <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Notes</NavLink>
-        <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Tasks</NavLink>
-        <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Settings</NavLink>
+        <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Dashboard"}</NavLink>
+        <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Calendar"}</NavLink>
+        <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Focus"}</NavLink>
+        <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Notes"}</NavLink>
+        <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Tasks"}</NavLink>
+        <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Settings"}</NavLink>
       </div>
 
       <button
@@ -65,7 +65,7 @@ const Sidebar = () => {
           border: "none",
           cursor: "pointer"
         }}
-      >Log Out</button>
+        >{isCollapsed ? "" : "Log Out"}</button>
     
     </div>
 
