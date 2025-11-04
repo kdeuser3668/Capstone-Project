@@ -1,10 +1,12 @@
 //eventually want to make this collapsable
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 const Sidebar = () => {
     
   const [isCollapsed, setIsCollapsed] = useState(false)
+
+  const navigate = useNavigate;
     
     const linkStyle = {
     display: "block",
@@ -28,10 +30,19 @@ const Sidebar = () => {
       border: "black",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      width: isCollapsed ? "0px" : "150px",
+
     }}>
       <div>
         <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>PlannerPal</h2>
+
+        <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="toggleButtonStyle"
+        title={isCollapsed ? "Expand" : "Collapse"}
+        >{isCollapsed ? "›" : "‹"}</button>
+
         <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Dashboard</NavLink>
         <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Calendar</NavLink>
         <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Focus</NavLink>
