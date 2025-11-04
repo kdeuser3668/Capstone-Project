@@ -119,80 +119,81 @@ function MakeNotes(){
     }
 
     return (
-        <div className="page" style={{ position: "relative" }}>
-            <h2>Your Notes</h2>
+  <div className="page" style={{ position: "relative" }}>
+    <h2>Your Notes</h2>
 
-      <div className="grid" style={{ marginTop: "1.5rem" }}>
-        {notes.map((e) => (
+    <button
+      className="button"
+      onClick={() => setShowForm(!showForm)}
+      style={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+      }}
+    >
+      {showForm ? "Cancel" : "Create Note"}
+    </button>
+
+    {showForm && (
+      <div className="card" style={{ marginTop: "1rem", textAlign: "left" }}>
+        <h3>Add a New Note</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <input
+            type="text"
+            placeholder="Enter Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{ padding: "0.5rem", fontSize: "1rem", borderRadius: "6px" }}
+          />
+          <textarea
+            placeholder="Enter note details"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            style={{
+              padding: "0.5rem",
+              fontSize: "1rem",
+              borderRadius: "6px",
+              resize: "none",
+            }}
+          ></textarea>
+          <button className="button" onClick={handleSubmit}>
+            Save Note
+          </button>
+        </div>
+      </div>
+    )}
+
+    <div className="grid" style={{ marginTop: "2rem" }}>
+      {notes.length === 0 ? (
+        <p style={{ textAlign: "center", color: "#555" }}>No Notes Yet</p>
+      ) : (
+        notes.map((e) => (
           <div className="card" key={e.key}>
             <h4>{e.title}</h4>
-            <p style={{ fontStyle: 'italic', fontSize: '0.8rem', color: '#888' }}>
+            <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
               {new Date(e.created).toLocaleString()}
             </p>
             <p>{e.description}</p>
             <button
-                className="button"
-                onClick={() => setShowForm(!showForm)}
-                style={{
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-                }}
+              className="button"
+              style={{
+                backgroundColor: "#ff7272",
+                marginTop: "1rem",
+                fontSize: "0.9rem",
+              }}
+              onClick={() => remove(e.key)}
             >
-                {showForm ? "Cancel" : "Create Note"}
+              Delete
             </button>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+);
 
-
-            {showForm && (
-                <div className="card" style={{marginTop: "1rem", textAlign: "left"}}>
-                    <h3>Add a New Note</h3>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem"}}>
-                        <input
-                            type="text"
-                            placeholder="Enter Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
-                        />
-                        <textarea
-                            placeholder="Enter note details"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows={4}
-                            style={{
-                                padding: "0.5rem",
-                                fontSize: "1rem",
-                                borderRadius: "6px",
-                                resize: "none",
-                            }}
-                        ></textarea>
-                        <button className="button" onClick={handleSubmit}>
-                            Save Note
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            <div className="grid" style={{marginTop: "2rem"}}>
-                {notes.length === 0 ? (
-                    <p style={{textAlign: "center", color: "#555"}}>No Notes Yet</p>
-                ) : (
-                    notes.map((e) => (
-                        <div className="card" key={e.key}>
-                            <h4>{e.title}</h4>
-                            <p styles={{textAlign: "left"}}>{e.description}</p>
-                            <button className="button" style={{backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem"}} onClick={() => remove(e.key)}>
-                                Delete
-                            </button>
-                        </div>
-                    ))
-                )}
-            </div>
-        </div>
-    );
 }
 
 
 export default Notes;
-
-//https://www.geeksforgeeks.org/reactjs/how-to-create-a-basic-notes-app-using-reactjs/
