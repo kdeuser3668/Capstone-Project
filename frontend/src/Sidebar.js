@@ -1,9 +1,11 @@
 //eventually want to make this collapsable
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
 
 const Sidebar = () => {
-    const navigate = useNavigate();
-
+    
+  const [isCollapsed, setIsCollapsed] = useState(false)
+    
     const linkStyle = {
     display: "block",
     padding: "1rem 1.5rem",
@@ -55,6 +57,7 @@ const Sidebar = () => {
       >Log Out</button>
     
     </div>
+
   );
 };
 
