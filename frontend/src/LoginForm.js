@@ -2,6 +2,8 @@
 import {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,7 +38,7 @@ export default function LoginForm() {
     const payload = isLogin ? { email, password } : { email, password, username };
 
     try {
-      const res = await fetch(`http://localhost:5050/${endpoint}`, { // hits local backend, will be changed in deployment
+      const res = await fetch(`${backendUrl}/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -45,6 +47,9 @@ export default function LoginForm() {
       const data = await res.json();
       if (res.ok) {
         alert(data.message);
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
         localStorage.setItem('isAuthenticated', 'true');
 
         navigate('/dashboard')

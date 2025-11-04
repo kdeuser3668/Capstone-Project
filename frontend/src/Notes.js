@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "./App.css";
+
+const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+
 
 function Notes() {
   const navigate = useNavigate();
@@ -32,8 +35,45 @@ function MakeNotes() {
   const [notes, setNotes] = useState([]);
   const [count, setCount] = useState(1);
 
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const userId = storedUser?.id;
+
+  // Fetch existing notes on load
+  useEffect(() => {
+    fetch(`${backendUrl}/notes?userId=${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setNotes(data.map((note, index) => ({
+          key: note.id || index,
+          title: note.note_title,
+          description: note.note_content,
+          created: note.created
+        })));
+      })
+      .catch((err) => console.error("Error fetching notes:", err));
+  }, []);
+
   function remove(id) {
-    setNotes(notes.filter((e) => e.key !== id));
+    // Confirm before deleting note
+    const confirmed = window.confirm("Are you sure you want to delete this note?");
+    if (!confirmed) return;
+
+    const noteToDelete = notes.find((e) => e.key === id);
+    if (!noteToDelete) return;
+
+    const noteId = noteToDelete.key;
+
+    fetch(`${backendUrl}/notes/${noteId}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to delete note");
+        setNotes(notes.filter((e) => e.key !== id));
+      })
+      .catch((err) => {
+        console.error(err);
+        window.alert("Error deleting note");
+      });
   }
 
   function handle() {
@@ -41,10 +81,28 @@ function MakeNotes() {
       window.alert("Incomplete input");
       return;
     }
-    setNotes([...notes, { key: count, title, description }]);
-    setCount(count + 1);
-    setTitle("");
-    setDescription("");
+
+    const newNote = { userId, noteTitle: title, noteContent: description };
+
+    fetch(`${backendUrl}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote)
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to save note");
+        return res.json();
+      })
+      .then(() => {
+        setNotes([...notes, { key: count, title, description }]);
+        setCount(count + 1);
+        setTitle("");
+        setDescription("");
+      })
+      .catch((err) => {
+        console.error(err);
+        window.alert("Error saving note");
+      });
   }
 
   return (
@@ -68,6 +126,9 @@ function MakeNotes() {
         {notes.map((e) => (
           <div className="card" key={e.key}>
             <h4>{e.title}</h4>
+            <p style={{ fontStyle: 'italic', fontSize: '0.8rem', color: '#888' }}>
+              {new Date(e.created).toLocaleString()}
+            </p>
             <p>{e.description}</p>
             <button
               className="button"
