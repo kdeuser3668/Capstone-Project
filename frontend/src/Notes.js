@@ -106,18 +106,6 @@ function MakeNotes(){
       });
   }
 
-    function handleSubmit() {
-        if (!title || !description) {
-            window.alert("Incomplete input");
-            return;
-        }
-        setNotes([...notes, { key: count, title: title, description:description}]);
-        setCount(count + 1);
-        setTitle("");
-        setDescription("");
-        setShowForm(false);
-    }
-
     return (
   <div className="page" style={{ position: "relative" }}>
     <h2>Your Notes</h2>
@@ -157,7 +145,7 @@ function MakeNotes(){
               resize: "none",
             }}
           ></textarea>
-          <button className="button" onClick={handleSubmit}>
+          <button className="button" onClick={handle}>
             Save Note
           </button>
         </div>
