@@ -1,9 +1,13 @@
 //eventually want to make this collapsable
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Sidebar = () => {
-    const navigate = useNavigate();
+    
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
+  const navigate = useNavigate;
+    
     const linkStyle = {
     display: "block",
     padding: "1rem 1.5rem",
@@ -26,16 +30,25 @@ const Sidebar = () => {
       border: "black",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      width: isCollapsed ? "0px" : "150px",
+
     }}>
       <div>
-        <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>PlannerPal</h2>
-        <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Dashboard</NavLink>
-        <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Calendar</NavLink>
-        <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Focus</NavLink>
-        <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Notes</NavLink>
-        <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Tasks</NavLink>
-        <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>Settings</NavLink>
+        <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>{isCollapsed ? "" : "PlannerPal"}</h2>
+
+        <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="toggleButtonStyle"
+        title={isCollapsed ? "Expand" : "Collapse"}
+        >{isCollapsed ? "›" : "‹"}</button>
+
+        <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Dashboard"}</NavLink>
+        <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Calendar"}</NavLink>
+        <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Focus"}</NavLink>
+        <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Notes"}</NavLink>
+        <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Tasks"}</NavLink>
+        <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Settings"}</NavLink>
       </div>
 
       <button
@@ -52,9 +65,10 @@ const Sidebar = () => {
           border: "none",
           cursor: "pointer"
         }}
-      >Log Out</button>
+        >{isCollapsed ? "" : "Log Out"}</button>
     
     </div>
+
   );
 };
 
