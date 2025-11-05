@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import './App.css';
 import { DayPilotCalendar } from "@daypilot/daypilot-lite-react";
 
+const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+
 function Focus(){
     const navigate = useNavigate();
     var today = new Date();
@@ -184,15 +186,34 @@ function FocusSession () {
         return saved ? JSON.parse(saved) : [];
     });
 
+    const [userCourses, setUserCourses] = useState([]);
+
     const [form, setForm] = useState({
         title: "", 
         start_time: "", 
         end_time: "", 
-        category: "", 
+        course_id: "", 
         notes: ""
     });
 
     const [showForm, setShowForm] = useState(false);
+
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const userId = storedUser?.id;
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const response = await fetch(`${backendUrl}/get-courses?userId=${userId}`);
+                if (!response.ok) throw new Error("Failed to fetch courses");
+                const data = await response.json();
+                setUserCourses(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchCourses();
+    }, []);
 
     useEffect(() => {
         localStorage.setItem("focusSessions", JSON.stringify(sessions));
@@ -206,12 +227,12 @@ function FocusSession () {
             title: form.title,
             start: form.start_time,
             end: form.end_time,
-            category: form.category, 
+            course_id: form.course_id, 
             notes: form.notes
         };
 
         setSessions([...sessions, newSession]);
-        setForm({title: "", start_time: "", end_time: "", category: "", notes: ""});
+        setForm({title: "", start_time: "", end_time: "", course_id: "", notes: ""});
         setShowForm(false);
 
     };
@@ -263,13 +284,17 @@ function FocusSession () {
                             required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
                         />
-                        <input 
-                            type="text"
-                            placeholder="Category"
-                            value={form.category}
-                            onChange={(e) => setForm({ ... form, category: e.target.value})}
+                        <select
+                            value={form.course_id}
+                            onChange={(e) => setForm({ ...form, course_id: e.target.value })}
+                            required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
-                        />
+                        >
+                            <option value="">Select Course</option>
+                            {userCourses.map(course => (
+                                <option key={course.id} value={course.id}>{course.course_name}</option>
+                            ))}
+                        </select>
                         <textarea
                             placeholder="Notes"
                             value={form.notes}
@@ -293,7 +318,7 @@ function FocusSession () {
                     <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
                     <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
                     <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
-                    {s.category && <p><strong>Category:</strong> {s.category}</p>}
+                    {s.course && <p><strong>Course:</strong> {s.course}</p>}
                     {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
                     <button className="button" onClick={() => removeSession(s.id)}>Delete</button>
                     </div>
