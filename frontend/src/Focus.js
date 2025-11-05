@@ -320,7 +320,7 @@ function FocusSession () {
                     <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
                     {s.course && <p><strong>Course:</strong> {s.course}</p>}
                     {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
-                    <button className="button" onClick={() => removeSession(s.id)}>Delete</button>
+                    <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>
                     </div>
                 ))
                 )}
