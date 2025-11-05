@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Tasks from "./Tasks";
 import Progress from "./Progress";
+import Focus from "./Focus";
 import './App.css';
 
 function Dashboard() {
