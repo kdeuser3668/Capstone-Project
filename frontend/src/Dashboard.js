@@ -48,13 +48,16 @@ function Dashboard() {
         <div className="grid" style={{ flex: "flex" }}>
 
           <div className="card">
-            <h2 className="h2">Progress</h2>
+            <h2 className="h2">Your Day</h2>
+            <h3 className="h3">Tasks</h3>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <h3 className="h3">Calendar</h3>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
 
 
           <div className="card">
-            <h2 className="h2">Your Tasks</h2>
+            <h2 className="h2">Progress</h2>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
 
