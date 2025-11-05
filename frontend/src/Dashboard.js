@@ -21,28 +21,10 @@ function Dashboard() {
   const [editingTaskId, setEditingTaskId] = useState(null);
 
   return (
-    <div style={{
-      display: "flex",
-      minHeight: "100vh",
-      backgroundColor: "var(--background-color, #fafafa)",
-    }}>
-      
-      {/* Sidebar */}
-      <Sidebar />
-
+    <div className="container">
+    <Sidebar />
       {/* Main Content */}
-      <div style={{
-        flex: 1,
-        padding: "2rem",
-        display: "flex",
-        flexDirection: "column",
-      }}>
-        <header style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "2rem",
-        }}>
+      <div className="main-content">
           <div>
             <h1 style={{ margin: 0, color: "var(--text-color)" }}>Dashboard</h1>
             <h3 style={{ margin: 0, color: "gray" }}>{formattedDate}</h3>
@@ -96,7 +78,7 @@ function Dashboard() {
             boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
           }}>
             <h2 style={{ color: "var(--text-color)" }}>Completed Today</h2>
-            <p style={{ fontSize: "1.2rem", color: "gray" }}>Coming soon...</p>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
         </div>
       </div>
