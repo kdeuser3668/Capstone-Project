@@ -27,7 +27,14 @@ router.post('/', async (req, res) => {
       [username, email, hashedPassword]
     );
 
-    res.status(201).json({ message: 'User registered successfully.' });
+    res.status(201).json({
+      message: 'User registered successfully.',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+     });
 
   } catch (error) {
     console.error('Signup error:', error.message, error.stack);
