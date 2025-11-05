@@ -23,11 +23,10 @@ function Dashboard() {
   return (
     <div className="container">
     <Sidebar />
-      {/* Main Content */}
       <div className="main-content">
           <div>
-            <h1 style={{ margin: 0, color: "var(--text-color)" }}>Dashboard</h1>
-            <h3 style={{ margin: 0, color: "gray" }}>{formattedDate}</h3>
+            <h1 className="h1">Dashboard</h1>
+            <h3 className="h3">{formattedDate}</h3>
           </div>
 
           {/* Add Task Button */}
@@ -47,7 +46,6 @@ function Dashboard() {
               {editingTaskId ? "Edit Task" : "Create Task"}
             </button>
           )}
-        </header>
 
         <div className="grid" style={{ flex: "flex" }}>
 
