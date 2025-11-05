@@ -31,21 +31,15 @@ return (
                         <hr style={{color: "#000000ff", width: "70%", borderWidth: "1px"}}/>
                         <Timer />  
                     </div>
-
                     <div className="card">
                         <h3>Music Selection</h3>
                         <MusicPlayer />
                     </div>
                 </div>
                 <div style={styles.column}>
-                    <div classname="card">
+                    <div className="card">
                         <FocusSession />
                     </div>
-                </div>
-            </div>
-            <div style={styles.cardContainer}>
-                <div style={styles.card}>
-                    <FocusSession />
                 </div>
             </div>
         </div>
@@ -54,12 +48,8 @@ return (
 }
 
 //Timer function
-
-//To-do: 
-//Make cards adjustable depending on screen size
-//add number wheels to select time, 
-//add default options for quick selection - done but need to format
-//add styles for select dropdown menu
+//Allows user to select preset options for time or custom time
+//Can start, pause, and reset timer
 
 function Timer () {
     const intervalRef = useRef(null);
@@ -189,8 +179,6 @@ function MusicPlayer () {
 }
    
 function FocusSession () {
-    //add function to create focus sessions and add them to calendar
-    //also have upcoming focus sessions displayed
     const [sessions, setSessions] = useState(() => {
         const saved = localStorage.getItem("focusSessions");
         return saved ? JSON.parse(saved) : [];
@@ -203,6 +191,8 @@ function FocusSession () {
         category: "", 
         notes: ""
     });
+
+    const [showForm, setShowForm] = useState(false);
 
     useEffect(() => {
         localStorage.setItem("focusSessions", JSON.stringify(sessions));
@@ -222,37 +212,90 @@ function FocusSession () {
 
         setSessions([...sessions, newSession]);
         setForm({title: "", start_time: "", end_time: "", category: "", notes: ""});
+        setShowForm(false);
 
     };
+
+    const removeSession = (id) => {
+        setSessions((prev) => prev.filter((s) => s.id !==id));
+    }
+
     const upcomingSessions = sessions
         .filter((s) => new Date(s.start) >= new Date())
         .sort((a, b) => new Date(a.start) - new Date(b.start));
 
     return (
         <div>
-            <h2>Schedule Focus Session</h2>
+            <h3>Schedule Focus Session</h3>
+            <hr></hr>
 
-            <form onSubmit={handleSubmit}>
-                <input type="text" placeholder="Session Title" value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required/>
-                <input type="datetime-local" value={form.start_time} onChange={(e) => setForm({...form, start_time: e.target.value})} required/>
-                <input type="datetime-local" value={form.end_time} onChange={(e) => setForm({...form, end_time: e.target.value})} required/>
-                <input type="text" placeholder="Category" value={form.category} onChange={(e) => setForm({...form, category: e.target.value})}/>
-                <textarea placeholder="Notes - What do you want to accomplish?" value={form.notes} onChange={(e) => setForm({...form, notes: e.target.value})}></textarea>
-                <button type="submit">Add Session</button>
-            </form>
+            <button
+                className="button"
+                style={{margin: "1rem"}}
+                onClick={() => setShowForm(!showForm)}
+            > 
+                {showForm ? "Cancel" : "Create Focus Session"}
+            </button>
+
+            {showForm && (
+                <div className="card" style={{marginTop: "1rem", marginBottom: "1rem", textAlign: "left", padding: "5px", alignContent: "center"}}>
+                    <h3>Schedule a Focus Session</h3>
+                    <form onSubmit={handleSubmit} style={{display: "flex", flexDirection: "column", gap: "1rem"}}>
+                        <input 
+                            type="text"
+                            placeholder="Title"
+                            value={form.title}
+                            onChange={(e) => setForm({ ... form, title: e.target.value})}
+                            required
+                            style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
+                        />
+                        <input 
+                            type="datetime-local"
+                            value={form.start_time}
+                            onChange={(e) => setForm({ ... form, start_time: e.target.value})}
+                            required
+                            style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
+                        />
+                        <input 
+                            type="datetime-local"
+                            value={form.end_time}
+                            onChange={(e) => setForm({ ... form, end_time: e.target.value})}
+                            required
+                            style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
+                        />
+                        <input 
+                            type="text"
+                            placeholder="Category"
+                            value={form.category}
+                            onChange={(e) => setForm({ ... form, category: e.target.value})}
+                            style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
+                        />
+                        <textarea
+                            placeholder="Notes"
+                            value={form.notes}
+                            onChange={(e) => setForm({ ... form, notes: e.target.value})}
+                            rows={3}
+                            style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
+                        ></textarea>
+                        <button type="submit" className="button">Add Session</button>
+                    </form>
+                </div>
+            )}
 
             <h3>Upcoming Focus Sessions</h3>
-            <div>
+            <hr></hr>
+            <div style={{marginTop: "2rem", padding: "3px", alignItems: "center"}}>
                 {upcomingSessions.length === 0 ? (
                 <p>No upcoming sessions yet.</p>
                 ) : (
                 upcomingSessions.map((s) => (
-                    <div key={s.id} style={{...styles.card, padding: "10px", margin: "5px "}}>
+                    <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
                     <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
                     <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
                     <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
                     {s.category && <p><strong>Category:</strong> {s.category}</p>}
                     {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
+                    <button className="button" onClick={() => removeSession(s.id)}>Delete</button>
                     </div>
                 ))
                 )}
