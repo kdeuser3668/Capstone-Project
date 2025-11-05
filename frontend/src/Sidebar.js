@@ -6,7 +6,7 @@ const Sidebar = () => {
     
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const navigate = useNavigate;
+  const navigate = useNavigate();
     
     const linkStyle = {
     display: "block",
