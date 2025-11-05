@@ -106,7 +106,7 @@ function MakeNotes(){
       });
   }
 
-    return (
+  return (
   <div className="page" style={{ position: "relative" }}>
     <h2>Your Notes</h2>
 
