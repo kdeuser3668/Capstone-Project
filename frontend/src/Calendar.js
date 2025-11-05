@@ -1,59 +1,101 @@
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import CalendarComponent from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import './Calendar.css';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
+import { DayPilot } from "@daypilot/daypilot-lite-react";
 
-
-function Calendar({ weekStart }) {
-  const navigate = useNavigate();
+function Calendar() {
   const [value, setValue] = useState(new Date());
   const [view, setView] = useState("month");
-
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  const shortMonthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
 
   const [events, setEvents] = useState([
     { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
     { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
   ]);
 
-  const renderNavigationBar = () => {
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+
+  // Form state for new event
+  const [newEventData, setNewEventData] = useState({
+    text: "",
+    location: "",
+    notes: "",
+    start: null,
+    end: null
+  });
+
+  // Month names for header
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  // Navigation handler
   const handleNavigation = (direction) => {
-    const newDate = new Date(value);
-    if (view === "day") {
-      newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
-    } else if (view === "week") {
-      newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : direction === "prev" ? -7 : 0));
-    } else if (view === "month") {
-      newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+    let newDate = new Date(value);
+    if (direction === "today") {
+      newDate = new Date();
+    } else if (direction === "prev") {
+      if (view === "day") newDate.setDate(newDate.getDate() - 1);
+      else if (view === "week") newDate.setDate(newDate.getDate() - 7);
+      else if (view === "month") newDate.setMonth(newDate.getMonth() - 1);
+      else if (view === "year") newDate.setFullYear(newDate.getFullYear() - 1);
+    } else if (direction === "next") {
+      if (view === "day") newDate.setDate(newDate.getDate() + 1);
+      else if (view === "week") newDate.setDate(newDate.getDate() + 7);
+      else if (view === "month") newDate.setMonth(newDate.getMonth() + 1);
+      else if (view === "year") newDate.setFullYear(newDate.getFullYear() + 1);
     }
     setValue(newDate);
   };
 
-  return (
-    <div style={styles.navBar}>
-      <button style={styles.navButton} onClick={() => handleNavigation("prev")}>← Prev</button>
-      <button style={styles.navButton} onClick={() => handleNavigation("today")}>Today</button>
-      <button style={styles.navButton} onClick={() => handleNavigation("next")}>Next →</button>
-    </div>
-  );
+  // Open modal when selecting time range in calendar
+  const onTimeRangeSelected = (args) => {
+    setNewEventData({
+      text: "",
+      location: "",
+      notes: "",
+      start: args.start.toString(),
+      end: args.end.toString()
+    });
+    setShowModal(true);
+  };
+
+  // Add new event from modal
+  const addEvent = () => {
+    if (!newEventData.text || !newEventData.start || !newEventData.end) {
+      alert("Please fill in at least Event Name, Start and End time.");
+      return;
+    }
+
+    // Create new event object
+   const newEvent = {
+  id: DayPilot.guid(),
+  text: newEventData.text,
+  start: newEventData.start.length === 16 ? newEventData.start + ":00" : newEventData.start,
+  end: newEventData.end.length === 16 ? newEventData.end + ":00" : newEventData.end,
+  location: newEventData.location,
+  notes: newEventData.notes,
 };
+
+
+    setEvents((prev) => [...prev, newEvent]);
+    setShowModal(false);
+  };
+
+  // Format a Date string to YYYY-MM-DDTHH:mm for input[type=datetime-local]
+  const formatForDatetimeLocal = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    const iso = d.toISOString();
+    return iso.substring(0, 16); // "YYYY-MM-DDTHH:mm"
+  };
 
   return (
     <div style={{ display: "flex" }}>
       <Sidebar />
       <div style={styles.page}>
+        {/* Header */}
         <div style={styles.header}>
           <h1 style={styles.headerTitle}>Calendar</h1>
           <h3 style={styles.headerSubtitle}>
@@ -61,80 +103,78 @@ function Calendar({ weekStart }) {
           </h3>
         </div>
 
-        <div style={styles.viewTabs}>
-            {renderNavigationBar()}
-          {["day", "week", "month", "year"].map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              style={{
-                ...styles.tabButton,
-                ...(view === v ? styles.activeTab : {})
-              }}
-            >
-              {v.charAt(0).toUpperCase() + v.slice(1)}
-            </button>
-          ))}
+        {/* Navigation */}
+        <div style={styles.controlsWrapper}>
+          <div style={styles.navBar}>
+            <button style={styles.navButton} onClick={() => handleNavigation("prev")}>← Prev</button>
+            <button style={styles.navButton} onClick={() => handleNavigation("today")}>Today</button>
+            <button style={styles.navButton} onClick={() => handleNavigation("next")}>Next →</button>
+          </div>
+
+          <div style={styles.viewTabs}>
+            {["day", "week", "month", "year"].map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                style={{
+                  ...styles.tabButton,
+                  ...(view === v ? styles.activeTab : {})
+                }}
+              >
+                {v.charAt(0).toUpperCase() + v.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Main content */}
         <div style={styles.mainContent}>
           <div style={styles.calendarSection}>
             <div style={styles.dayPilotWrapper}>
-         {view === "day" && (
-        <DayPilotCalendar
-            viewType="Day"
-            events={{ list: events }}
-            startDate={value}
-            durationBarVisible={false}
-            onBeforeHeaderRender={args => {
-            const date = new Date(args.header.start);
-            const weekday = date.toLocaleDateString("en-US", { weekday: "long" });
-            const formatted = `${weekday}, ${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}.${date.getFullYear()}`;
-            args.header.html = `<div style='font-weight:bold; font-size:1.1rem;'>${formatted}</div>`;
-            }}
-        />
-        )}
-        {view === "week" && (
-        <DayPilotCalendar
-            viewType="Week"
-            events={{ list: events }}
-            startDate={value}
-            durationBarVisible={false}
-            onBeforeHeaderRender={args => {
-            const date = new Date(args.header.start);
-            const weekday = date.toLocaleDateString("en-US", { weekday: "short" }); // "Mon", "Tue", etc.
-            const day = date.getDate();
-            args.header.html = `<div style='font-weight:bold; font-size:1rem;'>${weekday} ${day}</div>`;
-            }}
-        />
-        )}
+
+              {/* Show calendar based on view */}
+              {view === "day" && (
+                <DayPilotCalendar
+                  viewType="Day"
+                  events={{ list: events }}
+                  startDate={value}
+                  durationBarVisible={false}
+                  onTimeRangeSelected={onTimeRangeSelected}
+                />
+              )}
+
+              {view === "week" && (
+                <DayPilotCalendar
+                  viewType="Week"
+                  events={{ list: events }}
+                  startDate={value}
+                  durationBarVisible={false}
+                  onTimeRangeSelected={onTimeRangeSelected}
+                />
+              )}
+
               {view === "month" && (
-                <div>
+                <>
                   <h3 style={styles.monthHeader}>
                     {monthNames[value.getMonth()]} {value.getFullYear()}
                   </h3>
                   <DayPilotMonth
                     events={{ list: events }}
                     startDate={value.toISOString().split("T")[0]}
-                    onBeforeCellRender={(args) => {
-                        const date = new Date(args.cell.start);
-                        const shortMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()];
-                        const day = date.getDate();
-                        args.cell.html = `<div style='font-weight:bold; margin-bottom:4px;'>${shortMonth} ${day}</div>`;
-                    }}
-                    />
-
-
-                </div>
+                    onTimeRangeSelected={onTimeRangeSelected}
+                  />
+                </>
               )}
+
               {view === "year" && (
                 <div style={styles.placeholder}>
-                  <p>Year view coming soon…</p>
+                  <p>Year view coming soon!</p>
                 </div>
               )}
             </div>
           </div>
 
+          {/* Sidebar tasks */}
           <div style={styles.sidePanel}>
             <div style={styles.agendaBox}>
               <h3>Agenda / Current Tasks</h3>
@@ -154,6 +194,62 @@ function Calendar({ weekStart }) {
             </div>
           </div>
         </div>
+
+        {/* Modal */}
+        {showModal && (
+          <div style={modalStyles.overlay}>
+            <div style={modalStyles.modal}>
+              <h3>Add New Event</h3>
+
+              <label style={modalStyles.label}>Event Name *</label>
+              <input
+                type="text"
+                placeholder="Event name"
+                value={newEventData.text}
+                onChange={e => setNewEventData({ ...newEventData, text: e.target.value })}
+                style={modalStyles.input}
+              />
+
+              <label style={modalStyles.label}>Start Time *</label>
+              <input
+                type="datetime-local"
+                value={formatForDatetimeLocal(newEventData.start)}
+                onChange={e => setNewEventData({ ...newEventData, start: e.target.value })}
+                style={modalStyles.input}
+              />
+
+              <label style={modalStyles.label}>End Time *</label>
+              <input
+                type="datetime-local"
+                value={formatForDatetimeLocal(newEventData.end)}
+                onChange={e => setNewEventData({ ...newEventData, end: e.target.value })}
+                style={modalStyles.input}
+              />
+
+              <label style={modalStyles.label}>Location</label>
+              <input
+                type="text"
+                placeholder="Location"
+                value={newEventData.location}
+                onChange={e => setNewEventData({ ...newEventData, location: e.target.value })}
+                style={modalStyles.input}
+              />
+
+              <label style={modalStyles.label}>Notes</label>
+              <textarea
+                placeholder="Notes"
+                value={newEventData.notes}
+                onChange={e => setNewEventData({ ...newEventData, notes: e.target.value })}
+                style={{ ...modalStyles.input, height: "80px" }}
+              />
+
+              <div style={{ marginTop: "15px", display: "flex", justifyContent: "space-between" }}>
+                <button onClick={addEvent} style={modalStyles.addButton}>Add Event</button>
+                <button onClick={() => setShowModal(false)} style={modalStyles.cancelButton}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -263,20 +359,80 @@ const styles = {
     marginBottom: "10px"
   },
   navBar: {
-  display: "flex",
-  justifyContent: "center",
-  gap: "10px",
-  marginBottom: "10px"
-},
-navButton: {
-  padding: "6px 12px",
-  fontSize: "0.9rem",
-  backgroundColor: "#e0e0e0",
-  border: "1px solid #ccc",
-  borderRadius: "6px",
-  cursor: "pointer",
-  color: "#333"
-}
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+    marginBottom: "10px"
+  },
+  navButton: {
+    padding: "6px 12px",
+    fontSize: "0.9rem",
+    backgroundColor: "#e0e0e0",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    cursor: "pointer",
+    color: "#333"
+  },
+  controlsWrapper: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+    gap: "20px"
+  },
+};
+
+const modalStyles = {
+  overlay: {
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  modal: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "8px",
+    width: "320px",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
+  },
+  label: {
+    display: "block",
+    marginTop: "10px",
+    marginBottom: "4px",
+    fontWeight: "bold",
+    fontSize: "0.9rem",
+  },
+  input: {
+    width: "100%",
+    padding: "8px",
+    fontSize: "1rem",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
+  },
+  addButton: {
+    backgroundColor: "#ee6dd5",
+    color: "#fff",
+    padding: "8px 16px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold"
+  },
+  cancelButton: {
+    backgroundColor: "#ccc",
+    color: "#333",
+    padding: "8px 16px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer"
+  }
 };
 
 export default Calendar;

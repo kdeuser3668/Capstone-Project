@@ -4,50 +4,56 @@ import Sidebar from "./Sidebar";
 import "./App.css";
 
 //update the date, hardcode in a +1 for the date
+//try just having the date typed in manually, don't know if it would work if it interferes with calendar
 
 function Tasks() {
-  const navigate = useNavigate();
-  const today = new Date();
-  const monthNames = [
+    const navigate = useNavigate();
+    const today = new Date();
+    const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
-  ];
-  const theDate = `${monthNames[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+    ];
 
-  const [tasks, setTasks] = useState([]);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [task, setTask] = useState("");
-  const [priority, setPriority] = useState("High");
-  const [deadline, setDeadline] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+    const theDate = `${monthNames[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
-  // Local storage 
-  useEffect(() => {
+    const [tasks, setTasks] = useState([]);
+    const [completedTasks, setCompletedTasks] = useState([]);
+    const [task, setTask] = useState("");
+    const [priority, setPriority] = useState("High");
+    const [deadline, setDeadline] = useState("");
+    const [showForm, setShowForm] = useState(false);
+    const [editingTaskId, setEditingTaskId] = useState(null);
+
+    // Local storage 
+    useEffect(() => {
     const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
     const savedComplete = JSON.parse(localStorage.getItem("completedTasks")) || [];
     setTasks(savedTasks);
     setCompletedTasks(savedComplete);
-  }, []);
+    }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    }, [tasks]);
 
-  useEffect(() => {
+    useEffect(() => {
     localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
-  }, [completedTasks]);
+    }, [completedTasks]);
 
-  const normalizeDeadline = (dateStr) => {
-    if (!dateStr) return "";
-    const parsed = new Date(dateStr);
-    return isNaN(parsed) ? "" : parsed.toISOString().split("T")[0];
-  };
+    const normalizeDeadline = (dateStr) => {
+        if (!dateStr) return "";
+        const parsed = new Date(dateStr);
+        if (isNaN(parsed)) return "";
+        const year = parsed.getFullYear();
+        const month = String(parsed.getMonth() + 1).padStart(2, "0");
+        const day = String(parsed.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`; 
+      };
 
-  const addTask = () => {
+    const addTask = () => {
     if (task.trim() === "" || deadline === "") {
-      alert("Please enter a task and select a valid deadline.");
-      return;
+        alert("Please enter a task and select a valid deadline.");
+        return;
     }
 
     const selectedDate = new Date(deadline);
@@ -55,6 +61,7 @@ function Tasks() {
     selectedDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
 
+    //wont let you select the current day, gives alert
     if (selectedDate < currentDate) {
       alert("Please select a future date for the deadline.");
       return;
@@ -123,7 +130,7 @@ function Tasks() {
     const day = String(date.getDate()).padStart(2, "0");
     const year = date.getFullYear();
     return `${month}/${day}/${year}`;
-  };
+  };  
 
   const upcomingTasks = tasks.filter((t) => !t.done);
 
