@@ -160,23 +160,20 @@ function Settings() {
         alert("Something went wrong");
     }
     };
-
     
     // profile
-        // change email/pass
-    // font/font size
-    // reset colors
-    // notifications
-    // categories
-    // course management
-    // privacy policy
+        // font/font size
+        // reset colors
+        // notifications
+        // categories
+        // course management
         
 return (
     <div className="container">
     <Sidebar />
         <div className="main-content">
         <h1 className="h1">Settings</h1>
-        <h1 className="h1">Appearance Settings</h1>
+        <h2 className="h2" style={{textAlign:"left", margin: ".5rem"}}>Appearance Settings</h2>
         <h3 className="h3">Customize PlannerPal's appearance</h3>
             <div className="grid">
                 <div className="card">
@@ -228,11 +225,11 @@ return (
                     </p>
                 </div>
             </div>
-        <h1 className="h1">User Settings</h1>
+        <h2 className="h2" style={{textAlign:"left", marginBottom: ".5rem", marginTop: "1rem"}}>User Settings</h2>
         <h3 className="h3">Change account information</h3>
         <div className="grid">
             <div className="card">
-                <p style={{ marginTop: "1rem", color: textColor }}><strong style={{ color: textColor }}>Change Password</strong></p>
+                <p style={{ marginTop: "1rem", color: textColor }}>Change Password:</p>
                 <form onSubmit={handlePasswordChange}>
                     <input
                     type="password"
@@ -255,7 +252,7 @@ return (
                     onChange={(e) => setNewConfirmPassword(e.target.value)}
                     required
                     />
-                    <button type="submit" style={{ marginTop: "1rem" }}>Change Password</button>
+                    <button type="submit" className="button" style={{margin: ".5rem"}}>Change Password</button>
                 </form>
             </div>
         </div>
