@@ -207,7 +207,7 @@ function MakeNotes(){
             <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
               {new Date(e.created).toLocaleString()}
             </p>
-            <p style={{ color: "var(--text-color)" }}>{e.description}</p>
+            <p style={{ color: "var(--text-color)", textAlign: "left" }}>{e.description}</p>
             <button className="button" style={{ margin: ".25rem" }} onClick={() => remove(e.key)} >
               Delete
             </button>
