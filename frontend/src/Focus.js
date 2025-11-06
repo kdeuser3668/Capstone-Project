@@ -181,13 +181,8 @@ function MusicPlayer () {
 }
    
 function FocusSession () {
-    const [sessions, setSessions] = useState(() => {
-        const saved = localStorage.getItem("focusSessions");
-        return saved ? JSON.parse(saved) : [];
-    });
-
+    const [sessions, setSessions] = useState([]);
     const [userCourses, setUserCourses] = useState([]);
-
     const [form, setForm] = useState({
         title: "", 
         start_time: "", 
@@ -195,7 +190,6 @@ function FocusSession () {
         course_id: "", 
         notes: ""
     });
-
     const [showForm, setShowForm] = useState(false);
 
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -216,30 +210,62 @@ function FocusSession () {
     }, []);
 
     useEffect(() => {
-        localStorage.setItem("focusSessions", JSON.stringify(sessions));
-    }, [sessions]);
+        const fetchSessions = async () => {
+            try {
+                const response = await fetch(`${backendUrl}/focus?user_id=${userId}`);
+                if (!response.ok) throw new Error("Failed to fetch sessions");
+                const data = await response.json();
+                const sessions = data.map(s => ({
+                    ...s,
+                    title: s.event_name || "Untitled Focus Session",
+                    course: s.course_name || s.course_code || "No Course Set"
+                }));
+                setSessions(sessions);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchSessions();
+    }, [userId]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const newSession = {
-            id: Date.now(),
+            user_id: userId,
             title: form.title,
             start: form.start_time,
             end: form.end_time,
-            course_id: form.course_id, 
+            course_id: form.course_id,
             notes: form.notes
         };
 
-        setSessions([...sessions, newSession]);
-        setForm({title: "", start_time: "", end_time: "", course_id: "", notes: ""});
-        setShowForm(false);
+        try {
+            const response = await fetch(`${backendUrl}/focus`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newSession)
+            });
 
+            if (!response.ok) throw new Error("Failed to save session");
+
+            const savedSession = await response.json();
+            setSessions([...sessions, savedSession]);
+            setForm({ title: "", start_time: "", end_time: "", course_id: "", notes: "" });
+            setShowForm(false);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    const removeSession = (id) => {
-        setSessions((prev) => prev.filter((s) => s.id !==id));
-    }
+    const removeSession = async (id) => {
+        try {
+            await fetch(`${backendUrl}/focus-sessions/${id}`, { method: "DELETE" });
+            setSessions((prev) => prev.filter((s) => s.id !== id));
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const upcomingSessions = sessions
         .filter((s) => new Date(s.start) >= new Date())
@@ -315,12 +341,12 @@ function FocusSession () {
                 ) : (
                 upcomingSessions.map((s) => (
                     <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
-                    <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
-                    <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
-                    <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
-                    {s.course && <p><strong>Course:</strong> {s.course}</p>}
-                    {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
-                    <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>
+                        <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
+                        <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
+                        <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
+                        {s.course && <p><strong>Course:</strong> {s.course}</p>}
+                        {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
+                        <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>
                     </div>
                 ))
                 )}

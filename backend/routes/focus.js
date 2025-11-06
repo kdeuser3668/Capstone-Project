@@ -3,6 +3,23 @@ import { pool } from '../db.js';
 
 const router = express.Router();
 
+router.get('/', async (req, res) => {
+    try {
+        const user_id = req.query.user_id;
+        if (!user_id) return res.status(400).json({ message: "Missing user_id" });
+
+        const result = await pool.query(
+            'SELECT id, user_id, course_id, event_name, (start_date + start_time::time)::timestamptz AS start, (end_date + end_time::time)::timestamptz AS end, notes FROM calendar_events WHERE user_id = $1 AND event_type = \'focus\' ORDER BY start_date, start_time',
+            [user_id]
+        );
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         const { user_id, title, start, end, course_id, notes } = req.body;
@@ -22,7 +39,7 @@ router.post('/', async (req, res) => {
         const end_date = endDateObj.toISOString().slice(0, 10);
 
         const query = `
-            INSERT INTO events (
+            INSERT INTO calendar_events (
                 user_id, course_id, event_name, recurring, weekday, 
                 start_time, end_time, start_date, end_date, location, event_type, notes
             )
@@ -40,7 +57,7 @@ router.post('/', async (req, res) => {
             end_time,
             start_date,
             end_date,
-            '',           // location always empty
+            null,           // location always empty
             'focus',      // event_type
             notes || ''
         ];
