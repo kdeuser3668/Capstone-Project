@@ -19,7 +19,7 @@ function Dashboard() {
   const formattedDate = `${monthNamesDate[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
   const [showForm, setShowForm] = useState(false);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingCourseId, setEditingCourseId] = useState(null);
 
   const [username, setUsername] = useState("");
 
@@ -49,7 +49,7 @@ function Dashboard() {
 
           {!showForm && (
             <button onClick={() => setShowForm(true)} className="button">
-              {editingTaskId ? "Edit Task" : "Create Task"}
+              {editingCourseId ? "" : "Add Course"}
             </button>
           )}
           </div>
