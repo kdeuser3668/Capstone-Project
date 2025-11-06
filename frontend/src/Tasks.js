@@ -135,7 +135,7 @@ function Tasks() {
   const upcomingTasks = tasks.filter((t) => !t.done);
 
   return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
       <Sidebar />
       <div className="main-content">
         <div
