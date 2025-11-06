@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { useEffect } from "react";
 import Tasks from "./Tasks";
 import Progress from "./Progress";
 import Focus from "./Focus";
 import './App.css';
+import LoginForm from "./LoginForm";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -14,12 +16,19 @@ function Dashboard() {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-
   const formattedDate = `${monthNamesDate[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
-  // Local state (optional for later use)
   const [showForm, setShowForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("username");
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+  }, []);
 
   return (
     <div className="container">
@@ -35,7 +44,7 @@ function Dashboard() {
           }}>
           <div>
             <h1 className="h1">Dashboard</h1>
-            <h3 className="h3">{formattedDate}</h3>
+            <h3 className="h3">Hello, {username || "User"}!</h3>
           </div>
 
           {!showForm && (
