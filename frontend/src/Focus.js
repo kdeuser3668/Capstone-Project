@@ -20,7 +20,7 @@ function Focus(){
 return (
     <div className="container">
         <Sidebar />
-        <div className="main-content" style={{padding: "20px", width: "100%", boxSizing: "border-box",}}>
+        <div className="main-content">
             <h1 className="h1">Focus</h1>
             <h3 className="h3">{theDate}</h3>
 
