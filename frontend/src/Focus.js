@@ -51,7 +51,7 @@ return (
 //Allows user to select preset options for time or custom time
 //Can start, pause, and reset timer
 
-function Timer () {
+export function Timer () {
     const intervalRef = useRef(null);
     const [remaining, setRemaining] = useState(0);
     const [isActive, setIsActive] = useState(false);

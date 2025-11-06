@@ -140,57 +140,62 @@ function TaskManager () {
 
   return (
     <div>
-      <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "1rem"}}>
+      <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "1rem", position: "relative"}}>
         {!showForm && (
-          <button className="button" onClick={() =>setShowForm(true)}>{editingTaskId ? "Edit Task" : "Create Task"}</button>
+          <button className="button" onClick={() =>setShowForm(true)} style={{position: "absolute", right: "0", top: "0", padding: "0.5rem 1rem", fontSize: "1rem", cursor: "pointer",}}>{editingTaskId ? "Edit Task" : "Create Task"}</button>
         )}
       </div>
 
       {showForm && (
-        <div>
+        <div className="card" style={{maxWidth: "400px", margin: "1rem auto", textAlign: "center"}}>
           <h3>{editingTaskId ? "Edit Task" : "Create Task"}</h3>
-          <input
-            type="text"
-            placeholder="Task Name"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-          />
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
-          <input
-            type="date"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-          />
-          <div>
-            <button className="button" onClick={addTask}>
-              {editingTaskId ? "Save Changes" : "Add Task"}
-            </button>
-            <button 
-              className="button" 
-              onClick={() => {
-                setShowForm(false);
-                setEditingTaskId(null);
-                setTask("");
-                setPriority("High");
-                setDeadline("");
-              }}
+          <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
+            <input
+              type="text"
+              placeholder="Task Name"
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+            />
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
             >
-              Cancel
-            </button>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <input
+              type="date"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+            />
+            <div style={{display: "flex", alignConent: "center", gap: "0.5rem"}}>
+              <button className="button" onClick={addTask}>
+                {editingTaskId ? "Save Changes" : "Add Task"}
+              </button>
+              <button 
+                className="button" 
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingTaskId(null);
+                  setTask("");
+                  setPriority("High");
+                  setDeadline("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {(tasks.length > 0 || completedTasks.length > 0) && (
-        <div>
-          <h2>Upcoming Tasks</h2>
+        <div style={{display: "flex", flexDirection: "column", gap: "1rem", marginTop: "2rem"}}>
+          <h2 style={{color: "var(--button-color"}}>Upcoming Tasks</h2>
           <table>
             <thead>
               <tr>
@@ -202,7 +207,7 @@ function TaskManager () {
             </thead>
             <tbody>
               {upcomingTasks.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.id} style={{padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                   <td>{t.task}</td>
                   <td>{t.priority}</td>
                   <td>{formatDate(t.deadline)}</td>
@@ -244,7 +249,7 @@ function TaskManager () {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default Tasks;

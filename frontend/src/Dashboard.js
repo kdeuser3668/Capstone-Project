@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import { useEffect } from "react";
 import Tasks from "./Tasks";
 import Progress from "./Progress";
-import Focus from "./Focus";
+import { Timer } from "./Focus";
 import './App.css';
 import LoginForm from "./LoginForm";
 
@@ -80,6 +80,7 @@ function Dashboard() {
           <div className="card">
             <h2 className="h2">Focus Timer</h2>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <Timer />
           </div>
         </div>
       </div>
