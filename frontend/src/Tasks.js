@@ -194,62 +194,54 @@ function TaskManager () {
       )}
 
       {(tasks.length > 0 || completedTasks.length > 0) && (
-        <div style={{display: "flex", flexDirection: "column", gap: "1rem", marginTop: "2rem"}}>
-          <h2 style={{color: "var(--button-color"}}>Upcoming Tasks</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Task Name</th>
-                <th>Priority</th>
-                <th>Deadline</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {upcomingTasks.map((t) => (
-                <tr key={t.id} style={{padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                  <td>{t.task}</td>
-                  <td>{t.priority}</td>
-                  <td>{formatDate(t.deadline)}</td>
-                  <td>
-                    {!t.done && (
-                      <button className="button" onClick={() => markDone(t.id)}>Mark Done</button>
-                    )}
-                    <button className="button" onClick={() => editTask(t.id)}>Edit</button>
-                    <button className="button" onClick={() => deleteTask(t.id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{display: "flex", flexDirection: "column", gap: "1rem", marginTop: "2rem", width: "100%", maxWidth: "900px", marginLeft: "auto", marginRight: "auto"}}>
+          <h2 style={{margin: "0"}}>Upcoming Tasks</h2>
 
-          <h2>Completed Tasks</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Task Name</th>
-                  <th>Priority</th>
-                  <th>Deadline</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {completedTasks.map((ct) => (
-                  <tr key={ct.id}>
-                    <td>{ct.task}</td>
-                    <td>{ct.priority}</td>
-                    <td>{formatDate(ct.deadline)}</td>
-                    <td>
-                      <button className="button" onClick={() => deleteTask(ct.id)}>Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "0.5rem" }}>
+            {upcomingTasks.map((t) => (
+                <div key={t.id} style={{backgroundColor: "#fff", padding: "1rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)"}}>
+                  <div style={{ textAlign: "left", minWidth: "0"}}>
+                    <h3 style={{margin: "0 0 .25rem 0", wordBreak: "break-word"}}>{t.task}</h3>
+                    <div style={{display: "flex", gap: "1rem", fontSize: "0.95rem"}}>
+                      <span>Priority: {t.priority}</span>
+                      <span>Deadline: {formatDate(t.deadline)}</span>
+                    </div>
+                  </div>
+
+                  <div style={{display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-end"}}>
+                    {!t.done && (<button className="button" onClick={() => markDone(t.id)}>Mark Done</button>)}
+                    <div style={{display: "flex", gap: "0.5rem"}}>
+                      <button className="button" onClick={() => editTask(t.id)}>Edit</button>
+                      <button className="button" onClick={() => deleteTask(t.id)}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          <h2 style={{margin: "0.75rem 0 0 0"}}>Completed Tasks</h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "0.5rem" }}>
+            {completedTasks.map((ct) => (
+                <div key={ct.id} style={{backgroundColor: "#fff", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)"}}>
+                  <div style={{ textAlign: "left", minWidth: "0"}}>
+                    <h3 style={{margin: "0 0 .25rem 0", wordBreak: "break-word"}}>{ct.task}</h3>
+                    <div style={{display: "flex", gap: "1rem", fontSize: "0.95rem"}}>
+                      <span>Priority: {ct.priority}</span>
+                      <span>Deadline: {formatDate(ct.deadline)}</span>
+                    </div>
+                  </div>
+
+                  <div style={{display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-end"}}>
+                    <button className="button" onClick={() => deleteTask(ct.id, true)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       )}
     </div>
-  );
-}
+    );
+}  
 
 export default Tasks;
