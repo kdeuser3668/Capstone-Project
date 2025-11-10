@@ -185,8 +185,8 @@ function FocusSession () {
     const [userCourses, setUserCourses] = useState([]);
     const [form, setForm] = useState({
         title: "", 
-        start_time: "", 
-        end_time: "", 
+        start: "", 
+        end: "", 
         course_id: "", 
         notes: ""
     });
@@ -234,8 +234,8 @@ function FocusSession () {
         const newSession = {
             user_id: userId,
             title: form.title,
-            start: form.start_time,
-            end: form.end_time,
+            start: form.start,
+            end: form.end,
             course_id: form.course_id,
             notes: form.notes
         };
@@ -251,7 +251,7 @@ function FocusSession () {
 
             const savedSession = await response.json();
             setSessions([...sessions, savedSession]);
-            setForm({ title: "", start_time: "", end_time: "", course_id: "", notes: "" });
+            setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
             setShowForm(false);
         } catch (err) {
             console.error(err);
@@ -260,16 +260,25 @@ function FocusSession () {
 
     const removeSession = async (id) => {
         try {
-            await fetch(`${backendUrl}/focus-sessions/${id}`, { method: "DELETE" });
+            const confirmed = window.confirm("Are you sure you want to delete this session?");
+            if (!confirmed) return;
+
+            const response = await fetch(`${backendUrl}/focus/${id}`, { method: "DELETE" });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || "Failed to delete session.");
+            }
+
             setSessions((prev) => prev.filter((s) => s.id !== id));
         } catch (err) {
-            console.error(err);
+            console.error("Error deleting session:", err);
+            alert("Failed to delete session. Please try again.");
         }
     };
 
     const upcomingSessions = sessions
-        .filter((s) => new Date(s.start) >= new Date())
-        .sort((a, b) => new Date(a.start) - new Date(b.start));
+        .filter((s) => new Date(s.nonrecurring_start) >= new Date())
+        .sort((a, b) => new Date(a.nonrecurring_start) - new Date(b.nonrecurring_start));
 
     return (
         <div>
@@ -298,15 +307,15 @@ function FocusSession () {
                         />
                         <input 
                             type="datetime-local"
-                            value={form.start_time}
-                            onChange={(e) => setForm({ ... form, start_time: e.target.value})}
+                            value={form.start}
+                            onChange={(e) => setForm({ ... form, start: e.target.value})}
                             required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
                         />
                         <input 
                             type="datetime-local"
-                            value={form.end_time}
-                            onChange={(e) => setForm({ ... form, end_time: e.target.value})}
+                            value={form.end}
+                            onChange={(e) => setForm({ ... form, end: e.target.value})}
                             required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
                         />
@@ -342,8 +351,8 @@ function FocusSession () {
                 upcomingSessions.map((s) => (
                     <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
                         <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
-                        <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
-                        <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
+                        <p><strong>Start:</strong> {new Date(s.nonrecurring_start).toLocaleString()}</p>
+                        <p><strong>End:</strong> {new Date(s.nonrecurring_end).toLocaleString()}</p>
                         {s.course && <p><strong>Course:</strong> {s.course}</p>}
                         {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
                         <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>

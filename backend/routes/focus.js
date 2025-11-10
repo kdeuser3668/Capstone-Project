@@ -6,10 +6,22 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const user_id = req.query.user_id;
-        if (!user_id) return res.status(400).json({ message: "Missing user_id" });
+        if (!user_id) return res.status(400).json({ message: "Missing user ID. Try logging out and back in." });
 
         const result = await pool.query(
-            'SELECT id, user_id, course_id, event_name, (start_date + start_time::time)::timestamptz AS start, (end_date + end_time::time)::timestamptz AS end, notes FROM calendar_events WHERE user_id = $1 AND event_type = \'focus\' ORDER BY start_date, start_time',
+            `SELECT
+                e.id,
+                e.user_id,
+                c.course_name,
+                c.course_code,
+                e.event_name,
+                e.nonrecurring_start,
+                e.nonrecurring_end,
+                e.notes
+            FROM calendar_events e
+            JOIN courses c ON e.course_id = c.id
+            WHERE e.user_id = $1 AND e.event_type = 'focus'
+            ORDER BY e.nonrecurring_start`,
             [user_id]
         );
 
@@ -28,22 +40,15 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        const startDateObj = new Date(start);
-        const endDateObj = new Date(end);
-
-        const weekday = startDateObj.getDay();
-
-        const start_time = startDateObj.toTimeString().slice(0, 8); // "HH:MM:SS"
-        const end_time = endDateObj.toTimeString().slice(0, 8);
-        const start_date = startDateObj.toISOString().slice(0, 10); // "YYYY-MM-DD"
-        const end_date = endDateObj.toISOString().slice(0, 10);
+        const startUTC = new Date(start);
+        const endUTC = new Date(end);
 
         const query = `
             INSERT INTO calendar_events (
-                user_id, course_id, event_name, recurring, weekday, 
-                start_time, end_time, start_date, end_date, location, event_type, notes
+                user_id, course_id, event_name, recurring,
+                nonrecurring_start, nonrecurring_end, location, event_type, notes
             )
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
             RETURNING *
         `;
 
@@ -51,14 +56,11 @@ router.post('/', async (req, res) => {
             user_id,
             course_id,
             title,
-            false,        // recurring always false
-            weekday,
-            start_time,
-            end_time,
-            start_date,
-            end_date,
+            false,          // recurring always false
+            startUTC.toISOString(),
+            endUTC.toISOString(),
             null,           // location always empty
-            'focus',      // event_type
+            'focus',        // event_type
             notes || ''
         ];
 
@@ -69,6 +71,22 @@ router.post('/', async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Server error" });
     }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Missing event ID.' });
+    }
+
+    await pool.query('DELETE FROM calendar_events WHERE id = $1', [id]);
+    res.status(200).json({ message: 'Session deleted successfully.' });
+  } catch (error) {
+    console.error('Session DELETE error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 export default router;
