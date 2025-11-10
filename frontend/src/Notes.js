@@ -153,7 +153,6 @@ function MakeNotes(){
 
   return (
   <div className="page" style={{ position: "relative" }}>
-    <h2>Your Notes</h2>
 
     <button
       className="button"
@@ -199,15 +198,15 @@ function MakeNotes(){
 
     <div className="grid" style={{ marginTop: "2rem" }}>
       {notes.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#555" }}>No Notes Yet</p>
+        <p style={{ textAlign: "center", color: "#555",  fontSize: 'var(--font-size)' }}>No Notes Yet</p>
       ) : (
         notes.map((e) => (
           <div className="card" key={e.key}>
-            <h4 style={{ color: "var(--text-color)" }}>{e.title}</h4>
+            <h4 style={{ color: "var(--text-color)",  fontSize: 'var(--font-size)' }}>{e.title}</h4>
             <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
               {new Date(e.created).toLocaleString()}
             </p>
-            <p style={{ color: "var(--text-color)", textAlign: "left" }}>{e.description}</p>
+            <p style={{ color: "var(--text-color)", textAlign: "left",  fontSize: 'var(--font-size)' }}>{e.description}</p>
             <button className="button" style={{ margin: ".25rem" }} onClick={() => remove(e.key)} >
               Delete
             </button>

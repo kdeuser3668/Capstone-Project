@@ -63,7 +63,7 @@ const Sidebar = () => {
           textAlign: "center",
           backgroundColor: "var(--button-color, #ee6dd5)",
           border: "none",
-          cursor: "pointer"
+          cursor: "pointer",
         }}
         >{isCollapsed ? "" : "Log Out"}</button>
     

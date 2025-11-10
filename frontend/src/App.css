@@ -4,6 +4,7 @@
   --button-color: #ee6dd5;
   --text-color: #000000;
   --shadow-color: #eb59c199;
+  --font-size: 1; 
 }
 
 /* Container layout */
@@ -46,6 +47,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  font-size: calc(1.1rem * var(--font-scale));
 }
 
 /* Headings */
@@ -55,12 +57,14 @@ h1 {
   margin-bottom: 0;
   color: var(--text-color);
   padding: 10px;
+  font-size: calc(2rem * var(--font-size)); 
 }
 
 h2 { /* using this on login page might need to change later */
   text-align: center;
   margin-bottom: 2rem;
-  color: var(--text-color)
+  color: var(--text-color);
+  font-size: calc(1.6rem * var(--font-size)); 
 }
 
 h3 {
@@ -68,6 +72,7 @@ h3 {
   font-weight: normal;
   text-align: left;
   margin-top: 0;
+  font-size: calc(1.3rem * var(--font-size)); 
 }
 
 /* Card component */
@@ -93,5 +98,5 @@ h3 {
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: calc(1.2rem * var(--font-size));
 };
