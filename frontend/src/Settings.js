@@ -3,6 +3,8 @@ import Sidebar from './Sidebar';
 import './Calendar.css';
 import './App.css';
 
+const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+
 function Settings() {
 
     const [textColor, setTextColor] = useState(
@@ -117,22 +119,104 @@ function Settings() {
         const savedCardColor = window.localStorage.getItem("cardColor") || "#fff";
         document.documentElement.style.setProperty("--card-color", savedCardColor);
         }, []);
+
+    // change password and email functionality
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const userId = storedUser?.id;
+
+    const [password, setPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newConfirmPassword, setNewConfirmPassword] = useState('');
+
+    const [currentEmail, setCurrentEmail] = useState('');
+    const [newEmail, setNewEmail] = useState('');
+    const [newConfirmEmail, setNewConfirmEmail] = useState('');
+    const [password2, setPassword2] = useState('');
+
+    const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    
+    if (newPassword !== newConfirmPassword) {
+        alert("New passwords do not match");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${backendUrl}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            userId: userId,
+            currentPassword: password, 
+            newPassword: newPassword 
+        }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+        alert("Password changed successfully!");
+        setPassword('');
+        setNewPassword('');
+        setNewConfirmPassword('');
+        } else {
+        alert(data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Something went wrong");
+    }
+    };
+
+    const handleEmailChange = async (e) => {
+    e.preventDefault();
+    
+    if (newEmail !== newConfirmEmail) {
+        alert("New emails do not match");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${backendUrl}/change-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            userId: userId,
+            currentEmail: currentEmail,
+            newEmail: newEmail,
+            password: password2
+        }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+        alert("Email changed successfully!");
+        setCurrentEmail('');
+        setNewEmail('');
+        setNewConfirmEmail('');
+        setPassword2('');
+        } else {
+        alert(data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Something went wrong");
+    }
+    };
     
     // profile
-        // change email/pass
-    // font/font size
-    // reset colors
-    // notifications
-    // categories
-    // course management
-    // privacy policy
+        // font/font size
+        // reset colors
+        // notifications
+        // categories
+        // course management
         
 return (
     <div className="container">
     <Sidebar />
         <div className="main-content">
         <h1 className="h1">Settings</h1>
-        <h3 className="h3">Customize your productivity app experience</h3>
+        <h2 className="h2" style={{textAlign:"left", margin: ".5rem"}}>Appearance Settings</h2>
+        <h3 className="h3">Customize PlannerPal's appearance</h3>
             <div className="grid">
                 <div className="card">
                 <label htmlFor="textcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
@@ -183,6 +267,71 @@ return (
                     </p>
                 </div>
             </div>
+        <h2 className="h2" style={{textAlign:"left", marginBottom: ".5rem", marginTop: "1rem"}}>User Settings</h2>
+        <h3 className="h3">Change account information</h3>
+        <div className="grid">
+            <div className="card">
+                <p style={{ marginTop: "1rem", color: textColor }}>Change Password:</p>
+                <form onSubmit={handlePasswordChange}>
+                    <input
+                    type="password"
+                    placeholder="Current Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="password"
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={newConfirmPassword}
+                    onChange={(e) => setNewConfirmPassword(e.target.value)}
+                    required
+                    />
+                    <button type="submit" className="button" style={{margin: ".5rem"}}>Change Password</button>
+                </form>
+            </div>
+            <div className="card">
+                <p style={{ marginTop: "1rem", color: textColor }}>Change Email:</p>
+                <form onSubmit={handleEmailChange}>
+                    <input
+                    type="text"
+                    placeholder="Current Email"
+                    value={currentEmail}
+                    onChange={(e) => setCurrentEmail(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="text"
+                    placeholder="New Email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="text"
+                    placeholder="Confirm New Email"
+                    value={newConfirmEmail}
+                    onChange={(e) => setNewConfirmEmail(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="password"
+                    placeholder="Password"
+                    value={password2}
+                    onChange={(e) => setPassword2(e.target.value)}
+                    required
+                    />
+                    <button type="submit" className="button" style={{margin: ".5rem"}}>Change Email</button>
+                </form>
+            </div>
+        </div>
         </div>
       </div>
   );

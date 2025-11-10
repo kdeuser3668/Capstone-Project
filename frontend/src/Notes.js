@@ -35,6 +35,7 @@ function MakeNotes(){
     const [notes, setNotes] = useState([]);
     const [count, setCount] = useState(1);
     const [showForm, setShowForm] = useState(false);
+    const [editingNoteId, setEditingNoteId] = useState(null);
 
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const userId = storedUser?.id;
@@ -77,36 +78,80 @@ function MakeNotes(){
       });
   }
 
+  //edit a note
+  const editNote = (id) => {
+    setTitle(notes.title);
+    setDescription(notes.description)
+    setEditingNoteId(id);
+    setShowForm(true);
+  };
+
   function handle() {
     if (!title || !description) {
       window.alert("Incomplete input");
       return;
     }
+    if (editingNoteId){
+      const updatedNote = { noteTitle: title, noteContent: description };
 
-    const newNote = { userId, noteTitle: title, noteContent: description };
+      fetch(`${backendUrl}/notes/${editingNoteId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedNote),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to update note");
+          return res.json();
+        })
+        .then(() => {
+          setNotes((prev) =>
+            prev.map((n) =>
+              n.id === editingNoteId
+                ? { ...n, title, description }
+                : n
+            )
+          );
+          resetForm();
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Error updating note");
+        });
+    
+    }else{
 
-    fetch(`${backendUrl}/notes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newNote)
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to save note");
-        return res.json();
+      const newNote = { userId, noteTitle: title, noteContent: description };
+
+      fetch(`${backendUrl}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newNote)
       })
-      .then(() => {
-        setNotes([...notes, { key: count, title, description }]);
-        setCount(count + 1);
-        setTitle("");
-        setDescription("");
-      })
-      .catch((err) => {
-        console.error(err);
-        window.alert("Error saving note");
-      });
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to save note");
+          return res.json();
+        })
+        .then(() => {
+          setNotes([...notes, { key: count, title, description }]);
+          setCount(count + 1);
+          setTitle("");
+          setDescription("");
+        })
+        .catch((err) => {
+          console.error(err);
+          window.alert("Error saving note");
+        });
+      }
   }
 
-    return (
+  function resetForm() {
+    setTitle("");
+    setDescription("");
+    setEditingNoteId(null);
+    setShowForm(false);
+  }
+
+  return (
   <div className="page" style={{ position: "relative" }}>
     <h2>Your Notes</h2>
 
@@ -124,7 +169,7 @@ function MakeNotes(){
 
     {showForm && (
       <div className="card" style={{ marginTop: "1rem", textAlign: "left" }}>
-        <h3>Add a New Note</h3>
+        <h3>{ editingNoteId ? "Edit Note" : "Add a New Note"}</h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <input
             type="text"
@@ -146,7 +191,7 @@ function MakeNotes(){
             }}
           ></textarea>
           <button className="button" onClick={handle}>
-            Save Note
+            { editingNoteId ? "Update Note" : "Save Note"}
           </button>
         </div>
       </div>
@@ -158,21 +203,16 @@ function MakeNotes(){
       ) : (
         notes.map((e) => (
           <div className="card" key={e.key}>
-            <h4>{e.title}</h4>
+            <h4 style={{ color: "var(--text-color)" }}>{e.title}</h4>
             <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
               {new Date(e.created).toLocaleString()}
             </p>
-            <p>{e.description}</p>
-            <button
-              className="button"
-              style={{
-                backgroundColor: "#ff7272",
-                marginTop: "1rem",
-                fontSize: "0.9rem",
-              }}
-              onClick={() => remove(e.key)}
-            >
+            <p style={{ color: "var(--text-color)", textAlign: "left" }}>{e.description}</p>
+            <button className="button" style={{ margin: ".25rem" }} onClick={() => remove(e.key)} >
               Delete
+            </button>
+            <button className="button" style={{ margin: ".25rem" }} onClick={() => editNote(e.key)} >
+              Edit
             </button>
           </div>
         ))

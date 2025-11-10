@@ -49,6 +49,7 @@ export default function LoginForm() {
         alert(data.message);
         if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('username', data.user.username); 
         }
         localStorage.setItem('isAuthenticated', 'true');
 
