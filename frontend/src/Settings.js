@@ -234,15 +234,15 @@ return (
     <Sidebar />
         <div className="main-content">
         <h1 className="h1">Settings</h1>
-        <h2 className="h2" style={{textAlign:"left", marginBottom: ".5rem"}}>Appearance Settings</h2>
+        <h2 className="h2" style={{textAlign:"left", marginBottom: ".5rem", marginTop: "0rem" }}>Appearance Settings</h2>
         <h3 className="h3">Customize PlannerPal's appearance</h3>
             <div className="grid">
                 <div className="card">
-                <label htmlFor="textcolor" style={{ display: "block", marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>
+                <label htmlFor="textcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
                     Select your text color:
                     </label>
                     <input type="color" id="textcolor" value={textColor} onChange={handleColorChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Your selected color:{" "}<strong style={{ color: textColor }}>{textColor}</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: textColor }}>{textColor}</strong>
                     </p>
                 </div>
                 <div className="card">
@@ -250,7 +250,7 @@ return (
                     Select your button color:
                     </label>
                     <input type="color" id="buttonColor" value={buttonColor} onChange={handleButtonChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Your selected color:{" "}<strong style={{ color: buttonColor }}>{buttonColor}</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: buttonColor }}>{buttonColor}</strong>
                     </p>
                 </div>
                 <div className="card">
@@ -258,7 +258,7 @@ return (
                     Select your drop shadow color:
                     </label>
                     <input type="color" id="shadowColor" value={shadowColor} onChange={handleShadowChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Your selected color:{" "}<strong style={{ color: shadowColor }}>{shadowColor}</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: shadowColor }}>{shadowColor}</strong>
                     </p>
                 </div>
                 <div className="card">
@@ -266,7 +266,7 @@ return (
                     Select your background color:
                     </label>
                     <input type="color" id="backgroundColor" value={backgroundColor} onChange={handleBackgroundChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Your selected color:{" "}<strong style={{ color: backgroundColor }}>{backgroundColor}</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: backgroundColor }}>{backgroundColor}</strong>
                     </p>
                 </div>
                 <div className="card">
@@ -274,7 +274,7 @@ return (
                     Select your sidebar color:
                     </label>
                     <input type="color" id="sidebarColor" value={sidebarColor} onChange={handleSidebarChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Your selected color:{" "}<strong style={{ color: sidebarColor }}>{sidebarColor}</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: sidebarColor }}>{sidebarColor}</strong>
                     </p>
                 </div>
                 <div className="card">
@@ -282,7 +282,7 @@ return (
                     Select your card color:
                     </label>
                     <input type="color" id="cardColor" value={cardColor} onChange={handleCardChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Your selected color:{" "}<strong style={{ color: textColor }}>{cardColor}</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Your selected color:{" "}<strong style={{ color: textColor }}>{cardColor}</strong>
                     </p>
                 </div>
                 <div className="card">
@@ -290,7 +290,7 @@ return (
                     Change font size:
                     </label>
                     <input type="range" min="0.8" max="1.5" step="0.1" id="font-size-slider" value={fontSize} onChange={handleFontSizeChange} style={{ marginTop: "0.5rem", cursor: "pointer" }}/>
-                    <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Adjust text size:{" "}<strong style={{ color: textColor, fontSize: "calc(1rem * var(--font-scale))" }}>{fontSize.toFixed(1)}x</strong>
+                    <p className="p" style={{ marginTop: "1rem", color: textColor }}>Adjust text size:{" "}<strong style={{ color: textColor, fontSize: "calc(1rem * var(--font-scale))" }}>{fontSize.toFixed(1)}x</strong>
                     </p>
                 </div>
             </div>
@@ -298,7 +298,7 @@ return (
         <h3 className="h3">Change account information</h3>
         <div className="grid">
             <div className="card">
-                <p style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Change Password:</p>
+                <p className="p" style={{ marginTop: "1rem", color: textColor,  fontSize: "calc(1rem * var(--font-scale))" }}>Change Password:</p>
                 <form onSubmit={handlePasswordChange}>
                     <input
                     type="password"

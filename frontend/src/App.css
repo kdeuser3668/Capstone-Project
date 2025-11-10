@@ -75,6 +75,10 @@ h3 {
   font-size: calc(1.3rem * var(--font-size)); 
 }
 
+p {
+  font-size: calc(1.05rem * var(--font-size)); 
+}
+
 /* Card component */
 .card {
   background-color: var(--card-color, #fff);
