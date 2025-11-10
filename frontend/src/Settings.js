@@ -123,7 +123,23 @@ function Settings() {
         document.documentElement.style.setProperty("--card-color", savedCardColor);
         }, []);
 
+    //Font size
+    const handleFontSizeChange = (event) => {
+        const newSize = parseFloat(event.target.value);
+        setFontSize(newSize);
+        document.documentElement.style.setProperty("--font-size", newSize);
+        localStorage.setItem("fontSize", newSize);
+        };
+
+    useEffect(() => {
+        const savedFontSize = localStorage.getItem("fontSize");
+        document.documentElement.style.setProperty("--font-size", savedFontSize);
+        }, []);
+    
+        
+
     // change password functionality
+    // change password and email functionality
     const storedUser = JSON.parse(localStorage.getItem('user'));
     const userId = storedUser?.id;
 
