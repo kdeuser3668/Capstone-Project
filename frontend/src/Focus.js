@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import './App.css';
 import { DayPilotCalendar } from "@daypilot/daypilot-lite-react";
 
+const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+
 function Focus(){
     const navigate = useNavigate();
     var today = new Date();
@@ -179,50 +181,104 @@ function MusicPlayer () {
 }
    
 function FocusSession () {
-    const [sessions, setSessions] = useState(() => {
-        const saved = localStorage.getItem("focusSessions");
-        return saved ? JSON.parse(saved) : [];
-    });
-
+    const [sessions, setSessions] = useState([]);
+    const [userCourses, setUserCourses] = useState([]);
     const [form, setForm] = useState({
         title: "", 
-        start_time: "", 
-        end_time: "", 
-        category: "", 
+        start: "", 
+        end: "", 
+        course_id: "", 
         notes: ""
     });
-
     const [showForm, setShowForm] = useState(false);
 
-    useEffect(() => {
-        localStorage.setItem("focusSessions", JSON.stringify(sessions));
-    }, [sessions]);
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const userId = storedUser?.id;
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const response = await fetch(`${backendUrl}/get-courses?userId=${userId}`);
+                if (!response.ok) throw new Error("Failed to fetch courses");
+                const data = await response.json();
+                setUserCourses(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchCourses();
+    }, []);
+
+    useEffect(() => {
+        const fetchSessions = async () => {
+            try {
+                const response = await fetch(`${backendUrl}/focus?user_id=${userId}`);
+                if (!response.ok) throw new Error("Failed to fetch sessions");
+                const data = await response.json();
+                const sessions = data.map(s => ({
+                    ...s,
+                    title: s.event_name || "Untitled Focus Session",
+                    course: s.course_name || s.course_code || "No Course Set"
+                }));
+                setSessions(sessions);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchSessions();
+    }, [userId]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const newSession = {
-            id: Date.now(),
+            user_id: userId,
             title: form.title,
-            start: form.start_time,
-            end: form.end_time,
-            category: form.category, 
+            start: form.start,
+            end: form.end,
+            course_id: form.course_id,
             notes: form.notes
         };
 
-        setSessions([...sessions, newSession]);
-        setForm({title: "", start_time: "", end_time: "", category: "", notes: ""});
-        setShowForm(false);
+        try {
+            const response = await fetch(`${backendUrl}/focus`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newSession)
+            });
 
+            if (!response.ok) throw new Error("Failed to save session");
+
+            const savedSession = await response.json();
+            setSessions([...sessions, savedSession]);
+            setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
+            setShowForm(false);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    const removeSession = (id) => {
-        setSessions((prev) => prev.filter((s) => s.id !==id));
-    }
+    const removeSession = async (id) => {
+        try {
+            const confirmed = window.confirm("Are you sure you want to delete this session?");
+            if (!confirmed) return;
+
+            const response = await fetch(`${backendUrl}/focus/${id}`, { method: "DELETE" });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || "Failed to delete session.");
+            }
+
+            setSessions((prev) => prev.filter((s) => s.id !== id));
+        } catch (err) {
+            console.error("Error deleting session:", err);
+            alert("Failed to delete session. Please try again.");
+        }
+    };
 
     const upcomingSessions = sessions
-        .filter((s) => new Date(s.start) >= new Date())
-        .sort((a, b) => new Date(a.start) - new Date(b.start));
+        .filter((s) => new Date(s.nonrecurring_start) >= new Date())
+        .sort((a, b) => new Date(a.nonrecurring_start) - new Date(b.nonrecurring_start));
 
     return (
         <div>
@@ -251,25 +307,29 @@ function FocusSession () {
                         />
                         <input 
                             type="datetime-local"
-                            value={form.start_time}
-                            onChange={(e) => setForm({ ... form, start_time: e.target.value})}
+                            value={form.start}
+                            onChange={(e) => setForm({ ... form, start: e.target.value})}
                             required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
                         />
                         <input 
                             type="datetime-local"
-                            value={form.end_time}
-                            onChange={(e) => setForm({ ... form, end_time: e.target.value})}
+                            value={form.end}
+                            onChange={(e) => setForm({ ... form, end: e.target.value})}
                             required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
                         />
-                        <input 
-                            type="text"
-                            placeholder="Category"
-                            value={form.category}
-                            onChange={(e) => setForm({ ... form, category: e.target.value})}
+                        <select
+                            value={form.course_id}
+                            onChange={(e) => setForm({ ...form, course_id: e.target.value })}
+                            required
                             style={{padding: "0.5rem", fontSize: "1rem", borderRadius: "6px"}}
-                        />
+                        >
+                            <option value="">Select Course</option>
+                            {userCourses.map(course => (
+                                <option key={course.id} value={course.id}>{course.course_name}</option>
+                            ))}
+                        </select>
                         <textarea
                             placeholder="Notes"
                             value={form.notes}
@@ -290,12 +350,12 @@ function FocusSession () {
                 ) : (
                 upcomingSessions.map((s) => (
                     <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
-                    <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
-                    <p><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
-                    <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
-                    {s.category && <p><strong>Category:</strong> {s.category}</p>}
-                    {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
-                    <button className="button" onClick={() => removeSession(s.id)}>Delete</button>
+                        <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
+                        <p><strong>Start:</strong> {new Date(s.nonrecurring_start).toLocaleString()}</p>
+                        <p><strong>End:</strong> {new Date(s.nonrecurring_end).toLocaleString()}</p>
+                        {s.course && <p><strong>Course:</strong> {s.course}</p>}
+                        {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
+                        <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>
                     </div>
                 ))
                 )}
