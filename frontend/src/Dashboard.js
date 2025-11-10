@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { useEffect } from "react";
 import Tasks from "./Tasks";
 import Progress from "./Progress";
+import Focus from "./Focus";
 import './App.css';
+import LoginForm from "./LoginForm";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -13,69 +16,69 @@ function Dashboard() {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-
   const formattedDate = `${monthNamesDate[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
-  // Local state (optional for later use)
   const [showForm, setShowForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("username");
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+  }, []);
 
   return (
     <div className="container">
     <Sidebar />
       <div className="main-content">
+      <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: "1rem",
+          }}>
           <div>
             <h1 className="h1">Dashboard</h1>
-            <h3 className="h3">{formattedDate}</h3>
+            <h3 className="h3">Hello, {username || "User"}!</h3>
           </div>
 
-          {/* Add Task Button */}
           {!showForm && (
-            <button
-              onClick={() => setShowForm(true)}
-              style={{
-                padding: "0.5rem 1.2rem",
-                fontSize: "1rem",
-                backgroundColor: "var(--button-color, #ee6dd5)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={() => setShowForm(true)} className="button">
               {editingTaskId ? "Edit Task" : "Create Task"}
             </button>
           )}
+          </div>
 
         <div className="grid" style={{ flex: "flex" }}>
 
-          <div style={{
-            backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "1rem",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}>
-            <h2 style={{ color: "var(--text-color)" }}>Progress</h2>
+          <div className="card">
+            <h2 className="h2">Your Day</h2>
+            <h3 className="h3">Tasks</h3>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <h3 className="h3">Calendar</h3>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
 
 
-          <div style={{
-            backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "1rem",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}>
-            <h2 style={{ color: "var(--text-color)" }}>Your Tasks</h2>
+          <div className="card">
+            <h2 className="h2">Progress</h2>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
 
 
-          <div style={{
-            backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "1rem",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}>
-            <h2 style={{ color: "var(--text-color)" }}>Completed Today</h2>
+          <div className="card">
+            <h2 className="h2">Completed Today</h2>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+          </div>
+
+
+          <div className="card">
+            <h2 className="h2">Focus Timer</h2>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
         </div>
