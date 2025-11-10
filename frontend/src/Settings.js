@@ -123,27 +123,18 @@ function Settings() {
         document.documentElement.style.setProperty("--card-color", savedCardColor);
         }, []);
 
-    //Font size
-    const handleFontSizeChange = (event) => {
-        const newSize = parseFloat(event.target.value);
-        setFontSize(newSize);
-        document.documentElement.style.setProperty("--font-size", newSize);
-        localStorage.setItem("fontSize", newSize);
-        };
-
-    useEffect(() => {
-        const savedFontSize = localStorage.getItem("fontSize");
-        document.documentElement.style.setProperty("--font-size", savedFontSize);
-        }, []);
-    
-        
-
     // change password functionality
     const storedUser = JSON.parse(localStorage.getItem('user'));
     const userId = storedUser?.id;
+
     const [password, setPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [newConfirmPassword, setNewConfirmPassword] = useState('');
+
+    const [currentEmail, setCurrentEmail] = useState('');
+    const [newEmail, setNewEmail] = useState('');
+    const [newConfirmEmail, setNewConfirmEmail] = useState('');
+    const [password2, setPassword2] = useState('');
 
     const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -170,6 +161,42 @@ function Settings() {
         setPassword('');
         setNewPassword('');
         setNewConfirmPassword('');
+        } else {
+        alert(data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Something went wrong");
+    }
+    };
+
+    const handleEmailChange = async (e) => {
+    e.preventDefault();
+    
+    if (newEmail !== newConfirmEmail) {
+        alert("New emails do not match");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${backendUrl}/change-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            userId: userId,
+            currentEmail: currentEmail,
+            newEmail: newEmail,
+            password: password2
+        }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+        alert("Email changed successfully!");
+        setCurrentEmail('');
+        setNewEmail('');
+        setNewConfirmEmail('');
+        setPassword2('');
         } else {
         alert(data.message);
         }
@@ -279,6 +306,40 @@ return (
                     required
                     />
                     <button type="submit" className="button" style={{margin: ".5rem"}}>Change Password</button>
+                </form>
+            </div>
+            <div className="card">
+                <p style={{ marginTop: "1rem", color: textColor }}>Change Email:</p>
+                <form onSubmit={handleEmailChange}>
+                    <input
+                    type="text"
+                    placeholder="Current Email"
+                    value={currentEmail}
+                    onChange={(e) => setCurrentEmail(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="text"
+                    placeholder="New Email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="text"
+                    placeholder="Confirm New Email"
+                    value={newConfirmEmail}
+                    onChange={(e) => setNewConfirmEmail(e.target.value)}
+                    required
+                    />
+                    <input
+                    type="password"
+                    placeholder="Password"
+                    value={password2}
+                    onChange={(e) => setPassword2(e.target.value)}
+                    required
+                    />
+                    <button type="submit" className="button" style={{margin: ".5rem"}}>Change Email</button>
                 </form>
             </div>
         </div>
