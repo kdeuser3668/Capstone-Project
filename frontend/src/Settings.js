@@ -223,7 +223,6 @@ function Settings() {
     };
     
     // profile
-        // font/font size
         // reset colors
         // notifications
         // categories
@@ -233,9 +232,32 @@ return (
     <div className="container">
     <Sidebar />
         <div className="main-content">
-        <h1 className="h1">Settings</h1>
-        <h2 className="h2" style={{textAlign:"left", marginBottom: ".5rem", marginTop: "0rem" }}>Appearance Settings</h2>
-        <h3 className="h3">Customize PlannerPal's appearance</h3>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: "1rem",
+          }}>
+        <div>
+            <h1 className="h1">Settings</h1>
+            <h2 className="h2" style={{textAlign:"left", marginBottom: ".5rem", marginTop: "0rem" }}>Appearance Settings</h2>
+            <h3 className="h3">Customize PlannerPal's appearance</h3>
+        </div>
+        <div>
+            <button onClick={() => {
+                localStorage.clear(); document.documentElement.style.setProperty("--text-color", '#000000'); 
+                localStorage.clear(); document.documentElement.style.setProperty("--background-color", "#fff"); 
+                localStorage.clear(); document.documentElement.style.setProperty("--button-color",  "#ee6dd5");
+                localStorage.clear(); document.documentElement.style.setProperty("--shadow-color", "#eb59c199"); 
+                localStorage.clear(); document.documentElement.style.setProperty("--card-color", "#fff"); 
+                localStorage.clear(); document.documentElement.style.setProperty("--font-size", "1"); 
+                //window.location.reload(); 
+                }} className="button" style={{ alignItems: "right" }}>Reset Customizations</button>
+        </div>
+        </div>
+        
             <div className="grid">
                 <div className="card">
                 <label htmlFor="textcolor" style={{ display: "block", marginTop: "1rem", color: textColor }}>
