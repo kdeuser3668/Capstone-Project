@@ -4,6 +4,7 @@
   --button-color: #ee6dd5;
   --text-color: #000000;
   --shadow-color: #eb59c199;
+  --card-color: #fff;
   --font-size: 1; 
 }
 
@@ -47,7 +48,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  font-size: calc(1.1rem * var(--font-scale));
+  font-size: calc(1.05rem * var(--font-scale));
 }
 
 /* Headings */

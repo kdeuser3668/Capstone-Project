@@ -31,7 +31,7 @@ const Sidebar = () => {
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
-      width: isCollapsed ? "0px" : "150px",
+      width: isCollapsed ? "0px" : "150wh",
 
     }}>
       <div>

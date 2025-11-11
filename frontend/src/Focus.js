@@ -295,7 +295,7 @@ function FocusSession () {
 
             {showForm && (
                 <div className="card" style={{marginTop: "1rem", marginBottom: "1rem", textAlign: "left", padding: "5px", alignContent: "center"}}>
-                    <h3>Schedule a Focus Session</h3>
+                    <h3 className="h3">Schedule a Focus Session</h3>
                     <form onSubmit={handleSubmit} style={{display: "flex", flexDirection: "column", gap: "1rem"}}>
                         <input 
                             type="text"
@@ -351,7 +351,7 @@ function FocusSession () {
                 upcomingSessions.map((s) => (
                     <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
                         <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
-                        <p><strong>Start:</strong> {new Date(s.nonrecurring_start).toLocaleString()}</p>
+                        <p className="p"><strong>Start:</strong> {new Date(s.nonrecurring_start).toLocaleString()}</p>
                         <p><strong>End:</strong> {new Date(s.nonrecurring_end).toLocaleString()}</p>
                         {s.course && <p><strong>Course:</strong> {s.course}</p>}
                         {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
