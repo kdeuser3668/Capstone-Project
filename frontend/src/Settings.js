@@ -250,7 +250,7 @@ return (
                 localStorage.clear(); document.documentElement.style.setProperty("--text-color", '#000000'); 
                 localStorage.clear(); document.documentElement.style.setProperty("--background-color", "#fff"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--button-color",  "#ee6dd5");
-                localStorage.clear(); document.documentElement.style.setProperty("--shadow-color", "#eb59c199"); 
+                localStorage.clear(); document.documentElement.style.setProperty("--shadow-color", "#42434d"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--card-color", "#fff"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--font-size", "1"); 
                 //window.location.reload(); 
