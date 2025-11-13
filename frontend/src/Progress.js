@@ -46,3 +46,7 @@ export function Progress(){
     };
 
 export default Progress;
+
+export function CompletedToday(){
+    
+}
