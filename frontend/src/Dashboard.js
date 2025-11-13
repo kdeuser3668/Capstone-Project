@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useEffect } from "react";
-import Tasks from "./Tasks";
-import Progress from "./Progress";
+import { TaskManager } from "./Tasks";
+import { Progress } from "./Progress";
 import { Timer } from "./Focus";
 import './App.css';
 import LoginForm from "./LoginForm";
@@ -67,14 +67,7 @@ function Dashboard() {
 
           <div className="card">
             <h2 className="h2">Progress</h2>
-            <h3 className="h3">Completed Today</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
-            <h3 className="h3">Total Tasks</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
-            <h3 className="h3">Overdue</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
-            <h3 className="h3">Total Remaining</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <Progress />
           </div>
 
 
@@ -86,7 +79,6 @@ function Dashboard() {
 
           <div className="card">
             <h2 className="h2">Focus Timer</h2>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
             <Timer />
           </div>
         </div>
