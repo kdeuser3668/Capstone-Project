@@ -69,22 +69,45 @@ export function Timer () {
     };
 
     useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem("focusTimer"));
+        if (saved) {
+            const {startTime, duration, isActive} = saved;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const remainingTime = duration - elapsed;
+
+            if (remainingTime > 0) {
+                setRemaining(remainingTime);
+                setIsActive(isActive);
+                setHasStarted(true);
+            } else {
+                localStorage.removeItem("focusTimer")
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (hasStarted) {
+            const saved = JSON.parse(localStorage.getItem("focusTimer")) || {};
+            const updated = {...saved, remaining, isActive};
+            localStorage.setItem("focusTimer", JSON.stringify(updated));
+        };
+    }, [remaining, isActive, hasStarted]);
+
+    useEffect(() => {
         if (isActive && remaining > 0) {
             intervalRef.current = setInterval(() => {
                 setRemaining((prev) => {
                     if (prev <= 1) {
                         clearInterval(intervalRef.current);
                         setIsActive(false);
+                        localStorage.removeItem("focusTimer")
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
         }
-
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
+        return () => clearInterval(intervalRef.current);
     }, [isActive]);
 
     const startTimer = () => {
@@ -94,15 +117,22 @@ export function Timer () {
             const totalSeconds = h * 3600 + m * 60
 
             if (totalSeconds > 0) {
+                const newTimer = {
+                    startTime: Date.now(), duration: totalSeconds, isActive: true,
+                };
+                localStorage.setItem("focusTimer", JSON.stringify(newTimer));
+
                 setRemaining(totalSeconds);
                 setIsActive(true);
                 setHasStarted(true);
                 setHours("");
                 setMinutes("");
             }
-        } else {
-            if (remaining > 0) {
-                setIsActive(true);
+        } else if (remaining > 0) {
+            setIsActive(true);
+            const saved = JSON.parse(localStorage.getItem("focusTimer"));
+            if (saved) {
+                localStorage.setItem("focusTimer", JSON.stringify({...saved, isActive: true}));
             }
         }
         
@@ -111,6 +141,10 @@ export function Timer () {
     const pauseTimer = () => {
         setIsActive(false);
         clearInterval(intervalRef.current);
+        const saved = JSON.parse(localStorage.getItem("focusTimer"));
+        if (saved) {
+            localStorage.setItem("focusTimer", JSON.stringify({...saved, isActive: false}));
+        }
     };
 
     const resetTimer = () => {
@@ -118,6 +152,15 @@ export function Timer () {
         clearInterval(intervalRef.current);
         setRemaining(0);
         setHasStarted(false);
+        localStorage.removeItem("focusTimer");
+    };
+
+    const startPreset = (minutes) => {
+        const totalSeconds = minutes * 60;
+        setRemaining(totalSeconds);
+        setHasStarted(true);
+        setIsActive(true);
+        localStorage.setItem("focusTimer", JSON.stringify({startTime: Date.now(), duration: totalSeconds, isActive: true,}));
     };
 
 //Make timer selection in scroller/dropdown menu
@@ -151,9 +194,9 @@ export function Timer () {
             </div>
             <hr style={{color: "#000000ff", width: "100%", borderWidth: "1px"}}/>
             <div style={styles.buttonGroup}>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => {setRemaining(15 * 60); setHasStarted(true); setIsActive(true);}}>Quick Study</button>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => {setRemaining(25 * 60); setHasStarted(true); setIsActive(true);}}>Pomodoro</button>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => {setRemaining(50 * 60); setHasStarted(true); setIsActive(true);}}>Deep Focus</button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(15)}>Quick Study</button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(25)}>Pomodoro</button>
+                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(50)}>Deep Focus</button>
             </div>
         </div>
     );
