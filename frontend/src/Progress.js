@@ -11,12 +11,16 @@ export function Progress(){
     useEffect(() => {
         const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         const completed = JSON.parse(localStorage.getItem('completedTasks')) || [];
+        const now = new Date();
+        now.setHours(0,0,0,0);
 
         const total = tasks.length + completed.length;
-        const completedCount = tasks.filter( (t) => new Date(t.deadline) == now && !t.done ).length;
+        const completedCount = tasks.filter( (t) => {const taskDate = new Date(t.deadline);
+            taskDate.setHours(0,0,0,0);
+            return taskDate.getTime() === now.getTime();
+         }).length;
         const remaining = tasks.length;
 
-        const now = new Date();
         const overdue = tasks.filter( (t) => new Date(t.deadline) < now && !t.done ).length;
 
         setStats({
