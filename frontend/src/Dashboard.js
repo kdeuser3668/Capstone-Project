@@ -73,6 +73,8 @@ function Dashboard() {
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
             <h3 className="h3">Overdue</h3>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <h3 className="h3">Total Remaining</h3>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
 
 
