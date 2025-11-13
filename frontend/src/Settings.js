@@ -251,9 +251,10 @@ return (
                 localStorage.clear(); document.documentElement.style.setProperty("--background-color", "#fff"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--button-color",  "#a7d0fb");
                 localStorage.clear(); document.documentElement.style.setProperty("--shadow-color", "#42434d"); 
+                localStorage.clear(); document.documentElement.style.setProperty("--sidebar-color", "#f5f5f5"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--card-color", "#fff"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--font-size", "1"); 
-                //window.location.reload(); 
+                window.location.reload(); 
                 }} className="button" style={{ alignItems: "right" }}>Reset Customizations</button>
         </div>
         </div>

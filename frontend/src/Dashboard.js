@@ -67,6 +67,11 @@ function Dashboard() {
 
           <div className="card">
             <h2 className="h2">Progress</h2>
+            <h3 className="h3">Completed Today</h3>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <h3 className="h3">Total Tasks</h3>
+            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <h3 className="h3">Overdue</h3>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
 
