@@ -195,7 +195,7 @@ const styles = {
     transition: 'all 0.3s ease',
   },
   activeTab: {
-    backgroundColor: '#ee6dd5',
+    backgroundColor: '#a7d0fb',
     color: '#fff',
     fontWeight: 600,
   },
@@ -215,7 +215,7 @@ const styles = {
   button: {
     padding: '0.6rem',
     fontSize: '1rem',
-    backgroundColor: '#ee6dd5',
+    backgroundColor: '#a7d0fb',
     color: 'white',
     border: 'none',
     borderRadius: '6px',
@@ -223,7 +223,7 @@ const styles = {
     transition: 'background 0.3s ease',
   },
   message: {
-    color: '#ee6dd5',
+    color: '#a7d0fb',
     marginTop: '1rem',
     fontSize: '0.9rem',
     textAlign: 'center',

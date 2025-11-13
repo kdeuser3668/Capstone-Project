@@ -1,7 +1,7 @@
 /* Universal variables  */
 :root {
   --background-color: #ffffff;
-  --button-color: #ee6dd5;
+  --button-color: #a7d0fb;
   --text-color: #000000;
   --shadow-color: #42434d;
   --card-color: #fff;
@@ -102,7 +102,7 @@ p {
   left: 0px;
   width: 30px;
   height: 30px;
-  background-color: var(--button-color, #ee6dd5);
+  background-color: var(--button-color, #a7d0fb);
   color: white;
   border: none;
   border-radius: 50%;

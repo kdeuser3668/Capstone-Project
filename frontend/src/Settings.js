@@ -15,14 +15,14 @@ function Settings() {
 
     const [buttonColor, setButtonColor] = useState(
         typeof window !== "undefined" && window.localStorage
-          ? window.localStorage.getItem("buttonColor") || "#ee6dd5"
-          : "#ee6dd5"
+          ? window.localStorage.getItem("buttonColor") || "#a7d0fb"
+          : "#a7d0fb"
       );
 
     const [shadowColor, setShadowColor] = useState(
         typeof window !== "undefined" && window.localStorage
-          ? window.localStorage.getItem("shadowColor") || "0 4px 8px rgba(235, 89, 193, 0.6)"
-          : "0 4px 8px rgba(235, 89, 193, 0.6)"
+          ? window.localStorage.getItem("shadowColor") || "#42434d"
+          : "#42434d"
       );
 
     const [backgroundColor, setBackgroundColor] = useState(
@@ -58,7 +58,7 @@ function Settings() {
       }, []);
 
     
-      //saves and applies button changes across all pages when using background: "var(--button-color, #ee6dd5)" the second color is a fallback color
+      //saves and applies button changes across all pages when using background: "var(--button-color, #a7d0fb)" the second color is a fallback color
     const handleButtonChange = (event) => {
         const newButtonColor = event.target.value;
         setButtonColor(newButtonColor);
@@ -67,11 +67,11 @@ function Settings() {
       };
     
       useEffect(() => {
-        const savedButtonColor = window.localStorage.getItem("buttonColor") || "#ee6dd5";
+        const savedButtonColor = window.localStorage.getItem("buttonColor") || "#a7d0fb";
         document.documentElement.style.setProperty("--button-color", savedButtonColor);
       }, []);
 
-    //saves and applies shadow changes across all pages when using boxShadow: "0 4px 8px var(--shadow-color, #eb59c199)" the second color is a fallback color
+    //saves and applies shadow changes across all pages when using boxShadow: "0 4px 8px var(--shadow-color, #42434d)" the second color is a fallback color
     const handleShadowChange = (event) => {
         const newShadowColor = event.target.value;
         setShadowColor(newShadowColor);
@@ -80,7 +80,7 @@ function Settings() {
         };
 
     useEffect(() => {
-        const savedShadowColor = window.localStorage.getItem("shadowColor") || "#eb59c199";
+        const savedShadowColor = window.localStorage.getItem("shadowColor") || "#42434d";
         document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
         }, []);
 
@@ -249,7 +249,7 @@ return (
             <button onClick={() => {
                 localStorage.clear(); document.documentElement.style.setProperty("--text-color", '#000000'); 
                 localStorage.clear(); document.documentElement.style.setProperty("--background-color", "#fff"); 
-                localStorage.clear(); document.documentElement.style.setProperty("--button-color",  "#ee6dd5");
+                localStorage.clear(); document.documentElement.style.setProperty("--button-color",  "#a7d0fb");
                 localStorage.clear(); document.documentElement.style.setProperty("--shadow-color", "#42434d"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--card-color", "#fff"); 
                 localStorage.clear(); document.documentElement.style.setProperty("--font-size", "1"); 
