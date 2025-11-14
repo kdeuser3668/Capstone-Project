@@ -430,7 +430,7 @@ const styles = {
         backgroundColor: "#fff",
         padding: "2rem",
         borderRadius: "12px",      
-        boxShadow: "0 4px 8px rgba(235, 89, 193, 0.6)",
+        boxShadow: "0 4px 8px #42434d",
         textAlign: "center",
         width: "80%",
         maxWidth: "600px",
