@@ -31,7 +31,7 @@ function Notes() {
 
 function MakeNotes(){
     const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
+    const [content, setContent] = useState("");
     const [notes, setNotes] = useState([]);
     const [count, setCount] = useState(1);
     const [showForm, setShowForm] = useState(false);
@@ -48,8 +48,9 @@ function MakeNotes(){
         setNotes(data.map((note, index) => ({
           key: note.id || index,
           title: note.note_title,
-          description: note.note_content,
-          created: note.created
+          content: note.note_content,
+          created: note.created,
+          edited: note.edited
         })));
       })
       .catch((err) => console.error("Error fetching notes:", err));
@@ -80,22 +81,27 @@ function MakeNotes(){
 
   //edit a note
   const editNote = (id) => {
-    setTitle(notes.title);
-    setDescription(notes.description)
+    const n = notes.find((note) => note.key === id);
+    if (!n) {
+      console.error("Note not found");
+      return;
+    }
+    setTitle(n.title);
+    setContent(n.content);
     setEditingNoteId(id);
     setShowForm(true);
   };
 
   function handle() {
-    if (!title || !description) {
+    if (!title || !content) {
       window.alert("Incomplete input");
       return;
     }
     if (editingNoteId){
-      const updatedNote = { noteTitle: title, noteContent: description };
+      const updatedNote = { updatedTitle: title, updatedContent: content };
 
-      fetch(`${backendUrl}/notes/${editingNoteId}`, {
-        method: "PUT",
+      fetch(`${backendUrl}/update-notes/${editingNoteId}`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedNote),
       })
@@ -106,8 +112,8 @@ function MakeNotes(){
         .then(() => {
           setNotes((prev) =>
             prev.map((n) =>
-              n.id === editingNoteId
-                ? { ...n, title, description }
+              n.key === editingNoteId
+                ? { ...n, title, content }
                 : n
             )
           );
@@ -120,7 +126,7 @@ function MakeNotes(){
     
     }else{
 
-      const newNote = { userId, noteTitle: title, noteContent: description };
+      const newNote = { userId, noteTitle: title, noteContent: content };
 
       fetch(`${backendUrl}/notes`, {
         method: "POST",
@@ -132,10 +138,10 @@ function MakeNotes(){
           return res.json();
         })
         .then(() => {
-          setNotes([...notes, { key: count, title, description }]);
+          setNotes([...notes, { key: count, title, content }]);
           setCount(count + 1);
           setTitle("");
-          setDescription("");
+          setContent("");
         })
         .catch((err) => {
           console.error(err);
@@ -146,7 +152,7 @@ function MakeNotes(){
 
   function resetForm() {
     setTitle("");
-    setDescription("");
+    setContent("");
     setEditingNoteId(null);
     setShowForm(false);
   }
@@ -155,17 +161,26 @@ function MakeNotes(){
   <div className="page" style={{ position: "relative" }}>
     <h2>Your Notes</h2>
 
-    <button
-      className="button"
-      onClick={() => setShowForm(!showForm)}
-      style={{
-        position: "absolute",
-        top: "10px",
-        right: "10px",
-      }}
-    >
-      {showForm ? "Cancel" : "Create Note"}
-    </button>
+  <button
+    className="button"
+    onClick={() => {
+      if (!showForm) {
+        resetForm();
+        setShowForm(true);
+      } else {
+        resetForm();
+        setShowForm(false);
+      }
+    }}
+    style={{
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+    }}
+  >
+    {showForm ? "Cancel" : "Create Note"}
+  </button>
+
 
     {showForm && (
       <div className="card" style={{ marginTop: "1rem", textAlign: "left" }}>
@@ -180,8 +195,8 @@ function MakeNotes(){
           />
           <textarea
             placeholder="Enter note details"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             rows={4}
             style={{
               padding: "0.5rem",
@@ -204,10 +219,17 @@ function MakeNotes(){
         notes.map((e) => (
           <div className="card" key={e.key}>
             <h4 style={{ color: "var(--text-color)" }}>{e.title}</h4>
-            <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
+            <p style={{ fontSize: "0.8rem" }}>
               {new Date(e.created).toLocaleString()}
             </p>
-            <p style={{ color: "var(--text-color)", textAlign: "left" }}>{e.description}</p>
+            {e.edited && e.edited !== e.created ? (
+              <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
+                edited {new Date(e.edited).toLocaleString()}
+              </p>
+            ) : (
+              <p style={{ margin: 0, visibility: "hidden" }}>placeholder</p>
+            )}
+            <p style={{ color: "var(--text-color)", textAlign: "left" }}>{e.content}</p>
             <button className="button" style={{ margin: ".25rem" }} onClick={() => remove(e.key)} >
               Delete
             </button>
