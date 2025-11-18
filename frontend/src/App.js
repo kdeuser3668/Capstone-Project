@@ -11,6 +11,8 @@ import Progress from './Progress';
 import Tasks from './Tasks';
 import Settings from './Settings';
 import ProtectedRoute from './ProtectedRoute';
+import CanvasPage from "./Canvas";
+
 
 function App() {
   const [weekStart, setWeekStart] = useState('sunday');
@@ -52,6 +54,7 @@ function App() {
           <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings weekStart={weekStart} setWeekStart={setWeekStart} /></ProtectedRoute>} />
+          <Route path="/canvas" element={<CanvasPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

@@ -49,6 +49,10 @@ const Sidebar = () => {
         <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Notes"}</NavLink>
         <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Tasks"}</NavLink>
         <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Settings"}</NavLink>
+        <NavLink to="/canvas" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>
+        {isCollapsed ? "" : "Canvas"}
+        </NavLink>
+
       </div>
 
       <button
