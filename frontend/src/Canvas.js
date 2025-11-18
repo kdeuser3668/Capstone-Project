@@ -1,55 +1,121 @@
-import React from 'react';
+import React, { useState } from "react";
+import './App.css';
 
-const CanvasPage = () => {
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Canvas</h1>
-      <p>Welcome to the Canvas page!</p>
-    </div>
-  );
-};
+export default function CanvasIntegrationPage() {
+  const [showSetup, setShowSetup] = useState(false);
+  const [token, setToken] = useState("");
+  const [saving, setSaving] = useState(false);
 
+  // ===== FRONTEND POST CALL =====
+  const handleSubmitToken = async () => {
+    if (!token) return alert("Please enter a token first");
 
+    setSaving(true);
 
-export default function AccessTokenInstructions() {
-  const [token, setToken] = React.useState("");
-  const [copied, setCopied] = React.useState(false);
+    try {
+      const res = await fetch("http://localhost:5050/canvas/save-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: 1,        // temporary placeholder
+          canvasToken: token,  // MUST match backend variable name
+        }),
+      });
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(token);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Token saved successfully!");
+        setShowSetup(false);
+      } else {
+        alert(data.error || "Failed to save token");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error — check backend logs");
+    }
+
+    setSaving(false);
   };
 
-  return (
-    <div className="max-w-2xl mx-auto p-6 rounded-2xl shadow bg-gray-50">
-      <h2 className="text-2xl font-semibold mb-4">How to Generate Your Access Token</h2>
-      <ol className="list-decimal list-inside space-y-2 text-base mb-6">
-        <li>Log in to your account.</li>
-        <li>Go to <strong>Settings</strong> → <strong>Developer Settings</strong>.</li>
-        <li>Click <strong>Generate New Access Token</strong>.</li>
-        <li>Select the required permissions (e.g. read or write).</li>
-        <li>Click <strong>Create Token</strong> to finalize.</li>
-        <li>Copy and securely save your token—you may only see it once.</li>
-        <li>Paste your token into the field below to continue.</li>
-      </ol>
+  const fetchCourses = async () => {
+  try {
+    const res = await fetch("http://localhost:5050/canvas/courses/1");
+    const data = await res.json();
+    console.log("COURSES:", data.courses);
+  } catch (err) {
+    console.error("Error fetching courses:", err);
+  }
+};
 
-      <div className="flex gap-3 items-center">
-        <input
-          type="text"
-          placeholder="Enter your access token"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          className="flex-1 p-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={handleCopy}
-          className="px-4 py-2 rounded-xl shadow bg-blue-600 text-white hover:bg-blue-700"
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
-      </div>
+  return (
+    <div className="min-h-screen flex items-center justify-center p-8 bg-black text-white">
+      {!showSetup ? (
+        <div className="w-full max-w-2xl bg-neutral-900 p-12 rounded-2xl flex flex-col items-center text-center">
+          <div className="text-6xl mb-6">⚠️</div>
+          <h2 className="text-2xl font-semibold mb-2">
+            Canvas Integration Not Configured
+          </h2>
+          <p className="text-gray-300 mb-8 max-w-md">
+            Connect your Canvas account to view courses, assignments, and grades in your productivity hub.
+          </p>
+
+          <button
+            onClick={() => setShowSetup(true)}
+            className="px-6 py-3 bg-white text-black rounded-xl font-semibold hover:bg-gray-200"
+          >
+            ⚙️ Configure Canvas Integration
+          </button>
+        </div>
+      ) : (
+        <div className="max-w-2xl w-full bg-neutral-900 p-8 rounded-2xl shadow-lg">
+          <button
+            onClick={() => setShowSetup(false)}
+            className="mb-4 underline text-blue-400 hover:text-blue-300"
+          >
+            ← Back
+          </button>
+
+          <h2 className="text-3xl font-semibold mb-4">Canvas Integration Setup</h2>
+          <p className="text-gray-300 mb-6">
+            Follow these steps to generate your Canvas API Access Token.
+          </p>
+
+          <ol className="list-decimal list-inside space-y-2 text-base mb-6 text-gray-200">
+            <li>Log in to your Canvas dashboard.</li>
+            <li>Go to <strong>Account</strong> → <strong>Settings</strong>.</li>
+            <li>Scroll to <strong>Approved Integrations</strong>.</li>
+            <li>Click <strong>+ New Access Token</strong>.</li>
+            <li>Enter a purpose — e.g. "Productivity Hub".</li>
+            <li>Click <strong>Generate Token</strong>.</li>
+            <li>Copy the token immediately.</li>
+            <li>Paste it below.</li>
+          </ol>
+
+          <input
+            type="text"
+            placeholder="Paste your Canvas token"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="w-full p-3 rounded-xl bg-neutral-800 border border-neutral-700 focus:outline-none mb-4"
+          />
+
+          <button
+            onClick={handleSubmitToken}
+            disabled={saving}
+            className="w-full py-3 text-center bg-green-600 rounded-xl font-semibold hover:bg-green-700"
+          >
+            {saving ? "Saving..." : "Save Token"}
+          </button>
+          <button
+  onClick={fetchCourses}
+  className="w-full py-3 mt-4 bg-blue-600 rounded-xl font-semibold hover:bg-blue-700"
+>
+  Fetch My Courses
+</button>
+
+        </div>
+      )}
     </div>
   );
 }
-

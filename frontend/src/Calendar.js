@@ -2,6 +2,8 @@ import { useState } from "react";
 import Sidebar from './Sidebar';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
+import './App.css';
+
 
 function Calendar() {
   const [value, setValue] = useState(new Date());
