@@ -4,10 +4,20 @@ import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
 import './App.css';
 
-
 function Calendar() {
   const [value, setValue] = useState(new Date());
   const [view, setView] = useState("month");
+  
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const shortMonthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
 
   const [events, setEvents] = useState([
     { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
@@ -26,30 +36,26 @@ function Calendar() {
     end: null
   });
 
-  // Month names for header
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+// Navigation handler
+const handleNavigation = (direction) => {
+  const newDate = new Date(value);
 
-  // Navigation handler
-  const handleNavigation = (direction) => {
-    let newDate = new Date(value);
-    if (direction === "today") {
-      newDate = new Date();
-    } else if (direction === "prev") {
-      if (view === "day") newDate.setDate(newDate.getDate() - 1);
-      else if (view === "week") newDate.setDate(newDate.getDate() - 7);
-      else if (view === "month") newDate.setMonth(newDate.getMonth() - 1);
-      else if (view === "year") newDate.setFullYear(newDate.getFullYear() - 1);
-    } else if (direction === "next") {
-      if (view === "day") newDate.setDate(newDate.getDate() + 1);
-      else if (view === "week") newDate.setDate(newDate.getDate() + 7);
-      else if (view === "month") newDate.setMonth(newDate.getMonth() + 1);
-      else if (view === "year") newDate.setFullYear(newDate.getFullYear() + 1);
-    }
-    setValue(newDate);
-  };
+  if (direction === "today") {
+    setValue(new Date());
+    return;
+  }
+
+  if (view === "day") {
+    newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+  } else if (view === "week") {
+    newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : direction === "prev" ? -7 : 0));
+  } else if (view === "month") {
+    newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+  }
+
+  setValue(newDate);
+};
+
 
   // Open modal when selecting time range in calendar
   const onTimeRangeSelected = (args) => {
