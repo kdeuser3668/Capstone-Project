@@ -7,6 +7,7 @@ import Dashboard from './Dashboard';
 import Calendar from './Calendar';
 import Focus from './Focus';
 import Notes from './Notes';
+import PrivacyPolicy from './PrivacyPolicy';
 import Progress from './Progress';
 import Tasks from './Tasks';
 import Settings from './Settings';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/calendar" element={<ProtectedRoute><Calendar weekStart={weekStart} /></ProtectedRoute>} />
           <Route path="/focus" element={<ProtectedRoute><Focus /></ProtectedRoute>} />
           <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings weekStart={weekStart} setWeekStart={setWeekStart} /></ProtectedRoute>} />
