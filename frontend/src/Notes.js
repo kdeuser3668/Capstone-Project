@@ -228,7 +228,9 @@ function MakeNotes(){
             ) : (
               <p style={{ margin: 0, visibility: "hidden" }}>placeholder</p>
             )}
-            <p style={{ color: "var(--text-color)", textAlign: "left", fontSize: 'var(--font-size)' }}>{e.content}</p>
+            <p style={{ color: "var(--text-color)", textAlign: "left", fontSize: 'var(--font-size)' }}>
+              <div style={{whiteSpace: "pre-wrap"}}>{e.content}</div>
+            </p>
             <button className="button" style={{ margin: ".25rem" }} onClick={() => remove(e.key)} >
               Delete
             </button>
