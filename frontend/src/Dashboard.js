@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import { useEffect } from "react";
 import Tasks from "./Tasks";
 import Progress from "./Progress";
-import Focus from "./Focus";
+import { Timer } from "./Focus";
 import './App.css';
 import LoginForm from "./LoginForm";
 
@@ -19,7 +19,7 @@ function Dashboard() {
   const formattedDate = `${monthNamesDate[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
   const [showForm, setShowForm] = useState(false);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingCourseId, setEditingCourseId] = useState(null);
 
   const [username, setUsername] = useState("");
 
@@ -49,7 +49,7 @@ function Dashboard() {
 
           {!showForm && (
             <button onClick={() => setShowForm(true)} className="button">
-              {editingTaskId ? "Edit Task" : "Create Task"}
+              {editingCourseId ? "" : "Add Course"}
             </button>
           )}
           </div>
@@ -80,6 +80,7 @@ function Dashboard() {
           <div className="card">
             <h2 className="h2">Focus Timer</h2>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <Timer />
           </div>
         </div>
       </div>
