@@ -2,7 +2,7 @@
 import {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+const backendUrl = process.env.REACT_APP_API_URL || "http://localhost:5050";
 
 
 export default function LoginForm() {
