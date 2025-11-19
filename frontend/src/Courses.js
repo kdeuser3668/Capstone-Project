@@ -14,7 +14,7 @@ export function Courses(){
 
     return(
         <h3>{username || "User"}'s Courses</h3>
-
+        
     );
 };
 
