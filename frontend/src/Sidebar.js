@@ -6,7 +6,7 @@ const Sidebar = () => {
     
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const navigate = useNavigate;
+  const navigate = useNavigate();
     
     const linkStyle = {
     display: "block",
@@ -63,7 +63,7 @@ const Sidebar = () => {
           textAlign: "center",
           backgroundColor: "var(--button-color, #ee6dd5)",
           border: "none",
-          cursor: "pointer"
+          cursor: "pointer",
         }}
         >{isCollapsed ? "" : "Log Out"}</button>
     

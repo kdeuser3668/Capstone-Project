@@ -31,10 +31,11 @@ function Notes() {
 
 function MakeNotes(){
     const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
+    const [content, setContent] = useState("");
     const [notes, setNotes] = useState([]);
     const [count, setCount] = useState(1);
     const [showForm, setShowForm] = useState(false);
+    const [editingNoteId, setEditingNoteId] = useState(null);
 
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const userId = storedUser?.id;
@@ -47,8 +48,9 @@ function MakeNotes(){
         setNotes(data.map((note, index) => ({
           key: note.id || index,
           title: note.note_title,
-          description: note.note_content,
-          created: note.created
+          content: note.note_content,
+          created: note.created,
+          edited: note.edited
         })));
       })
       .catch((err) => console.error("Error fetching notes:", err));
@@ -77,54 +79,111 @@ function MakeNotes(){
       });
   }
 
+  //edit a note
+  const editNote = (id) => {
+    const n = notes.find((note) => note.key === id);
+    if (!n) {
+      console.error("Note not found");
+      return;
+    }
+    setTitle(n.title);
+    setContent(n.content);
+    setEditingNoteId(id);
+    setShowForm(true);
+  };
+
   function handle() {
-    if (!title || !description) {
+    if (!title || !content) {
       window.alert("Incomplete input");
       return;
     }
+    if (editingNoteId){
+      const updatedNote = { updatedTitle: title, updatedContent: content };
 
-    const newNote = { userId, noteTitle: title, noteContent: description };
+      fetch(`${backendUrl}/update-notes/${editingNoteId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedNote),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to update note");
+          return res.json();
+        })
+        .then(() => {
+          setNotes((prev) =>
+            prev.map((n) =>
+              n.key === editingNoteId
+                ? { ...n, title, content }
+                : n
+            )
+          );
+          resetForm();
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Error updating note");
+        });
+    
+    }else{
 
-    fetch(`${backendUrl}/notes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newNote)
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to save note");
-        return res.json();
+      const newNote = { userId, noteTitle: title, noteContent: content };
+
+      fetch(`${backendUrl}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newNote)
       })
-      .then(() => {
-        setNotes([...notes, { key: count, title, description }]);
-        setCount(count + 1);
-        setTitle("");
-        setDescription("");
-      })
-      .catch((err) => {
-        console.error(err);
-        window.alert("Error saving note");
-      });
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to save note");
+          return res.json();
+        })
+        .then(() => {
+          setNotes([...notes, { key: count, title, content }]);
+          setCount(count + 1);
+          setTitle("");
+          setContent("");
+        })
+        .catch((err) => {
+          console.error(err);
+          window.alert("Error saving note");
+        });
+      }
   }
 
-    return (
-  <div className="page" style={{ position: "relative" }}>
-    <h2>Your Notes</h2>
+  function resetForm() {
+    setTitle("");
+    setContent("");
+    setEditingNoteId(null);
+    setShowForm(false);
+  }
 
-    <button
-      className="button"
-      onClick={() => setShowForm(!showForm)}
-      style={{
-        position: "absolute",
-        top: "10px",
-        right: "10px",
-      }}
-    >
-      {showForm ? "Cancel" : "Create Note"}
-    </button>
+  return (
+  <div className="page" style={{ position: "relative" }}>
+
+  <button
+    className="button"
+    onClick={() => {
+      if (!showForm) {
+        resetForm();
+        setShowForm(true);
+      } else {
+        resetForm();
+        setShowForm(false);
+      }
+    }}
+    style={{
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+    }}
+  >
+    {showForm ? "Cancel" : "Create Note"}
+  </button>
+
 
     {showForm && (
       <div className="card" style={{ marginTop: "1rem", textAlign: "left" }}>
-        <h3>Add a New Note</h3>
+        <h3>{ editingNoteId ? "Edit Note" : "Add a New Note"}</h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <input
             type="text"
@@ -135,8 +194,8 @@ function MakeNotes(){
           />
           <textarea
             placeholder="Enter note details"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             rows={4}
             style={{
               padding: "0.5rem",
@@ -146,7 +205,7 @@ function MakeNotes(){
             }}
           ></textarea>
           <button className="button" onClick={handle}>
-            Save Note
+            { editingNoteId ? "Update Note" : "Save Note"}
           </button>
         </div>
       </div>
@@ -154,25 +213,27 @@ function MakeNotes(){
 
     <div className="grid" style={{ marginTop: "2rem" }}>
       {notes.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#555" }}>No Notes Yet</p>
+        <p style={{ textAlign: "center", color: "#555",  fontSize: 'var(--font-size)' }}>No Notes Yet</p>
       ) : (
         notes.map((e) => (
           <div className="card" key={e.key}>
-            <h4>{e.title}</h4>
-            <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
+            <h4 style={{ color: "var(--text-color)", fontSize: 'var(--font-size)' }}>{e.title}</h4>
+            <p style={{ fontSize: "0.8rem" }}>
               {new Date(e.created).toLocaleString()}
             </p>
-            <p>{e.description}</p>
-            <button
-              className="button"
-              style={{
-                backgroundColor: "#ff7272",
-                marginTop: "1rem",
-                fontSize: "0.9rem",
-              }}
-              onClick={() => remove(e.key)}
-            >
+            {e.edited && e.edited !== e.created ? (
+              <p style={{ fontStyle: "italic", fontSize: "0.8rem", color: "#888" }}>
+                edited {new Date(e.edited).toLocaleString()}
+              </p>
+            ) : (
+              <p style={{ margin: 0, visibility: "hidden" }}>placeholder</p>
+            )}
+            <p style={{ color: "var(--text-color)", textAlign: "left", fontSize: 'var(--font-size)' }}>{e.content}</p>
+            <button className="button" style={{ margin: ".25rem" }} onClick={() => remove(e.key)} >
               Delete
+            </button>
+            <button className="button" style={{ margin: ".25rem" }} onClick={() => editNote(e.key)} >
+              Edit
             </button>
           </div>
         ))
