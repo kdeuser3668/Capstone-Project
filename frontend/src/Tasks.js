@@ -71,7 +71,7 @@ function TaskManager () {
     selectedDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
 
-    //wont let you select the current day, gives alert
+    
     if (selectedDate < currentDate) {
       alert("Please select a future date for the deadline.");
       return;

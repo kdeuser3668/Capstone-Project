@@ -21,12 +21,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const savedButtonColor = window.localStorage.getItem("buttonColor") || "#ee6dd5";
+    const savedButtonColor = window.localStorage.getItem("buttonColor") || "#a7d0fb";
     document.documentElement.style.setProperty("--button-color", savedButtonColor);
   }, []);
 
   useEffect(() => {
-    const savedShadowColor = window.localStorage.getItem("shadowColor") || "#eb59c199";
+    const savedShadowColor = window.localStorage.getItem("shadowColor") || "#42434d";
     document.documentElement.style.setProperty("--shadow-color", savedShadowColor);
   }, []);
     
@@ -40,6 +40,11 @@ function App() {
     document.documentElement.style.setProperty("--sidebar-color", savedSidebarColor);
     }, []);
 
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem("fontSize");
+    document.documentElement.style.setProperty("--font-size", savedFontSize);
+    }, []);
+
   return (
     <Router>
       <div className="App">
@@ -49,7 +54,6 @@ function App() {
           <Route path="/calendar" element={<ProtectedRoute><Calendar weekStart={weekStart} /></ProtectedRoute>} />
           <Route path="/focus" element={<ProtectedRoute><Focus /></ProtectedRoute>} />
           <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
-          <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings weekStart={weekStart} setWeekStart={setWeekStart} /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
