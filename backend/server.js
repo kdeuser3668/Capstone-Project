@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import routes from "./routes/index.js";
 import { pool } from "./db.js";
-import canvasRoutes from "./routes/canvasRoutes.js";
 import dotenv from "dotenv";
 
 dotenv.config();
