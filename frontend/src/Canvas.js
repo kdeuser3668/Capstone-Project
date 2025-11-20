@@ -5,6 +5,7 @@ export default function CanvasIntegrationPage() {
   const [showSetup, setShowSetup] = useState(false);
   const [token, setToken] = useState("");
   const [saving, setSaving] = useState(false);
+  const [courses, setCourses] = useState([]);   // NEW state for courses
 
   // ===== FRONTEND POST CALL =====
   const handleSubmitToken = async () => {
@@ -38,15 +39,22 @@ export default function CanvasIntegrationPage() {
     setSaving(false);
   };
 
+  // ===== FETCH COURSES =====
   const fetchCourses = async () => {
-  try {
-    const res = await fetch("http://localhost:5050/canvas/courses/1");
-    const data = await res.json();
-    console.log("COURSES:", data.courses);
-  } catch (err) {
-    console.error("Error fetching courses:", err);
-  }
-};
+    try {
+      const res = await fetch("http://localhost:5050/canvas/courses/1");
+      const data = await res.json();
+
+      if (data.success) {
+        setCourses(data.courses);   // save courses to state
+      } else {
+        alert(data.error || "Failed to fetch courses");
+      }
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      alert("Error fetching courses");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-black text-white">
@@ -107,13 +115,27 @@ export default function CanvasIntegrationPage() {
           >
             {saving ? "Saving..." : "Save Token"}
           </button>
-          <button
-  onClick={fetchCourses}
-  className="w-full py-3 mt-4 bg-blue-600 rounded-xl font-semibold hover:bg-blue-700"
->
-  Fetch My Courses
-</button>
 
+          <button
+            onClick={fetchCourses}
+            className="w-full py-3 mt-4 bg-blue-600 rounded-xl font-semibold hover:bg-blue-700"
+          >
+            Fetch My Courses
+          </button>
+
+          {/* ===== RENDER COURSES ===== */}
+          {courses.length > 0 && (
+            <div className="mt-6 text-left">
+              <h3 className="text-xl font-semibold mb-4">My Courses</h3>
+              <ul className="space-y-2">
+                {courses.map((course) => (
+                  <li key={course.id} className="p-3 bg-neutral-800 rounded-lg">
+                    {course.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
