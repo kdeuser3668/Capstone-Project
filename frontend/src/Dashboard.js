@@ -5,8 +5,8 @@ import { useEffect } from "react";
 import { TaskManager } from "./Tasks";
 import { Progress } from "./Progress";
 import { Timer } from "./Focus";
+import { Courses } from "./Courses";
 import './App.css';
-import LoginForm from "./LoginForm";
 
 function Dashboard() {
   
@@ -14,6 +14,13 @@ function Dashboard() {
   const [editingCourseId, setEditingCourseId] = useState(null);
 
   const [username, setUsername] = useState("");
+
+  const [courses, setCourses] = useState([]);
+  const [showCoursePopup, setShowCoursePopup] = useState(false);
+  const addCourse = (course) => {
+    setCourses(prev => [...prev, course]);
+  };
+
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
@@ -40,7 +47,7 @@ function Dashboard() {
           </div>
 
           {!showForm && (
-            <button onClick={() => setShowForm(true)} className="button">
+            <button onClick={() => setShowCoursePopup(true)} className="button">
               {editingCourseId ? "" : "Add Course"}
             </button>
           )}
@@ -70,8 +77,16 @@ function Dashboard() {
 
           <div className="card">
             <h2 className="h2">Courses</h2>
-            <p>Coming soon...</p>
-          </div>
+            {courses.length === 0 && <p className="p" style={{color: "gray"}}>No courses added yet.</p>}
+              <ul>
+                {courses.map(c => (
+                  <li key={c.id}>
+                    {c.id}. {c.course_name} ({c.course_code}) — {c.instructor_name}, {c.course_semester}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Courses showPopup={showCoursePopup} setShowPopup={setShowCoursePopup}/>
         </div>
       </div>
     </div>
