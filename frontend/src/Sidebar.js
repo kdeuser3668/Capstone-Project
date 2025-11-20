@@ -25,7 +25,8 @@ const Sidebar = () => {
 
   return (
     <div style={{
-      height: "100vh", 
+      height: "auto", 
+      minHeight: "100vh",
       backgroundColor: "var(--sidebar-color, #f5f5f5)",
       padding: "1rem",
       boxSizing: "border-box",
@@ -34,7 +35,8 @@ const Sidebar = () => {
       justifyContent: "space-between",
       transition: "width 0.3s ease",
       width: isCollapsed ? "calc(var(--font-size, 1) * 4rem)" : "calc(var(--font-size, 1) * 10rem)",
-      fontSize: "calc(var(--font-size, 1) * 1rem)"
+      fontSize: "calc(var(--font-size, 1) * 1rem)",
+
 
 
     }}>
@@ -54,6 +56,8 @@ const Sidebar = () => {
         <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "T" : "Tasks"}</NavLink>
         <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "S" : "Settings"}</NavLink>
       </div>
+
+      <div style={{flexgrow: "1"}}/>
 
       <button
         onClick={() => {
