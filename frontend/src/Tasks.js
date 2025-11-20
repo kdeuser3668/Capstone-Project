@@ -21,7 +21,7 @@ function Tasks() {
 return (
   <div className="container">
     <Sidebar />
-    <div className="main-content" style={{padding: "20px", width: "100%", boxSizing: "border-box",}}>
+    <div className="main-content">
         <h1 className="h1">Task Manager</h1>
         <h3 className="h3">{theDate}</h3>
         <div>
