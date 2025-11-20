@@ -1,19 +1,33 @@
-import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { use, useState } from "react";
 import Sidebar from './Sidebar';
 import { useEffect } from "react";
 import { TaskManager } from "./Tasks";
 import { Progress } from "./Progress";
 import { Timer } from "./Focus";
+import { Courses } from "./Courses";
 import './App.css';
-import LoginForm from "./LoginForm";
+
+const backendUrl = "http://localhost:5050";
 
 function Dashboard() {
-  
-  const [showForm, setShowForm] = useState(false);
-  const [editingCourseId, setEditingCourseId] = useState(null);
-
   const [username, setUsername] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userId = storedUser?.id;
+
+  //loads courses
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${backendUrl}/courses?userID=${userId}`)
+      .then(res => res.json())
+      .then(data => setCourses(data))
+      .catch(err => console.error("Failed to load courses:", err));
+  }, [userId]);
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
@@ -21,6 +35,43 @@ function Dashboard() {
       setUsername(savedUsername);
     }
   }, []);
+
+  async function saveCourse(course) {
+    try{
+      let saved;
+      if (course.id){
+        //update
+        const res = await fetch(`${backendUrl}/course/${course.id}`,{
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(course),
+        });
+        saved = await res.json();
+        setCourses(prev => prev.map(c => c.id === saved.id ? saved : c));
+
+      }else{
+        //new
+        const res = await fetch(`${backendUrl}/course/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({...course, user_id: userId})
+        });
+        saved = await res.json();
+        setCourses(prev => [...prev, saved]);
+      }
+
+      setShowPopup(false);
+      setEditingCourse(null);
+    }catch(err){
+      console.error("Failed to save course:", err);
+      alert("Failed to save course")
+    }
+  }
+
+  async function deleteCourse(id) {
+    await fetch(`${backendUrl}/courses/${id}`, {method:"DELETE"});
+    setCourses(prev => prev.filter(c => c.id !== id));
+  }
 
   return (
     <div className="container">
@@ -40,13 +91,13 @@ function Dashboard() {
           </div>
 
           {!showForm && (
-            <button onClick={() => setShowForm(true)} className="button">
-              {editingCourseId ? "" : "Add Course"}
+            <button onClick={() => {setEditingCourse(null); setShowPopup(true);}} className="button">
+              Add Course
             </button>
           )}
           </div>
 
-        <div className="grid" style={{ flex: "flex" }}>
+        <div className="grid">
 
           <div className="card" style={{ flex: "1",  }}>
             <h2 className="h2">Your Day</h2>
@@ -69,9 +120,31 @@ function Dashboard() {
           </div>
 
           <div className="card">
-            <h2 className="h2">Courses</h2>
-            <p>Coming soon...</p>
-          </div>
+            <h2 className="h2">{username || "User"}'s Courses</h2>
+            {courses.length === 0 && <p className="p" style={{color: "gray"}}>No courses added yet.</p>}
+                {courses.map(c => (
+                  <p className="p" key={c.id}>
+                    {c.id} 
+                    <strong>{c.course_name}</strong>
+                    <br />
+                    {c.course_code}
+                    <br />
+                    {c.instructor_name}
+                    <br />
+                    {c.course_semester}
+                    <br />
+                    <button className="button" onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
+                    <button className="button" onClick={() => {deleteCourse(c.id)}}>Delete</button>
+                  </p>
+                ))}
+            </div>
+            <Courses 
+            showPopup={showPopup}
+            setShowPopup={setShowPopup}
+            saveCourse={saveCourse}
+            editingCourse={editingCourse}
+            deleteCourse={deleteCourse}
+          /> 
         </div>
       </div>
     </div>
