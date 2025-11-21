@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import './App.css';
-import Sidebar from "./Sidebar";   // ✅ import your sidebar
+import Sidebar from "./Sidebar";
 
 export default function CanvasPage() {
   const [showSetup, setShowSetup] = useState(false);
   const [token, setToken] = useState("");
   const [saving, setSaving] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ===== FETCH COURSES ON MOUNT =====
+  useEffect(() => {
+    fetchCourses().finally(() => setLoading(false));
+  }, []);
 
   const handleSubmitToken = async () => {
     if (!token) return alert("Please enter a token first");
@@ -23,6 +29,7 @@ export default function CanvasPage() {
       if (res.ok) {
         alert("Token saved successfully!");
         setShowSetup(false);
+        fetchCourses(); // immediately load courses
       } else {
         alert(data.error || "Failed to save token");
       }
@@ -40,23 +47,48 @@ export default function CanvasPage() {
       if (data.success) {
         setCourses(data.courses);
       } else {
-        alert(data.error || "Failed to fetch courses");
+        setCourses([]); // no token case
       }
     } catch (err) {
       console.error("Error fetching courses:", err);
-      alert("Error fetching courses");
+      setCourses([]);
     }
   };
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--background-color)" }}>
-      {/* ✅ Sidebar on the left */}
       <Sidebar />
-
-      {/* ✅ Main content area */}
       <main style={{ flex: 1, padding: "2rem", color: "var(--text-color)" }}>
         <div className="max-w-3xl mx-auto">
-          {!showSetup ? (
+          {loading ? (
+            <p>Loading your courses...</p>
+          ) : courses.length > 0 ? (
+            <div
+              style={{
+                backgroundColor: "var(--sidebar-color)",
+                padding: "2rem",
+                borderRadius: "12px",
+                boxShadow: `0 4px 8px var(--shadow-color)`,
+              }}
+            >
+              <h2 className="text-2xl font-semibold mb-4">My Courses</h2>
+              <ul className="space-y-2">
+                {courses.map((course) => (
+                  <li
+                    key={course.id}
+                    style={{
+                      padding: "0.75rem",
+                      borderRadius: "8px",
+                      backgroundColor: "var(--background-color)",
+                      color: "var(--text-color)",
+                    }}
+                  >
+                    {course.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : !showSetup ? (
             <div
               style={{
                 backgroundColor: "var(--sidebar-color)",
@@ -72,21 +104,20 @@ export default function CanvasPage() {
                 Connect your Canvas account to view courses, assignments, and grades.
               </p>
               <button
-  onClick={() => setShowSetup(true)}
-  style={{
-    backgroundColor: "var(--button-color)",
-    color: "var(--text-color)",
-    padding: "0.75rem 1.5rem",
-    borderRadius: "8px",
-    fontWeight: "600",
-    cursor: "pointer",
-    display: "block",
-    margin: "2rem auto 0 auto",   // centers horizontally
-  }}
->
-  ⚙️ Configure Canvas Integration
-</button>
-
+                onClick={() => setShowSetup(true)}
+                style={{
+                  backgroundColor: "var(--button-color)",
+                  color: "var(--text-color)",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "block",
+                  margin: "2rem auto 0 auto", // ✅ centered
+                }}
+              >
+                ⚙️ Configure Canvas Integration
+              </button>
             </div>
           ) : (
             <div
@@ -167,27 +198,6 @@ export default function CanvasPage() {
               >
                 Fetch My Courses
               </button>
-
-              {courses.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-xl font-semibold mb-4">My Courses</h3>
-                  <ul className="space-y-2">
-                    {courses.map((course) => (
-                      <li
-                        key={course.id}
-                        style={{
-                          padding: "0.75rem",
-                          borderRadius: "8px",
-                          backgroundColor: "var(--background-color)",
-                          color: "var(--text-color)",
-                        }}
-                      >
-                        {course.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
         </div>
