@@ -1,27 +1,33 @@
-import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { use, useState } from "react";
 import Sidebar from './Sidebar';
 import { useEffect } from "react";
-import Tasks from "./Tasks";
-import Progress from "./Progress";
+import { TaskManager } from "./Tasks";
+import { Progress } from "./Progress";
 import { Timer } from "./Focus";
+import { Courses } from "./Courses";
 import './App.css';
-import LoginForm from "./LoginForm";
+
+const backendUrl = "http://localhost:5050";
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const today = new Date();
-
-  const monthNamesDate = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const formattedDate = `${monthNamesDate[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingCourseId, setEditingCourseId] = useState(null);
-
   const [username, setUsername] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userId = storedUser?.id;
+
+  //loads courses
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${backendUrl}/courses?userID=${userId}`)
+      .then(res => res.json())
+      .then(data => setCourses(data))
+      .catch(err => console.error("Failed to load courses:", err));
+  }, [userId]);
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
@@ -29,6 +35,43 @@ function Dashboard() {
       setUsername(savedUsername);
     }
   }, []);
+
+  async function saveCourse(course) {
+    try{
+      let saved;
+      if (course.id){
+        //update
+        const res = await fetch(`${backendUrl}/course/${course.id}`,{
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(course),
+        });
+        saved = await res.json();
+        setCourses(prev => prev.map(c => c.id === saved.id ? saved : c));
+
+      }else{
+        //new
+        const res = await fetch(`${backendUrl}/course/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({...course, user_id: userId})
+        });
+        saved = await res.json();
+        setCourses(prev => [...prev, saved]);
+      }
+
+      setShowPopup(false);
+      setEditingCourse(null);
+    }catch(err){
+      console.error("Failed to save course:", err);
+      alert("Failed to save course")
+    }
+  }
+
+  async function deleteCourse(id) {
+    await fetch(`${backendUrl}/courses/${id}`, {method:"DELETE"});
+    setCourses(prev => prev.filter(c => c.id !== id));
+  }
 
   return (
     <div className="container">
@@ -48,15 +91,15 @@ function Dashboard() {
           </div>
 
           {!showForm && (
-            <button onClick={() => setShowForm(true)} className="button">
-              {editingCourseId ? "" : "Add Course"}
+            <button onClick={() => {setEditingCourse(null); setShowPopup(true);}} className="button">
+              Add Course
             </button>
           )}
           </div>
 
-        <div className="grid" style={{ flex: "flex" }}>
+        <div className="grid">
 
-          <div className="card">
+          <div className="card" style={{ flex: "1",  }}>
             <h2 className="h2">Your Day</h2>
             <h3 className="h3">Tasks</h3>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
@@ -67,21 +110,41 @@ function Dashboard() {
 
           <div className="card">
             <h2 className="h2">Progress</h2>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
-          </div>
-
-
-          <div className="card">
-            <h2 className="h2">Completed Today</h2>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            <Progress />
           </div>
 
 
           <div className="card">
             <h2 className="h2">Focus Timer</h2>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
             <Timer />
           </div>
+
+          <div className="card">
+            <h2 className="h2">{username || "User"}'s Courses</h2>
+            {courses.length === 0 && <p className="p" style={{color: "gray"}}>No courses added yet.</p>}
+                {courses.map(c => (
+                  <p className="p" key={c.id}>
+                    {c.id} 
+                    <strong>{c.course_name}</strong>
+                    <br />
+                    {c.course_code}
+                    <br />
+                    {c.instructor_name}
+                    <br />
+                    {c.course_semester}
+                    <br />
+                    <button className="button" onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
+                    <button className="button" onClick={() => {deleteCourse(c.id)}}>Delete</button>
+                  </p>
+                ))}
+            </div>
+            <Courses 
+            showPopup={showPopup}
+            setShowPopup={setShowPopup}
+            saveCourse={saveCourse}
+            editingCourse={editingCourse}
+            deleteCourse={deleteCourse}
+          /> 
         </div>
       </div>
     </div>

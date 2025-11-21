@@ -5,14 +5,16 @@ import { useState } from 'react';
 const Sidebar = () => {
     
   const [isCollapsed, setIsCollapsed] = useState(false)
-
   const navigate = useNavigate();
     
-    const linkStyle = {
+  const linkStyle = {
     display: "block",
     padding: "1rem 1.5rem",
     color: "var(--text-color)",
     textDecoration: "none",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
     marginBottom: "0.5rem",
     borderRadius: "6px"
   };
@@ -23,19 +25,23 @@ const Sidebar = () => {
 
   return (
     <div style={{
-      height: "100vh", 
+      height: "auto", 
+      minHeight: "100vh",
       backgroundColor: "var(--sidebar-color, #f5f5f5)",
       padding: "1rem",
       boxSizing: "border-box",
-      border: "black",
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
-      width: isCollapsed ? "0px" : "150px",
+      transition: "width 0.3s ease",
+      width: isCollapsed ? "calc(var(--font-size, 1) * 4rem)" : "calc(var(--font-size, 1) * 10rem)",
+      fontSize: "calc(var(--font-size, 1) * 1rem)",
+
+
 
     }}>
       <div>
-        <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>{isCollapsed ? "" : "PlannerPal"}</h2>
+        <h2 style={{ color: "var(--text-color)", marginBottom: "2rem" }}>{isCollapsed ? "PP" : "PlannerPal"}</h2>
 
         <button
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -49,7 +55,13 @@ const Sidebar = () => {
         <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Notes"}</NavLink>
         <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Tasks"}</NavLink>
         <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Settings"}</NavLink>
+        <NavLink to="/canvas" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>
+        {isCollapsed ? "" : "Canvas"}
+        </NavLink>
+
       </div>
+
+      <div style={{flexgrow: "1"}}/>
 
       <button
         onClick={() => {
@@ -63,9 +75,9 @@ const Sidebar = () => {
           textAlign: "center",
           backgroundColor: "var(--button-color, #ee6dd5)",
           border: "none",
-          cursor: "pointer"
+          cursor: "pointer",
         }}
-        >{isCollapsed ? "" : "Log Out"}</button>
+        >{isCollapsed ? "L" : "Log Out"}</button>
     
     </div>
 
