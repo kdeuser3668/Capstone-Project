@@ -21,7 +21,7 @@ function Tasks() {
 return (
   <div className="container">
     <Sidebar />
-    <div className="main-content" style={{padding: "20px", width: "100%", boxSizing: "border-box",}}>
+    <div className="main-content">
         <h1 className="h1">Task Manager</h1>
         <h3 className="h3">{theDate}</h3>
         <div>
@@ -71,7 +71,7 @@ function TaskManager () {
     selectedDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
 
-    //wont let you select the current day, gives alert
+    
     if (selectedDate < currentDate) {
       alert("Please select a future date for the deadline.");
       return;
