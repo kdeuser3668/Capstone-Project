@@ -1,30 +1,25 @@
 import React, { useState } from "react";
 import './App.css';
+import Sidebar from "./Sidebar";   // ✅ import your sidebar
 
-export default function CanvasIntegrationPage() {
+export default function CanvasPage() {
   const [showSetup, setShowSetup] = useState(false);
   const [token, setToken] = useState("");
   const [saving, setSaving] = useState(false);
-  const [courses, setCourses] = useState([]);   // NEW state for courses
+  const [courses, setCourses] = useState([]);
 
-  // ===== FRONTEND POST CALL =====
   const handleSubmitToken = async () => {
     if (!token) return alert("Please enter a token first");
-
     setSaving(true);
 
     try {
       const res = await fetch("http://localhost:5050/canvas/save-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: 1,        // temporary placeholder
-          canvasToken: token,  // MUST match backend variable name
-        }),
+        body: JSON.stringify({ userId: 1, canvasToken: token }),
       });
 
       const data = await res.json();
-
       if (res.ok) {
         alert("Token saved successfully!");
         setShowSetup(false);
@@ -35,18 +30,15 @@ export default function CanvasIntegrationPage() {
       console.error(err);
       alert("Server error — check backend logs");
     }
-
     setSaving(false);
   };
 
-  // ===== FETCH COURSES =====
   const fetchCourses = async () => {
     try {
       const res = await fetch("http://localhost:5050/canvas/courses/1");
       const data = await res.json();
-
       if (data.success) {
-        setCourses(data.courses);   // save courses to state
+        setCourses(data.courses);
       } else {
         alert(data.error || "Failed to fetch courses");
       }
@@ -57,87 +49,149 @@ export default function CanvasIntegrationPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-black text-white">
-      {!showSetup ? (
-        <div className="w-full max-w-2xl bg-neutral-900 p-12 rounded-2xl flex flex-col items-center text-center">
-          <div className="text-6xl mb-6">⚠️</div>
-          <h2 className="text-2xl font-semibold mb-2">
-            Canvas Integration Not Configured
-          </h2>
-          <p className="text-gray-300 mb-8 max-w-md">
-            Connect your Canvas account to view courses, assignments, and grades in your productivity hub.
-          </p>
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--background-color)" }}>
+      {/* ✅ Sidebar on the left */}
+      <Sidebar />
 
-          <button
-            onClick={() => setShowSetup(true)}
-            className="px-6 py-3 bg-white text-black rounded-xl font-semibold hover:bg-gray-200"
-          >
-            ⚙️ Configure Canvas Integration
-          </button>
-        </div>
-      ) : (
-        <div className="max-w-2xl w-full bg-neutral-900 p-8 rounded-2xl shadow-lg">
-          <button
-            onClick={() => setShowSetup(false)}
-            className="mb-4 underline text-blue-400 hover:text-blue-300"
-          >
-            ← Back
-          </button>
+      {/* ✅ Main content area */}
+      <main style={{ flex: 1, padding: "2rem", color: "var(--text-color)" }}>
+        <div className="max-w-3xl mx-auto">
+          {!showSetup ? (
+            <div
+              style={{
+                backgroundColor: "var(--sidebar-color)",
+                padding: "2rem",
+                borderRadius: "12px",
+                boxShadow: `0 4px 8px var(--shadow-color)`,
+              }}
+            >
+              <h2 className="text-2xl font-semibold mb-2">
+                Canvas Integration Not Configured
+              </h2>
+              <p className="mb-6">
+                Connect your Canvas account to view courses, assignments, and grades.
+              </p>
+              <button
+  onClick={() => setShowSetup(true)}
+  style={{
+    backgroundColor: "var(--button-color)",
+    color: "var(--text-color)",
+    padding: "0.75rem 1.5rem",
+    borderRadius: "8px",
+    fontWeight: "600",
+    cursor: "pointer",
+    display: "block",
+    margin: "2rem auto 0 auto",   // centers horizontally
+  }}
+>
+  ⚙️ Configure Canvas Integration
+</button>
 
-          <h2 className="text-3xl font-semibold mb-4">Canvas Integration Setup</h2>
-          <p className="text-gray-300 mb-6">
-            Follow these steps to generate your Canvas API Access Token.
-          </p>
+            </div>
+          ) : (
+            <div
+              style={{
+                backgroundColor: "var(--sidebar-color)",
+                padding: "2rem",
+                borderRadius: "12px",
+                boxShadow: `0 4px 8px var(--shadow-color)`,
+              }}
+            >
+              <button
+                onClick={() => setShowSetup(false)}
+                style={{ color: "var(--button-color)", marginBottom: "1rem" }}
+              >
+                ← Back
+              </button>
 
-          <ol className="list-decimal list-inside space-y-2 text-base mb-6 text-gray-200">
-            <li>Log in to your Canvas dashboard.</li>
-            <li>Go to <strong>Account</strong> → <strong>Settings</strong>.</li>
-            <li>Scroll to <strong>Approved Integrations</strong>.</li>
-            <li>Click <strong>+ New Access Token</strong>.</li>
-            <li>Enter a purpose — e.g. "Productivity Hub".</li>
-            <li>Click <strong>Generate Token</strong>.</li>
-            <li>Copy the token immediately.</li>
-            <li>Paste it below.</li>
-          </ol>
+              <h2 className="text-3xl font-semibold mb-4">Canvas Integration Setup</h2>
+              <p className="mb-6">
+                Follow these steps to generate your Canvas API Access Token.
+              </p>
 
-          <input
-            type="text"
-            placeholder="Paste your Canvas token"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            className="w-full p-3 rounded-xl bg-neutral-800 border border-neutral-700 focus:outline-none mb-4"
-          />
+              <ol className="list-decimal list-inside space-y-2 mb-6">
+                <li>Log in to your Canvas dashboard.</li>
+                <li>Go to <strong>Account → Settings</strong>.</li>
+                <li>Scroll to <strong>Approved Integrations</strong>.</li>
+                <li>Click <strong>+ New Access Token</strong>.</li>
+                <li>Enter a purpose — e.g. "Productivity Hub".</li>
+                <li>Click <strong>Generate Token</strong>.</li>
+                <li>Copy the token immediately.</li>
+                <li>Paste it below.</li>
+              </ol>
 
-          <button
-            onClick={handleSubmitToken}
-            disabled={saving}
-            className="w-full py-3 text-center bg-green-600 rounded-xl font-semibold hover:bg-green-700"
-          >
-            {saving ? "Saving..." : "Save Token"}
-          </button>
+              <input
+                type="text"
+                placeholder="Paste your Canvas token"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  borderRadius: "8px",
+                  border: "1px solid var(--shadow-color)",
+                  marginBottom: "1rem",
+                  backgroundColor: "var(--background-color)",
+                  color: "var(--text-color)",
+                }}
+              />
 
-          <button
-            onClick={fetchCourses}
-            className="w-full py-3 mt-4 bg-blue-600 rounded-xl font-semibold hover:bg-blue-700"
-          >
-            Fetch My Courses
-          </button>
+              <button
+                onClick={handleSubmitToken}
+                disabled={saving}
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  borderRadius: "8px",
+                  backgroundColor: "green",
+                  color: "white",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+              >
+                {saving ? "Saving..." : "Save Token"}
+              </button>
 
-          {/* ===== RENDER COURSES ===== */}
-          {courses.length > 0 && (
-            <div className="mt-6 text-left">
-              <h3 className="text-xl font-semibold mb-4">My Courses</h3>
-              <ul className="space-y-2">
-                {courses.map((course) => (
-                  <li key={course.id} className="p-3 bg-neutral-800 rounded-lg">
-                    {course.name}
-                  </li>
-                ))}
-              </ul>
+              <button
+                onClick={fetchCourses}
+                style={{
+                  width: "100%",
+                  marginTop: "1rem",
+                  padding: "0.75rem",
+                  borderRadius: "8px",
+                  backgroundColor: "blue",
+                  color: "white",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+              >
+                Fetch My Courses
+              </button>
+
+              {courses.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-xl font-semibold mb-4">My Courses</h3>
+                  <ul className="space-y-2">
+                    {courses.map((course) => (
+                      <li
+                        key={course.id}
+                        style={{
+                          padding: "0.75rem",
+                          borderRadius: "8px",
+                          backgroundColor: "var(--background-color)",
+                          color: "var(--text-color)",
+                        }}
+                      >
+                        {course.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </main>
     </div>
   );
 }
