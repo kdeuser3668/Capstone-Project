@@ -49,12 +49,16 @@ const Sidebar = () => {
         title={isCollapsed ? "Expand" : "Collapse"}
         >{isCollapsed ? "›" : "‹"}</button>
 
-        <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "D" : "Dashboard"}</NavLink>
-        <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "C" : "Calendar"}</NavLink>
-        <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "F" : "Focus"}</NavLink>
-        <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "N" : "Notes"}</NavLink>
-        <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "T" : "Tasks"}</NavLink>
-        <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "S" : "Settings"}</NavLink>
+        <NavLink to="/dashboard" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Dashboard"}</NavLink>
+        <NavLink to="/calendar" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Calendar"}</NavLink>
+        <NavLink to="/focus" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Focus"}</NavLink>
+        <NavLink to="/notes" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Notes"}</NavLink>
+        <NavLink to="/tasks" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Tasks"}</NavLink>
+        <NavLink to="/settings" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Settings"}</NavLink>
+        <NavLink to="/canvas" style={({ isActive }) => isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>
+        {isCollapsed ? "" : "Canvas"}
+        </NavLink>
+
       </div>
 
       <div style={{flexgrow: "1"}}/>
