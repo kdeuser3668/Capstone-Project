@@ -12,7 +12,8 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI
 );
 
-const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"];
+
+const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/userinfo.email"];
 
 // Generate Google OAuth URL
 router.get("/google/auth", (req, res) => {
@@ -22,6 +23,7 @@ router.get("/google/auth", (req, res) => {
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
+    prompt: "consent",  // forces Google to return refresh_token every time
     state: userId
   });
   res.json({ url });
@@ -36,32 +38,39 @@ router.get("/google/callback", async (req, res) => {
   const userId = state;
 
   try {
+    // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
     // Fetch user's Google email
-    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+    const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
     const userInfo = await oauth2.userinfo.get();
     const googleEmail = userInfo.data.email;
 
     // Convert expiry
     const expiry = tokens.expiry_date ? new Date(tokens.expiry_date) : null;
 
-    // Store tokens
+    // Store tokens in DB (insert or update)
     await pool.query(
       `INSERT INTO user_google_tokens (user_id, google_email, access_token, refresh_token, expiry)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (user_id, google_email)
-       DO UPDATE SET access_token = $3, refresh_token = $4, expiry = $5`,
+       DO UPDATE SET
+         access_token = EXCLUDED.access_token,
+         refresh_token = COALESCE(EXCLUDED.refresh_token, user_google_tokens.refresh_token),
+         expiry = EXCLUDED.expiry`,
       [userId, googleEmail, tokens.access_token, tokens.refresh_token, expiry]
     );
 
-    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}`);
+    console.log("Tokens stored successfully for user:", userId);
+
+    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/calendar`);
   } catch (err) {
     console.error("Google callback error:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Fetch Google events using stored access token
 router.get("/google/events", async (req, res) => {
@@ -77,7 +86,13 @@ router.get("/google/events", async (req, res) => {
     if (!result.rows.length)
       return res.status(404).json({ message: "No Google tokens found" });
 
-    oauth2Client.setCredentials({ access_token: result.rows[0].access_token });
+    oauth2Client.setCredentials({
+      access_token: result.rows[0].access_token,
+      refresh_token: result.rows[0].refresh_token
+    });
+
+    await oauth2Client.getAccessToken();
+
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
     const eventsResponse = await calendar.events.list({
       calendarId: "primary",
