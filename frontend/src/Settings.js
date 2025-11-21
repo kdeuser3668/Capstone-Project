@@ -202,6 +202,70 @@ function Settings() {
         alert("Something went wrong");
     }
     };
+
+    // Google Calendar API Functions
+    // Google Calendar OAuth states
+    const [googleConnected, setGoogleConnected] = useState(false);
+    const [googleEmail, setGoogleEmail] = useState("");
+
+
+    // Check if user already has tokens in DB
+    useEffect(() => {
+    const checkTokens = async () => {
+        if (!userId) return;
+
+        try {
+            const res = await fetch(`${backendUrl}/api/google/check-tokens/${userId}`);
+            const data = await res.json();
+            setGoogleConnected(data.hasTokens); 
+        } catch (err) {
+      console.error("Error checking Google tokens:", err);
+    }
+    };
+        checkTokens();
+    }, [userId]);
+
+    // Start OAuth flow
+    const handleGoogleLogin = async () => {
+    if (!userId) return alert("User not logged in");
+
+    try {
+    const res = await fetch(`${backendUrl}/api/calendar/google/auth?userId=${userId}`);
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url; // redirect to Google OAuth
+    } else {
+      alert("Google login URL not received.");
+    }
+    } catch (err) {
+    console.error("Google login error:", err);
+    alert("Error starting Google login");
+    }
+    };
+
+
+    // Disconnect Google Calendar
+    const handleGoogleDisconnect = async () => {
+        try {
+            const res = await fetch(`${backendUrl}/api/calendar/google/disconnect/${userId}`, {
+            method: "POST"
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setGoogleConnected(false);
+      alert("Google Calendar disconnected.");
+    } else {
+      alert(data.message);
+    }
+
+    } catch (err) {
+    console.error(err);
+    alert("Error disconnecting Google Calendar");
+    }};
+
     
     // profile
         // font/font size
@@ -330,6 +394,18 @@ return (
                     />
                     <button type="submit" className="button" style={{margin: ".5rem"}}>Change Email</button>
                 </form>
+            </div>
+            <div className="card">
+                <p style={{ marginTop: "1rem", color: textColor }}>Connect to Google Calendar</p>
+                <input
+                    type="text"
+                    placeholder="Enter Gmail Address"
+                    value={googleEmail}
+                    onChange={(e) => setGoogleEmail(e.target.value)}
+                    required
+                    />
+                    {googleConnected ? (<button className="button" onClick={handleGoogleDisconnect}>Disconnect Google Calendar</button>) : 
+                    (<button className="button" onClick={handleGoogleLogin}>Connect</button>)}
             </div>
         </div>
         </div>
