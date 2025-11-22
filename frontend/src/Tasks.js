@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "./App.css";
 
-//update the date, hardcode in a +1 for the date
-//try just having the date typed in manually, don't know if it would work if it interferes with calendar
-
 function Tasks() {
     const navigate = useNavigate();
     var today = new Date();
@@ -72,8 +69,8 @@ function TaskManager () {
     currentDate.setHours(0, 0, 0, 0);
 
     
-    if (selectedDate < currentDate) {
-      alert("Please select a future date for the deadline.");
+    if (selectedDate.getTime() < currentDate.getTime()) {
+      alert("Please select today or a future date for the deadline.");
       return;
     }
 
