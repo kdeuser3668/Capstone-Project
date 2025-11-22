@@ -142,7 +142,7 @@ function TaskManager () {
     <div>
       <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "1rem", position: "relative"}}>
         {!showForm && (
-          <button className="button" onClick={() =>setShowForm(true)} style={{position: "absolute", right: "0", top: "0", padding: "0.5rem 1rem", fontSize: "1rem", cursor: "pointer",}}>{editingTaskId ? "Edit Task" : "Create Task"}</button>
+          <button className="button" onClick={() =>setShowForm(true)} style={{position: "absolute", right: "0", top: "0", cursor: "pointer",}}>{editingTaskId ? "Edit Task" : "Create Task"}</button>
         )}
       </div>
 

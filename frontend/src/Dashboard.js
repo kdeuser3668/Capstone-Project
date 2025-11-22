@@ -2,6 +2,7 @@ import { use, useState } from "react";
 import Sidebar from './Sidebar';
 import { useEffect } from "react";
 import { TaskManager } from "./Tasks";
+import { useNavigate } from 'react-router-dom';
 import { Progress } from "./Progress";
 import { Timer } from "./Focus";
 import { Courses } from "./Courses";
@@ -19,6 +20,15 @@ function Dashboard() {
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
+
+  //load tasks
+  const [tasks, setTasks] = useState([]);
+  useEffect(() => {
+    const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    setTasks(savedTasks)
+  }, []);
+  const today = new Date().toISOString().split("T")[0];
+  const tasksDueToday = tasks.filter( t => t.deadline === today && !t.done );
 
   //loads courses
   useEffect(() => {
@@ -102,7 +112,21 @@ function Dashboard() {
           <div className="card" style={{ flex: "1",  }}>
             <h2 className="h2">Your Day</h2>
             <h3 className="h3">Tasks</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            {tasksDueToday.length === 0 ? (
+            <p className="p">No tasks due today.</p>
+            ) : (  
+              <ul className="ul">
+              {tasksDueToday.map(task => (
+                <li className="li" key={task.id}>
+                  <strong>{task.task}</strong>
+                  <br />
+                  Priority: {task.priority}
+                  <br />
+                  Due: {task.deadline}
+                </li>
+              ))}
+            </ul>
+            )}
             <h3 className="h3">Calendar</h3>
             <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
           </div>
