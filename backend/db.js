@@ -9,7 +9,7 @@ export const pool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
-});
+};
 
 // tests connection, comment out prior to hosting
 try {
@@ -19,3 +19,5 @@ try {
 } catch (err) {
   console.error("Database connection failed:", err);
 }
+
+module.exports = { sql, getPool };
