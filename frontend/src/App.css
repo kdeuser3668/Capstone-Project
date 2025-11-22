@@ -85,6 +85,18 @@ p {
   color: var(--text-color);
 }
 
+ul{
+  transition: width 0.3s ease;
+  font-size: calc(1.05rem * var(--font-size)); 
+  color: var(--text-color);
+}
+
+li{
+  transition: width 0.3s ease;
+  font-size: calc(1.05rem * var(--font-size)); 
+  color: var(--text-color);
+}
+
 /* Card component */
 .card {
   background-color: var(--card-color, #fff);
