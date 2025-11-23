@@ -100,7 +100,7 @@ const handleNavigation = (direction) => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
       <Sidebar />
       <div className="main-content page">
         {/* Header */}
