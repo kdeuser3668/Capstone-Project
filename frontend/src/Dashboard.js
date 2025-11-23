@@ -21,13 +21,22 @@ function Dashboard() {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
 
+  //load events
+  const today = new Date().toISOString().split("T")[0];
+  const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+
+  const eventsToday = savedEvents.filter(ev => {
+    const evDate = ev.start.split("T")[0];
+    return evDate === today;
+  })
+
   //load tasks
   const [tasks, setTasks] = useState([]);
   useEffect(() => {
     const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
     setTasks(savedTasks)
   }, []);
-  const today = new Date().toISOString().split("T")[0];
+  //const today = new Date().toISOString().split("T")[0];
   const tasksDueToday = tasks.filter( t => t.deadline === today && !t.done );
 
   //loads courses
@@ -113,7 +122,7 @@ function Dashboard() {
             <h2 className="h2">Your Day</h2>
             <h3 className="h3">Tasks</h3>
             {tasksDueToday.length === 0 ? (
-            <p className="p">No tasks due today.</p>
+              <p className="p">No tasks due today.</p>
             ) : (  
               <ul className="ul">
               {tasksDueToday.map(task => (
@@ -128,7 +137,18 @@ function Dashboard() {
             </ul>
             )}
             <h3 className="h3">Calendar</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            {eventsToday.length === 0? (
+              <p className="p">No events today.</p>
+            ): (
+              <ul className="ul">
+                {eventsToday.map(ev => (
+                  <li className="li" key={ev.id}>
+                    <strong>{ev.text}</strong><br />
+                    {ev.start.split("T")[1].slice(0,5)} - {ev.end.split("T")[1].slice(0,5)}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
 
