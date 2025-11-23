@@ -8,6 +8,7 @@ import notesRoutes from "./notes.js";
 import updateNotesRoutes from "./updateNotes.js";
 import getCoursesRoutes from "./getCourses.js";
 import focusRoutes from "./focus.js";
+import tasksRoutes from "./tasks.js";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use("/update-notes", updateNotesRoutes);
 router.use("/api/calendar", calendarRoutes);
 router.use("/get-courses", getCoursesRoutes);
 router.use("/focus", focusRoutes);
+router.use("/tasks", tasksRoutes);
 
 export default router;
