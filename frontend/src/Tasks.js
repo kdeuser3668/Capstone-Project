@@ -103,6 +103,11 @@ function TaskManager () {
       return;
     }
 
+    if (selectedDate.getTime() < currentDate.getTime()) {
+      alert("Please select today or a future date for the deadline.");
+      return;
+    }
+
     if (!userId) {
       console.error("User ID not found. Try logging out and back in.");
       return;
