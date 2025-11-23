@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "./App.css";
 
+const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+
 //update the date, hardcode in a +1 for the date
 //try just having the date typed in manually, don't know if it would work if it interferes with calendar
 
@@ -44,26 +46,48 @@ function TaskManager () {
     const [showForm, setShowForm] = useState(false);
     const [editingTaskId, setEditingTaskId] = useState(null);
 
-    // Local storage 
+    const [courseId, setCourseId] = useState("");
+    const [userCourses, setUserCourses] = useState([]);
+
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const userId = storedUser?.id;
+
     useEffect(() => {
-    const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    const savedComplete = JSON.parse(localStorage.getItem("completedTasks")) || [];
-    setTasks(savedTasks);
-    setCompletedTasks(savedComplete);
+        const fetchCourses = async () => {
+            try {
+                const response = await fetch(`${backendUrl}/get-courses?userId=${userId}`);
+                if (!response.ok) throw new Error("Failed to fetch courses");
+                const data = await response.json();
+                setUserCourses(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchCourses();
     }, []);
 
     useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    }, [tasks]);
+      fetch(`${backendUrl}/tasks?userId=${userId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const mapped = data.map(t => ({
+            id: t.id,
+            courseId: t.course_id,
+            task: t.assignment_name,
+            priority: t.priority,
+            deadline: t.due_datetime,
+            done: t.completion
+          }));
+          setTasks(mapped.filter(t => !t.done));
+          setCompletedTasks(mapped.filter(t => t.done));
+        })
+        .catch((err) => console.error("GET /tasks failed", err));
+    }, []);
 
-    useEffect(() => {
-    localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
-    }, [completedTasks]);
-
-    const addTask = () => {
+  const addTask = async () => {
     if (task.trim() === "" || deadline === "") {
-        alert("Please enter a task and select a valid deadline.");
-        return;
+      alert("Please enter a task and select a valid deadline.");
+      return;
     }
 
     const selectedDate = new Date(deadline);
@@ -71,32 +95,78 @@ function TaskManager () {
     selectedDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
 
-    
+    const localDate = new Date(deadline);
+    const utcDate = localDate.toISOString();
+
     if (selectedDate < currentDate) {
       alert("Please select a future date for the deadline.");
       return;
     }
 
+    if (!userId) {
+      console.error("User ID not found. Try logging out and back in.");
+      return;
+    }
+
     if (editingTaskId) {
       const updatedTasks = tasks.map((t) =>
-        t.id === editingTaskId ? { ...t, task, priority, deadline} : t
+        t.id === editingTaskId ? { ...t, courseId, task, priority, deadline } : t
       );
+
       setTasks(updatedTasks);
+      
+      await fetch(`${backendUrl}/tasks/${editingTaskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          courseId: courseId || null,
+          assignmentName: task,
+          dueDatetime: utcDate,
+          priority,
+          completion: false
+        })
+      });
+
       setEditingTaskId(null);
+
     } else {
-      const newTask = { id: Date.now(), task, priority, deadline, done: false };
+      const newTask = {
+        id: Date.now(),
+        courseId,
+        task,
+        priority,
+        utcDate,
+        done: false
+      };
+
       const updatedTasks = [...tasks, newTask].sort(
         (a, b) => new Date(a.deadline) - new Date(b.deadline)
       );
+
       setTasks(updatedTasks);
+
+      await fetch(`${backendUrl}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          courseId: courseId || null,
+          assignmentName: task,
+          dueDatetime: utcDate,
+          priority,
+          completion: false
+        })
+      });
     }
 
+    setCourseId("");
     setTask("");
     setPriority("High");
     setDeadline("");
   };
 
-  const markDone = (id) => {
+  const markDone = async (id) => {
     const completedTask = tasks.find((t) => t.id === id);
     if (!completedTask) return;
 
@@ -105,9 +175,43 @@ function TaskManager () {
 
     setTasks([...remainingTasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline)));
     setCompletedTasks([...completedTasks, updatedTask].sort((a, b) => new Date(a.deadline) - new Date(b.deadline)));
+
+      try {
+        await fetch(`${backendUrl}/tasks/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: storedUser?.id,
+            courseId: updatedTask.courseId || null,
+            assignmentName: updatedTask.task,
+            dueDatetime: updatedTask.deadline,
+            priority: updatedTask.priority,
+            completion: true   // mark as done
+          })
+        });
+      } catch (err) {
+        console.error("Failed to update task completion", err);
+      }
   };
 
-  const deleteTask = (id, isCompleted = false) => {
+  const deleteTask = async (id, isCompleted = false) => {
+    const confirmed = window.confirm("Are you sure you want to delete this task?");
+    if (!confirmed) return;
+
+    try {
+      await fetch(`${backendUrl}/tasks/${id}`, {
+        method: "DELETE",
+      });
+
+      if (isCompleted) {
+        setCompletedTasks(completedTasks.filter((t) => t.id !== id));
+      } else {
+        setTasks(tasks.filter((t) => t.id !== id));
+      }
+    } catch (err) {
+      console.error("Failed to delete task", err);
+    }
+
     if (isCompleted) {
       setCompletedTasks(completedTasks.filter((t) => t.id !== id));
     } else {
@@ -119,22 +223,26 @@ function TaskManager () {
     const taskToEdit = tasks.find((t) => t.id === id);
     if (!taskToEdit) return;
 
-    const parts = taskToEdit.deadline.split("/");
-    let isoDeadline = parts.length === 3
-      ? `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`
-      : taskToEdit.deadline;
+    const formatForInput = (isoString) => {
+        if (!isoString) return "";
+        const date = new Date(isoString);
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
 
     setTask(taskToEdit.task);
     setPriority(taskToEdit.priority);
-    setDeadline(isoDeadline);
+    setDeadline(formatForInput(taskToEdit.deadline));
+    setCourseId(taskToEdit.courseId || "");
     setEditingTaskId(id);
     setShowForm(true);
   };
-
-  const formatDate = (dateStr) => {
-    const [year, month, day] = dateStr.split("-");
-    return `${month}/${day}/${year}`;
-  };  
 
   const upcomingTasks = tasks.filter((t) => !t.done);
 
@@ -166,8 +274,19 @@ function TaskManager () {
               <option value="Medium">Medium</option>
               <option value="Low">Low</option>
             </select>
+            <select
+              value={courseId}
+              onChange={(e) => setCourseId(e.target.value)}
+              required
+              style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+            >
+              <option value="">Select Course</option>
+              {userCourses.map(course => (
+                <option key={course.id} value={course.id}>{course.course_name}</option>
+              ))}
+            </select>
             <input
-              type="date"
+              type="datetime-local"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
               style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
@@ -204,7 +323,8 @@ function TaskManager () {
                     <h3 style={{margin: "0 0 .25rem 0", wordBreak: "break-word"}}>{t.task}</h3>
                     <div style={{display: "flex", gap: "1rem", fontSize: "0.95rem"}}>
                       <span>Priority: {t.priority}</span>
-                      <span>Deadline: {formatDate(t.deadline)}</span>
+                      <span>Deadline: {new Date(t.deadline).toLocaleString()}</span>
+                      <span>Course: {userCourses.find(c => c.id === t.courseId)?.course_name || "N/A"}</span>
                     </div>
                   </div>
 
@@ -228,7 +348,8 @@ function TaskManager () {
                     <h3 style={{margin: "0 0 .25rem 0", wordBreak: "break-word"}}>{ct.task}</h3>
                     <div style={{display: "flex", gap: "1rem", fontSize: "0.95rem"}}>
                       <span>Priority: {ct.priority}</span>
-                      <span>Deadline: {formatDate(ct.deadline)}</span>
+                      <span>Deadline: {new Date(ct.deadline).toLocaleString()}</span>
+                      <span>Course: {userCourses.find(c => c.id === ct.courseId)?.course_name || "N/A"}</span>
                     </div>
                   </div>
 
