@@ -30,6 +30,16 @@ function Dashboard() {
     return evDate === today;
   })
 
+  function to12Hour(time){
+    let [hour, minute] = time.split(":");
+    hour = parseInt(hour);
+
+    const ampm = hour >= 12 ? "PM":"AM";
+    hour = hour % 12 || 12;
+
+    return `${hour}:${minute} ${ampm}`
+  }
+
   //load tasks
   const [tasks, setTasks] = useState([]);
   useEffect(() => {
@@ -144,7 +154,7 @@ function Dashboard() {
                 {eventsToday.map(ev => (
                   <li className="li" key={ev.id}>
                     <strong>{ev.text}</strong><br />
-                    {ev.start.split("T")[1].slice(0,5)} - {ev.end.split("T")[1].slice(0,5)}
+                    {to12Hour(ev.start.split("T")[1].slice(0,5))} - {to12Hour(ev.end.split("T")[1].slice(0,5))}
                   </li>
                 ))}
               </ul>
