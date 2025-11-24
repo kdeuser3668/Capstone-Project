@@ -141,7 +141,7 @@ function TaskManager () {
         courseId,
         task,
         priority,
-        utcDate,
+        deadline: utcDate,
         done: false
       };
 
