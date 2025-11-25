@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from './Sidebar';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
@@ -23,6 +23,16 @@ function Calendar() {
     { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
     { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
   ]);
+
+  //save and pull events for dashboard
+  useEffect(() => {
+    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+    setEvents(savedEvents)
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("events", JSON.stringify(events));
+  }, [events]);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -100,7 +110,7 @@ const handleNavigation = (direction) => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
       <Sidebar />
       <div className="main-content page">
         {/* Header */}

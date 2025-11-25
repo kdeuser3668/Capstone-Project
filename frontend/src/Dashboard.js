@@ -2,6 +2,7 @@ import { use, useState } from "react";
 import Sidebar from './Sidebar';
 import { useEffect } from "react";
 import { TaskManager } from "./Tasks";
+import { useNavigate } from 'react-router-dom';
 import { Progress } from "./Progress";
 import { Timer } from "./Focus";
 import { Courses } from "./Courses";
@@ -19,6 +20,34 @@ function Dashboard() {
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
+
+  //load events
+  const today = new Date().toISOString().split("T")[0];
+  const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+
+  const eventsToday = savedEvents.filter(ev => {
+    const evDate = ev.start.split("T")[0];
+    return evDate === today;
+  })
+
+  function to12Hour(time){
+    let [hour, minute] = time.split(":");
+    hour = parseInt(hour);
+
+    const ampm = hour >= 12 ? "PM":"AM";
+    hour = hour % 12 || 12;
+
+    return `${hour}:${minute} ${ampm}`
+  }
+
+  //load tasks
+  const [tasks, setTasks] = useState([]);
+  useEffect(() => {
+    const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    setTasks(savedTasks)
+  }, []);
+  //const today = new Date().toISOString().split("T")[0];
+  const tasksDueToday = tasks.filter( t => t.deadline === today && !t.done );
 
   //loads courses
   useEffect(() => {
@@ -102,9 +131,34 @@ function Dashboard() {
           <div className="card" style={{ flex: "1",  }}>
             <h2 className="h2">Your Day</h2>
             <h3 className="h3">Tasks</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            {tasksDueToday.length === 0 ? (
+              <p className="p">No tasks due today.</p>
+            ) : (  
+              <ul className="ul">
+              {tasksDueToday.map(task => (
+                <li className="li" key={task.id}>
+                  <strong>{task.task}</strong>
+                  <br />
+                  Priority: {task.priority}
+                  <br />
+                  Due: {task.deadline}
+                </li>
+              ))}
+            </ul>
+            )}
             <h3 className="h3">Calendar</h3>
-            <p style={{ fontSize: "1.2rem", color: "gray", textAlign: "center " }}>Coming soon...</p>
+            {eventsToday.length === 0? (
+              <p className="p">No events today.</p>
+            ): (
+              <ul className="ul">
+                {eventsToday.map(ev => (
+                  <li className="li" key={ev.id}>
+                    <strong>{ev.text}</strong><br />
+                    {to12Hour(ev.start.split("T")[1].slice(0,5))} - {to12Hour(ev.end.split("T")[1].slice(0,5))}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
 
