@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from './Sidebar';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
@@ -23,6 +23,16 @@ function Calendar() {
     { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
     { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
   ]);
+
+  //save and pull events for dashboard
+  useEffect(() => {
+    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+    setEvents(savedEvents)
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("events", JSON.stringify(events));
+  }, [events]);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -100,13 +110,13 @@ const handleNavigation = (direction) => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
+    <div className="container">
       <Sidebar />
-      <div style={styles.page}>
+      <div className="main-content page">
         {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.headerTitle}>Calendar</h1>
-          <h3 style={styles.headerSubtitle}>
+          <h1 className="h1">Calendar</h1>
+          <h3 className="h3">
             {monthNames[value.getMonth()]} {value.getFullYear()}
           </h3>
         </div>
@@ -114,9 +124,9 @@ const handleNavigation = (direction) => {
         {/* Navigation */}
         <div style={styles.controlsWrapper}>
           <div style={styles.navBar}>
-            <button style={styles.navButton} onClick={() => handleNavigation("prev")}>← Prev</button>
-            <button style={styles.navButton} onClick={() => handleNavigation("today")}>Today</button>
-            <button style={styles.navButton} onClick={() => handleNavigation("next")}>Next →</button>
+            <button className="button" onClick={() => handleNavigation("prev")}>← Prev</button>
+            <button className="button" onClick={() => handleNavigation("today")}>Today</button>
+            <button className="button" onClick={() => handleNavigation("next")}>Next →</button>
           </div>
 
           <div style={styles.viewTabs}>
@@ -124,10 +134,7 @@ const handleNavigation = (direction) => {
               <button
                 key={v}
                 onClick={() => setView(v)}
-                style={{
-                  ...styles.tabButton,
-                  ...(view === v ? styles.activeTab : {})
-                }}
+                className={`button ${view === v ? styles.active-view : ""}`}
               >
                 {v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
@@ -184,7 +191,7 @@ const handleNavigation = (direction) => {
 
           {/* Sidebar tasks */}
           <div style={styles.sidePanel}>
-            <div style={styles.agendaBox}>
+            <div className="card">
               <h3>Agenda / Current Tasks</h3>
               <ul>
                 <li>Finish math homework</li>
@@ -192,7 +199,7 @@ const handleNavigation = (direction) => {
                 <li>Prepare for science quiz</li>
               </ul>
             </div>
-            <div style={styles.upcomingBox}>
+            <div className="card">
               <h3>Upcoming Assignments / Events</h3>
               <ul>
                 <li>Parent-teacher conference – Oct 16</li>
@@ -252,7 +259,7 @@ const handleNavigation = (direction) => {
               />
 
               <div style={{ marginTop: "15px", display: "flex", justifyContent: "space-between" }}>
-                <button onClick={addEvent} style={modalStyles.addButton}>Add Event</button>
+                <button onClick={addEvent} className="button">Add Event</button>
                 <button onClick={() => setShowModal(false)} style={modalStyles.cancelButton}>Cancel</button>
               </div>
             </div>
@@ -390,6 +397,11 @@ const styles = {
     flexWrap: "wrap",
     gap: "20px"
   },
+  activeView: {
+    backgroundColor: "#ee6dd5",
+    color: "white",
+    borderColor: "#ee6dd5"
+  }
 };
 
 const modalStyles = {
