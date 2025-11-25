@@ -9,15 +9,5 @@ export const pool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
-};
+});
 
-// tests connection, comment out prior to hosting
-try {
-  const client = await pool.connect();
-  console.log("Connected to Neon PostgreSQL database.");
-  client.release();
-} catch (err) {
-  console.error("Database connection failed:", err);
-}
-
-module.exports = { sql, getPool };
