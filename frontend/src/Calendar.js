@@ -196,7 +196,7 @@ const handleNavigation = (direction) => {
           </div>
 
           <div style={styles.viewTabs}>
-            {["day", "week", "month", "year"].map((v) => (
+            {["day", "week", "month"].map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -248,12 +248,6 @@ const handleNavigation = (direction) => {
                     onEventClick={onEventClick}
                   />
                 </>
-              )}
-
-              {view === "year" && (
-                <div style={styles.placeholder}>
-                  <p>Year view coming soon!</p>
-                </div>
               )}
             </div>
           </div>
