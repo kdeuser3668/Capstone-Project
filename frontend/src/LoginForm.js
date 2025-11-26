@@ -156,6 +156,14 @@ export default function LoginForm() {
 
         <p style={{ marginTop: '1rem' }}>{message}</p>
       </div>
+      <div style={{ 
+      position: "absolute", 
+      bottom: "1rem", 
+      fontSize: "0.8rem",
+      opacity: 0.8
+      }}>
+        <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+      </div>
     </div>
   );
 }
