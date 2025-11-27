@@ -79,6 +79,39 @@ const handleNavigation = (direction) => {
     setShowModal(true);
   };
 
+  //OnClick to handle editing when event is clicked on
+  const onEventClick = (args) => {
+    const event = args.e.data;
+
+    setNewEventData({
+      id: event.id,
+      text: event.text,
+      location: event.location || "",
+      notes: event.notes || "",
+      start: addSeconds(event.start),
+      end: addSeconds(event.end)
+    });
+    setShowModal(true);
+  }
+
+  //handles the actual updating of the event
+  const updateEvent = () => {
+    const updated = events.map(ev =>
+      ev.id === newEventData.id
+        ? {
+          ...ev,
+          text: newEventData.text,
+          location: newEventData.location,
+          notes: newEventData.notes,
+          start: addSeconds(newEventData.start),
+          end: addSeconds(newEventData.end)
+        }
+      : ev
+    );
+    setEvents(updated);
+    setShowModal(false);
+  }
+
   // Add new event from modal
   const addEvent = () => {
     if (!newEventData.text || !newEventData.start || !newEventData.end) {
@@ -86,28 +119,61 @@ const handleNavigation = (direction) => {
       return;
     }
 
-    // Create new event object
-   const newEvent = {
-  id: DayPilot.guid(),
-  text: newEventData.text,
-  start: newEventData.start.length === 16 ? newEventData.start + ":00" : newEventData.start,
-  end: newEventData.end.length === 16 ? newEventData.end + ":00" : newEventData.end,
-  location: newEventData.location,
-  notes: newEventData.notes,
-};
+    if (newEventData.id) {
+      setEvents(prev =>
+        prev.map(ev =>
+          ev.id === newEventData.id ? { ...ev, ...newEventData } : ev
+        )
+      );
+    } else {
+      const newEvent ={
+        id: DayPilot.guid(),
+        text: newEventData.text,
+        start: addSeconds(newEventData.start),
+        end: addSeconds(newEventData.end), 
+        location: newEventData.location,
+        notes: newEventData.notes,
+      };
 
+      setEvents(prev => [...prev, newEvent]);
+    }
 
-    setEvents((prev) => [...prev, newEvent]);
     setShowModal(false);
+
+    // Create new event object
+    //const newEvent = {
+      //id: DayPilot.guid(),
+      //text: newEventData.text,
+      //start: newEventData.start.length === 16 ? newEventData.start + ":00" : newEventData.start,
+      //end: newEventData.end.length === 16 ? newEventData.end + ":00" : newEventData.end,
+      //location: newEventData.location,
+      //notes: newEventData.notes,
+    //};
+
+
+    //setEvents((prev) => [...prev, newEvent]);
+    //setShowModal(false);
   };
 
   // Format a Date string to YYYY-MM-DDTHH:mm for input[type=datetime-local]
   const formatForDatetimeLocal = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    const iso = d.toISOString();
-    return iso.substring(0, 16); // "YYYY-MM-DDTHH:mm"
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    //const iso = d.toISOString();
+    //return iso.substring(0, 16); // "YYYY-MM-DDTHH:mm"
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
+
+  //To ensure seconds on the end
+  const addSeconds = (str) => {
+    return str && str.length === 16 ? str + ":00" : str;
+  }
 
   return (
     <div className="container">
@@ -130,7 +196,7 @@ const handleNavigation = (direction) => {
           </div>
 
           <div style={styles.viewTabs}>
-            {["day", "week", "month", "year"].map((v) => (
+            {["day", "week", "month"].map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -155,6 +221,7 @@ const handleNavigation = (direction) => {
                   startDate={value}
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
+                  onEventClick={onEventClick}
                 />
               )}
 
@@ -165,6 +232,7 @@ const handleNavigation = (direction) => {
                   startDate={value}
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
+                  onEventClick={onEventClick}
                 />
               )}
 
@@ -177,14 +245,9 @@ const handleNavigation = (direction) => {
                     events={{ list: events }}
                     startDate={value.toISOString().split("T")[0]}
                     onTimeRangeSelected={onTimeRangeSelected}
+                    onEventClick={onEventClick}
                   />
                 </>
-              )}
-
-              {view === "year" && (
-                <div style={styles.placeholder}>
-                  <p>Year view coming soon!</p>
-                </div>
               )}
             </div>
           </div>
@@ -259,7 +322,11 @@ const handleNavigation = (direction) => {
               />
 
               <div style={{ marginTop: "15px", display: "flex", justifyContent: "space-between" }}>
-                <button onClick={addEvent} className="button">Add Event</button>
+                {newEventData.id ? (
+                  <button className="button" onClick={updateEvent}>Save Changes</button>
+                ) : (
+                  <button onClick={addEvent} className="button">Add Event</button>
+                )}
                 <button onClick={() => setShowModal(false)} style={modalStyles.cancelButton}>Cancel</button>
               </div>
             </div>

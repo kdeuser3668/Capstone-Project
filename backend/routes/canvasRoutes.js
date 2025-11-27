@@ -6,7 +6,7 @@ const router = express.Router();
 
 // ===== SAVE TOKEN =====
 router.post("/save-token", async (req, res) => {
-  const { userId, canvasToken } = req.body; // MUST match frontend name
+  const { userId, canvasToken } = req.body;
 
   console.log("Saving Canvas token for user:", userId);
 
@@ -26,7 +26,7 @@ router.post("/save-token", async (req, res) => {
   }
 });
 
-// ===== GET USER COURSES =====
+// ===== GET USER COURSES (handles both check + fetch) =====
 router.get("/courses/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -36,8 +36,8 @@ router.get("/courses/:userId", async (req, res) => {
       [userId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "No Canvas token found for user" });
+    if (result.rows.length === 0 || !result.rows[0].canvas_access_token) {
+      return res.json({ success: false, error: "No Canvas token found" });
     }
 
     const token = result.rows[0].canvas_access_token;
@@ -53,7 +53,7 @@ router.get("/courses/:userId", async (req, res) => {
     res.json({ success: true, courses });
   } catch (err) {
     console.error("Error fetching courses:", err);
-    res.status(500).json({ error: "Failed to fetch courses" });
+    res.status(500).json({ success: false, error: "Failed to fetch courses" });
   }
 });
 
