@@ -52,6 +52,7 @@ function TaskManager () {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     const userId = storedUser?.id;
 
+    //load courses
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -66,6 +67,7 @@ function TaskManager () {
         fetchCourses();
     }, []);
 
+    
     useEffect(() => {
       fetch(`${backendUrl}/tasks?userId=${userId}`)
         .then((res) => res.json())
@@ -84,6 +86,7 @@ function TaskManager () {
         .catch((err) => console.error("GET /tasks failed", err));
     }, []);
 
+    //add and edit task
   const addTask = async () => {
     if (task.trim() === "" || deadline === "") {
       alert("Please enter a task and select a valid deadline.");
