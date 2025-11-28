@@ -18,26 +18,35 @@ export function Progress(){
         const fetchStats = async() => {
             try{
                 const res = await fetch(`http://localhost:5050/tasks?userId=${userId}`);
-                const data = await res.json();
+                const raw = await res.json();
+
+                const data = raw.map(t => ({
+                    id: t.id,
+                    courseId: t.course_id,
+                    task: t.assignment_name,
+                    priority: t.priority,
+                    deadline: t.due_datetime,
+                    done: t.completion
+                }))
 
                 const now = new Date();
                 now.setHours(0,0,0,0);
 
                 const total = data.length;
-                const completed = data.filter(t => t.completion).length;
-                const remaining = data.filter(t => !t.completion).length;
+                const completed = data.filter(t => t.done).length;
+                const remaining = data.filter(t => !t.done).length;
 
                 const overdue = data.filter(t => {
-                    const deadline = new Date(t.due_datetime);
-                    deadline.setHours(0,0,0,0);
-                    return !t.completion && deadline < now;
+                    const d = new Date(t.deadline);
+                    d.setHours(0,0,0,0);
+                    return !t.done && d < now;
                 }).length;
 
                 const completedToday = data.filter(t=> {
-                    if (!t.completion) return false;
-                    const deadline = new Date(t.due_datetime);
-                    deadline.setHours(0,0,0,0);
-                    return deadline.getTime() === now.getTime();
+                    if (!t.done) return false;
+                    const d = new Date(t.deadline);
+                    d.setHours(0,0,0,0);
+                    return d.getTime() === now.getTime();
                 }).length
 
                 setStats({

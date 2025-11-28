@@ -43,11 +43,29 @@ function Dashboard() {
   //load tasks
   const [tasks, setTasks] = useState([]);
   useEffect(() => {
-    const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    setTasks(savedTasks)
-  }, []);
-  //const today = new Date().toISOString().split("T")[0];
-  const tasksDueToday = tasks.filter( t => t.deadline === today && !t.done );
+    if (!userId) return;
+
+    fetch(`${backendUrl}/tasks?userID=${userId}`)
+    .then(res => res.json())
+        .then(data => {
+          const mapped = data.map(t => ({
+            id: t.id,
+            courseId: t.course_id,
+            task: t.assignment_name,
+            priority: t.priority,
+            deadline: t.due_datetime,
+            done: t.completion
+          }));
+          setTasks(mapped);
+        })
+        .catch((err) => console.error("GET /tasks failed", err));
+  }, [userId]);
+
+  const tasksDueToday = tasks.filter( t => {
+    const dateOnly = t.deadline.split("T")[0];
+    return dateOnly === today && !t.done;
+  });
+
 
   //loads courses
   useEffect(() => {
