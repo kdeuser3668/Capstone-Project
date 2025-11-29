@@ -83,6 +83,19 @@ function Dashboard() {
     );
   });
 
+  //stop getting the wrong time (previously showed +6 hours)
+  function formatTaskTime(isoString) {
+    if (!isoString) return "";
+    const date = new Date(isoString); // converts UTC → local
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    minutes = minutes.toString().padStart(2, "0");
+    return `${hours}:${minutes} ${ampm}`;
+  }
+  
+
 //loads courses
 useEffect(() => {
     if (!userId) return;
@@ -179,7 +192,7 @@ useEffect(() => {
                   <br />
                   Priority: {task.priority}
                   <br />
-                  Due: {to12Hour(task.deadline)}
+                  Due: {formatTaskTime(task.deadline)}
                 </li>
               ))}
             </ul>
