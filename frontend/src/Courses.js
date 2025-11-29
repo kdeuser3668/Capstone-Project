@@ -68,7 +68,7 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
 
                     <button className="button" style={{margin: ".5rem"}} onClick={() => setShowPopup(false)}>Cancel</button>
 
-                    {editingCourse && ( <button className="button" style={{ marginTop: "1rem" }} onClick={() => deleteCourse(editingCourse.id)}>Delete</button>)}
+                    {editingCourse && ( <button className="button" style={{ marginTop: "1rem", padding: ".5rem" }} onClick={() => deleteCourse(editingCourse.id)}>Delete</button>)}
                 
                 </div>
             )}
