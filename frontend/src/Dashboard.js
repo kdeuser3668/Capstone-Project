@@ -21,7 +21,7 @@ function Dashboard() {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
 
-  //load events
+  //load events from calendar
   const today = new Date().toISOString().split("T")[0];
   const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
 
@@ -40,41 +40,61 @@ function Dashboard() {
     return `${hour}:${minute} ${ampm}`
   }
 
-  //load tasks
+  //load tasks for your day
   const [tasks, setTasks] = useState([]);
   useEffect(() => {
     if (!userId) return;
-
-    fetch(`${backendUrl}/tasks?userID=${userId}`)
-    .then(res => res.json())
-        .then(data => {
-          const mapped = data.map(t => ({
-            id: t.id,
-            courseId: t.course_id,
-            task: t.assignment_name,
-            priority: t.priority,
-            deadline: t.due_datetime,
-            done: t.completion
-          }));
-          setTasks(mapped);
-        })
-        .catch((err) => console.error("GET /tasks failed", err));
+  
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/tasks?userId=${userId}&_=${Date.now()}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        console.log("raw backend tasks:", data);
+        // map backend fields to frontend expectation:
+        const mapped = data.map(t => ({
+          id: t.id,
+          task: t.assignment_name,
+          deadline: t.due_datetime,
+          priority: t.priority,
+          courseId: t.course_id,
+          done: t.completion
+        }));
+        setTasks(mapped);
+      } catch (err) {
+        console.error("Failed to load tasks:", err);
+      }
+    };
+  
+    fetchTasks();
   }, [userId]);
 
-  const tasksDueToday = tasks.filter( t => {
-    const dateOnly = t.deadline.split("T")[0];
-    return dateOnly === today && !t.done;
+  const todayDate = new Date();
+  const tasksDueToday = tasks.filter(t => {
+    if (!t.deadline) return false;
+    const taskDate = new Date(t.deadline);
+    return (
+      taskDate.getFullYear() === todayDate.getFullYear() &&
+      taskDate.getMonth() === todayDate.getMonth() &&
+      taskDate.getDate() === todayDate.getDate() &&
+      !t.done
+    );
   });
 
-
-  //loads courses
-  useEffect(() => {
+//loads courses
+useEffect(() => {
     if (!userId) return;
-    fetch(`${backendUrl}/courses?userID=${userId}`)
+
+    fetch(`${backendUrl}/courses?userId=${userId}`)
       .then(res => res.json())
-      .then(data => setCourses(data))
+      .then(data => {
+          console.log("Fetched courses:", data);
+          setCourses(Array.isArray(data) ? data : []); // fallback to empty array
+      })
       .catch(err => console.error("Failed to load courses:", err));
-  }, [userId]);
+}, [userId]);
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
@@ -88,7 +108,7 @@ function Dashboard() {
       let saved;
       if (course.id){
         //update
-        const res = await fetch(`${backendUrl}/course/${course.id}`,{
+        const res = await fetch(`${backendUrl}/courses/${course.id}`,{
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(course),
@@ -98,7 +118,7 @@ function Dashboard() {
 
       }else{
         //new
-        const res = await fetch(`${backendUrl}/course/`, {
+        const res = await fetch(`${backendUrl}/courses/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({...course, user_id: userId})
@@ -159,7 +179,7 @@ function Dashboard() {
                   <br />
                   Priority: {task.priority}
                   <br />
-                  Due: {task.deadline}
+                  Due: {to12Hour(task.deadline)}
                 </li>
               ))}
             </ul>
@@ -196,7 +216,6 @@ function Dashboard() {
             {courses.length === 0 && <p className="p" style={{color: "gray"}}>No courses added yet.</p>}
                 {courses.map(c => (
                   <p className="p" key={c.id}>
-                    {c.id} 
                     <strong>{c.course_name}</strong>
                     <br />
                     {c.course_code}
@@ -205,8 +224,8 @@ function Dashboard() {
                     <br />
                     {c.course_semester}
                     <br />
-                    <button className="button" onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
-                    <button className="button" onClick={() => {deleteCourse(c.id)}}>Delete</button>
+                    <button className="button" style={{margin: ".5rem"}} onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
+                    <button className="button" style={{margin: ".5rem"}} onClick={() => {deleteCourse(c.id)}}>Delete</button>
                   </p>
                 ))}
             </div>
