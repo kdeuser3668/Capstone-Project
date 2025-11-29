@@ -27,7 +27,9 @@ function Calendar() {
   //save and pull events for dashboard
   useEffect(() => {
     const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
-    setEvents(savedEvents)
+    if (savedEvents.length > 0){
+      setEvents(savedEvents);
+    }
   }, []);
 
   useEffect(() => {

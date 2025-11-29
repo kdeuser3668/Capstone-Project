@@ -21,7 +21,7 @@ function Dashboard() {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
 
-  //load events
+  //load events from calendar
   const today = new Date().toISOString().split("T")[0];
   const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
 
