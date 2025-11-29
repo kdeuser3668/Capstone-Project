@@ -6,7 +6,7 @@ import changeEmailRoutes from './changeEmail.js';
 import calendarRoutes from "./calendar.js";
 import notesRoutes from "./notes.js";
 import updateNotesRoutes from "./updateNotes.js";
-import getCoursesRoutes from "./getCourses.js";
+import coursesRoutes from "./courses.js";
 import focusRoutes from "./focus.js";
 import tasksRoutes from "./tasks.js";
 
@@ -20,7 +20,7 @@ router.use('/change-email', changeEmailRoutes);
 router.use("/notes", notesRoutes);
 router.use("/update-notes", updateNotesRoutes);
 router.use("/api/calendar", calendarRoutes);
-router.use("/get-courses", getCoursesRoutes);
+router.use("/courses", coursesRoutes);
 router.use("/focus", focusRoutes);
 router.use("/tasks", tasksRoutes);
 
