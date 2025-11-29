@@ -224,8 +224,8 @@ useEffect(() => {
                     <br />
                     {c.course_semester}
                     <br />
-                    <button className="button" onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
-                    <button className="button" onClick={() => {deleteCourse(c.id)}}>Delete</button>
+                    <button className="button" style={{margin: ".5rem"}} onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
+                    <button className="button" style={{margin: ".5rem"}} onClick={() => {deleteCourse(c.id)}}>Delete</button>
                   </p>
                 ))}
             </div>
