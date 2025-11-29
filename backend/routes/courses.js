@@ -1,20 +1,21 @@
-import express from 'express';
-import { pool } from '../db.js';
+import express from "express";
+import { pool } from "../db.js";
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        const userId = req.query.userId;
+        const { userId } = req.query;
 
         if (!userId) {
-            return res.status(400).json({ message: "Missing User ID" });
+            return res.status(400).json({ message: "Missing userId" });
         }
 
         const result = await pool.query(
-            `SELECT id, course_name 
-             FROM courses 
-             WHERE user_id = $1 
+            `SELECT id, course_name, course_code, instructor_name, 
+                    course_semester, color_code
+             FROM courses
+             WHERE user_id = $1
              ORDER BY course_name`,
             [userId]
         );
@@ -26,20 +27,27 @@ router.get('/', async (req, res) => {
     }
 });
 
-
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-        const { userId, course_name } = req.body;
+        const {
+            course_name,
+            course_code,
+            instructor_name,
+            course_semester,
+            color_code,
+            user_id
+        } = req.body;
 
-        if (!userId || !course_name) {
+        if (!user_id || !course_name) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
         const result = await pool.query(
-            `INSERT INTO courses (user_id, course_name)
-             VALUES ($1, $2)
-             RETURNING id, course_name`,
-            [userId, course_name]
+            `INSERT INTO courses 
+             (course_name, course_code, instructor_name, course_semester, color_code, user_id)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+            [course_name, course_code, instructor_name, course_semester, color_code, user_id]
         );
 
         res.status(201).json(result.rows[0]);
@@ -49,22 +57,27 @@ router.post('/', async (req, res) => {
     }
 });
 
-
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { course_name } = req.body;
-
-        if (!course_name) {
-            return res.status(400).json({ message: "Missing course_name" });
-        }
+        const {
+            course_name,
+            course_code,
+            instructor_name,
+            course_semester,
+            color_code
+        } = req.body;
 
         const result = await pool.query(
             `UPDATE courses
-             SET course_name = $1
-             WHERE id = $2
-             RETURNING id, course_name`,
-            [course_name, id]
+             SET course_name = $1,
+                 course_code = $2,
+                 instructor_name = $3,
+                 course_semester = $4,
+                 color_code = $5
+             WHERE id = $6
+             RETURNING *`,
+            [course_name, course_code, instructor_name, course_semester, color_code, id]
         );
 
         if (result.rows.length === 0) {
@@ -78,8 +91,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
