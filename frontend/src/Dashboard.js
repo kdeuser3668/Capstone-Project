@@ -53,7 +53,7 @@ function Dashboard() {
 useEffect(() => {
     if (!userId) return;
 
-    fetch(`${backendUrl}/courses?user_id=${userId}`)
+    fetch(`${backendUrl}/courses?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
           console.log("Fetched courses:", data);
