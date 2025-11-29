@@ -40,16 +40,50 @@ function Dashboard() {
     return `${hour}:${minute} ${ampm}`
   }
 
-  //load tasks
+  //load tasks for your day
   const [tasks, setTasks] = useState([]);
   useEffect(() => {
-    const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    setTasks(savedTasks)
-  }, []);
-  //const today = new Date().toISOString().split("T")[0];
-  const tasksDueToday = tasks.filter( t => t.deadline === today && !t.done );
+    if (!userId) return;
+  
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/tasks?userId=${userId}&_=${Date.now()}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        console.log("raw backend tasks:", data);
+        // map backend fields to frontend expectation:
+        const mapped = data.map(t => ({
+          id: t.id,
+          task: t.assignment_name,
+          deadline: t.due_datetime,
+          priority: t.priority,
+          courseId: t.course_id,
+          done: t.completion
+        }));
+        setTasks(mapped);
+      } catch (err) {
+        console.error("Failed to load tasks:", err);
+      }
+    };
+  
+    fetchTasks();
+  }, [userId]);
 
-  //loads courses
+  const todayDate = new Date();
+  const tasksDueToday = tasks.filter(t => {
+    if (!t.deadline) return false;
+    const taskDate = new Date(t.deadline);
+    return (
+      taskDate.getFullYear() === todayDate.getFullYear() &&
+      taskDate.getMonth() === todayDate.getMonth() &&
+      taskDate.getDate() === todayDate.getDate() &&
+      !t.done
+    );
+  });
+
+//loads courses
 useEffect(() => {
     if (!userId) return;
 
@@ -145,7 +179,7 @@ useEffect(() => {
                   <br />
                   Priority: {task.priority}
                   <br />
-                  Due: {task.deadline}
+                  Due: {to12Hour(task.deadline)}
                 </li>
               ))}
             </ul>
@@ -182,7 +216,6 @@ useEffect(() => {
             {courses.length === 0 && <p className="p" style={{color: "gray"}}>No courses added yet.</p>}
                 {courses.map(c => (
                   <p className="p" key={c.id}>
-                    {c.id} 
                     <strong>{c.course_name}</strong>
                     <br />
                     {c.course_code}
