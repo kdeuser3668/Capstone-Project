@@ -9,7 +9,9 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: ["http://localhost:3000",
+  "https://plannerpal-ex34i.ondigitalocean.app/" //deployment url
+  ],
   credentials: true,
 }));
 app.use(express.json());
@@ -23,5 +25,5 @@ app.get("/", (req, res) => {
 app.use("/", routes);
 app.use("/canvas", canvasRoutes);  // <--- register before listen
 
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 5050; //8000 necessary for digital ocean to access, 5050 for dev
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -50,13 +50,17 @@ function Dashboard() {
   const tasksDueToday = tasks.filter( t => t.deadline === today && !t.done );
 
   //loads courses
-  useEffect(() => {
+useEffect(() => {
     if (!userId) return;
-    fetch(`${backendUrl}/courses?userID=${userId}`)
+
+    fetch(`${backendUrl}/courses?user_id=${userId}`)
       .then(res => res.json())
-      .then(data => setCourses(data))
+      .then(data => {
+          console.log("Fetched courses:", data);
+          setCourses(Array.isArray(data) ? data : []); // fallback to empty array
+      })
       .catch(err => console.error("Failed to load courses:", err));
-  }, [userId]);
+}, [userId]);
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
@@ -70,7 +74,7 @@ function Dashboard() {
       let saved;
       if (course.id){
         //update
-        const res = await fetch(`${backendUrl}/course/${course.id}`,{
+        const res = await fetch(`${backendUrl}/courses/${course.id}`,{
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(course),
@@ -80,7 +84,7 @@ function Dashboard() {
 
       }else{
         //new
-        const res = await fetch(`${backendUrl}/course/`, {
+        const res = await fetch(`${backendUrl}/courses/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({...course, user_id: userId})
