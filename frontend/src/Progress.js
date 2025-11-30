@@ -42,12 +42,17 @@ export function Progress(){
                     return !t.done && d < now;
                 }).length;
 
+                //locally store the timestamp of the completed task for completed today
+                const completedTimeStamps = JSON.parse(localStorage.getItem("taskCompletionTimes") || "{}" )
+
                 const completedToday = data.filter(t=> {
                     if (!t.done) return false;
-                    const d = new Date(t.deadline);
-                    d.setHours(0,0,0,0);
-                    return d.getTime() === now.getTime();
-                }).length
+                    const completedAt = completedTimeStamps[t.id];
+                    if (!completedAt) return false;
+                    const completedDate = new Date(completedAt);
+                    completedDate.setHours(0,0,0,0);
+                    return completedDate.getTime() === now.getTime();
+                }).length;
 
                 setStats({
                     total,

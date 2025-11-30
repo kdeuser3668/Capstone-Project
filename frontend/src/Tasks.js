@@ -182,6 +182,10 @@ function TaskManager () {
     setTasks([...remainingTasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline)));
     setCompletedTasks([...completedTasks, updatedTask].sort((a, b) => new Date(a.deadline) - new Date(b.deadline)));
 
+    const completionTimes = JSON.parse(localStorage.getItem("taskCompletionTimes") || "{}");
+    completionTimes[id] = new Date().toISOString();
+    localStorage.setItem("taskCompletionTimes", JSON.stringify(completionTimes));
+
       try {
         await fetch(`${backendUrl}/tasks/${id}`, {
           method: "PUT",
