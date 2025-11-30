@@ -112,7 +112,7 @@ li{
 .toggleButtonStyle {
   position: absolute;
   top: 10px;
-  left: 0px;
+  left: 15px;
   width: 30px;
   height: 30px;
   background-color: var(--button-color, #a7d0fb);
@@ -121,6 +121,7 @@ li{
   border-radius: 50%;
   cursor: pointer;
   font-size: 16px;
+  
 };
 /*  margin-bottom: 1rem;
   background-color: transparent;
