@@ -269,7 +269,7 @@ function TaskManager () {
               placeholder="Task Name"
               value={task}
               onChange={(e) => setTask(e.target.value)}
-              style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+              style={{width: "95%", marginBottom: "0.5rem", padding: "0.5rem"}}
             />
             <select
               value={priority}
@@ -295,7 +295,7 @@ function TaskManager () {
               type="datetime-local"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              style={{width: "100%", marginBottom: "0.5rem", padding: "0.5rem"}}
+              style={{width: "95%", marginBottom: "0.5rem", padding: "0.5rem"}}
             />
             <div style={{display: "flex", alignConent: "center", gap: "0.5rem"}}>
               <button className="button" onClick={addTask}>
@@ -330,7 +330,7 @@ function TaskManager () {
                     <div style={{display: "flex", gap: "1rem", fontSize: "0.95rem"}}>
                       <span>Priority: {t.priority}</span>
                       <span>Deadline: {new Date(t.deadline).toLocaleString()}</span>
-                      <span>Course: {userCourses.find(c => c.id === t.courseId)?.course_name || "N/A"}</span>
+                      <span>Course: {userCourses.find(c => String(c.id) === String(t.courseId))?.course_name || "N/A"}</span>
                     </div>
                   </div>
 
@@ -355,7 +355,7 @@ function TaskManager () {
                     <div style={{display: "flex", gap: "1rem", fontSize: "0.95rem"}}>
                       <span>Priority: {ct.priority}</span>
                       <span>Deadline: {new Date(ct.deadline).toLocaleString()}</span>
-                      <span>Course: {userCourses.find(c => c.id === ct.courseId)?.course_name || "N/A"}</span>
+                      <span>Course: {userCourses.find(c => String(c.id) === String(ct.courseId))?.course_name || "N/A"}</span>
                     </div>
                   </div>
 
