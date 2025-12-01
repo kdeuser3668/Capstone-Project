@@ -2,8 +2,7 @@
 import {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const backendUrl = process.env.REACT_APP_API_URL || "http://localhost:5050";
-
+const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
