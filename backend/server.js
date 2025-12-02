@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(cors({
   origin: ["http://localhost:3000",
-  "https://plannerpal-ex34i.ondigitalocean.app/" //deployment url
+  "https://plannerpal-ex34i.ondigitalocean.app" //deployment url
   ],
   credentials: true,
 }));
