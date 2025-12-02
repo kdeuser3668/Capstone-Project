@@ -34,7 +34,6 @@ function Dashboard() {
     savedEvents = [];
   }
 
-
   const eventsToday = savedEvents.filter(ev => {
     const evDate = ev.start.split("T")[0];
     return evDate === today;

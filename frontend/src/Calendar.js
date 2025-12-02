@@ -23,6 +23,17 @@ function Calendar() {
   }, [userId]);
 
   const [events, setEvents] = useState([]);
+  useEffect(() => {
+    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+    if (savedEvents.length > 0) {
+      setEvents(savedEvents);
+    }
+  }, []);
+  
+  // Save events whenever they change
+  useEffect(() => {
+    localStorage.setItem("events", JSON.stringify(events));
+  }, [events]);
 
   const [showModal, setShowModal] = useState(false);
   const [newEventData, setNewEventData] = useState({
