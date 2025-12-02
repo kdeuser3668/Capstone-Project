@@ -8,7 +8,7 @@ import { Timer } from "./Focus";
 import { Courses } from "./Courses";
 import './App.css';
 
-const backendUrl = "http://localhost:5050";
+const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
 
 function Dashboard() {
   const [username, setUsername] = useState("");
@@ -23,7 +23,16 @@ function Dashboard() {
 
   //load events from calendar
   const today = new Date().toISOString().split("T")[0];
-  const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+  //prevents no events stored from crashing app
+  const rawEvents = localStorage.getItem("events");
+  let savedEvents;
+
+  try {
+    savedEvents = rawEvents ? JSON.parse(rawEvents) : [];
+  } catch (e) {
+    console.error("Bad events JSON in localStorage:", rawEvents);
+    savedEvents = [];
+  }
 
   const eventsToday = savedEvents.filter(ev => {
     const evDate = ev.start.split("T")[0];

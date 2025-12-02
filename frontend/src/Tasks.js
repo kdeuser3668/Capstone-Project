@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "./App.css";
 
-const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
 
 //update the date, hardcode in a +1 for the date
 //try just having the date typed in manually, don't know if it would work if it interferes with calendar

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "./Dashboard";
 
-const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
 
 export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, deleteCourse}){
 

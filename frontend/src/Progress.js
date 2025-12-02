@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+// NEED LOCALHOST:5050 CHANGED
+// https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend
+// MIGHT WORK ^^ UNSURE THO
 
 export function Progress(){
     const [stats, setStats] = useState({

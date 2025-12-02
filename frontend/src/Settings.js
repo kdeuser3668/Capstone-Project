@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import './Calendar.css';
 import './App.css';
 
-const backendUrl = "http://localhost:5050"; // hits local backend, will be changed in deployment
+const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
 
 function Settings() {
 
