@@ -238,7 +238,6 @@ function FocusSession () {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     const userId = storedUser?.id;
 
-    //courses arent populating
     //load courses
     useEffect(() => {
         if (!userId) return;
