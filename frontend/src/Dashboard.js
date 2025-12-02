@@ -8,7 +8,7 @@ import { Timer } from "./Focus";
 import { Courses } from "./Courses";
 import './App.css';
 
-const backendUrl = "http://localhost:5050";
+const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
 
 function Dashboard() {
   const [username, setUsername] = useState("");

@@ -8,7 +8,7 @@ function Calendar() {
   const [value, setValue] = useState(new Date());
   const [view, setView] = useState("month");
 
-  const backendUrl = "http://localhost:5050";
+  const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
 
