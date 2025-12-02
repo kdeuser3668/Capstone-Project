@@ -7,177 +7,454 @@ import './App.css';
 function Calendar() {
   const [value, setValue] = useState(new Date());
   const [view, setView] = useState("month");
-  
+
+  const backendUrl = "http://localhost:5050";
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userId = storedUser?.id;
+
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${backendUrl}/courses?userId=${userId}`)
+      .then(r => r.json())
+      .then(setCourses)
+      .catch(e => console.error("failed to load courses", e));
+  }, [userId]);
+
+  const [events, setEvents] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [newEventData, setNewEventData] = useState({
+    dbId: null,         // ID of calendar row (for editing)
+    text: "",
+    location: "",
+    notes: "",
+    // one-off:
+    start: "",
+    end: "",
+    // recurring:
+    recurring: false,
+    weekday: "",       // 1..7
+    start_date: "",
+    end_date: "",
+    start_time: "",    // "HH:MM"
+    end_time: "",      // "HH:MM"
+    course_id: ""
+  });
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
 
-  const shortMonthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-
-  const [events, setEvents] = useState([
-    { id: 1, text: "Math Homework", start: "2024-06-10T10:00:00", end: "2024-06-10T12:00:00" },
-    { id: 2, text: "Science Quiz", start: "2024-06-11T09:00:00", end: "2024-06-11T10:00:00" },
-  ]);
-
-  //save and pull events for dashboard
-  //UPDATE WITH DB SAVE INFO
-  useEffect(() => {
-    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
-    if (savedEvents.length > 0){
-      setEvents(savedEvents);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events));
-  }, [events]);
-
-  // Modal state
-  const [showModal, setShowModal] = useState(false);
-
-  // Form state for new event
-  const [newEventData, setNewEventData] = useState({
-    text: "",
-    location: "",
-    notes: "",
-    start: null,
-    end: null
-  });
-
-// Navigation handler
-const handleNavigation = (direction) => {
-  const newDate = new Date(value);
-
-  if (direction === "today") {
-    setValue(new Date());
-    return;
+  // Helpers: time & instance expansion
+  function normalizeTime(t) {
+    if (!t) return "00:00:00";
+    return String(t).split(".")[0];
   }
 
-  if (view === "day") {
-    newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
-  } else if (view === "week") {
-    newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : direction === "prev" ? -7 : 0));
-  } else if (view === "month") {
-    newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+  // make ISO "YYYY-MM-DDTHH:MM:SS"
+  function makeIso(dateStr, timeStr) {
+  const d = new Date(`${dateStr}T${timeStr}`);
+  return `${dateStr}T${timeStr}`;  //DayPilot-friendly
   }
 
-  setValue(newDate);
-};
-
-
-  // Open modal when selecting time range in calendar
-  const onTimeRangeSelected = (args) => {
-    setNewEventData({
-      text: "",
-      location: "",
-      notes: "",
-      start: args.start.toString(),
-      end: args.end.toString()
-    });
-    setShowModal(true);
-  };
-
-  //OnClick to handle editing when event is clicked on
-  const onEventClick = (args) => {
-    const event = args.e.data;
-
-    setNewEventData({
-      id: event.id,
-      text: event.text,
-      location: event.location || "",
-      notes: event.notes || "",
-      start: addSeconds(event.start),
-      end: addSeconds(event.end)
-    });
-    setShowModal(true);
+  // Convert datetime-local value (YYYY-MM-DDTHH:mm) to ISO string
+  function dtLocalToIso(dtLocal) {
+    if (!dtLocal) return null;
+    // create Date from local string and convert to ISO (timestamptz)
+    const d = new Date(dtLocal);
+    return d.toISOString();
   }
 
-  //handles the actual updating of the event
-  const updateEvent = () => {
-    const updated = events.map(ev =>
-      ev.id === newEventData.id
-        ? {
-          ...ev,
-          text: newEventData.text,
-          location: newEventData.location,
-          notes: newEventData.notes,
-          start: addSeconds(newEventData.start),
-          end: addSeconds(newEventData.end)
-        }
-      : ev
-    );
-    setEvents(updated);
-    setShowModal(false);
-  }
-
-  // Add new event from modal
-  const addEvent = () => {
-    if (!newEventData.text || !newEventData.start || !newEventData.end) {
-      alert("Please fill in at least Event Name, Start and End time.");
-      return;
-    }
-
-    if (newEventData.id) {
-      setEvents(prev =>
-        prev.map(ev =>
-          ev.id === newEventData.id ? { ...ev, ...newEventData } : ev
-        )
-      );
-    } else {
-      const newEvent ={
-        id: DayPilot.guid(),
-        text: newEventData.text,
-        start: addSeconds(newEventData.start),
-        end: addSeconds(newEventData.end), 
-        location: newEventData.location,
-        notes: newEventData.notes,
-      };
-
-      setEvents(prev => [...prev, newEvent]);
-    }
-
-    setShowModal(false);
-
-    // Create new event object
-    //const newEvent = {
-      //id: DayPilot.guid(),
-      //text: newEventData.text,
-      //start: newEventData.start.length === 16 ? newEventData.start + ":00" : newEventData.start,
-      //end: newEventData.end.length === 16 ? newEventData.end + ":00" : newEventData.end,
-      //location: newEventData.location,
-      //notes: newEventData.notes,
-    //};
-
-
-    //setEvents((prev) => [...prev, newEvent]);
-    //setShowModal(false);
-  };
-
-  // Format a Date string to YYYY-MM-DDTHH:mm for input[type=datetime-local]
+  // Convert ISO to "YYYY-MM-DDTHH:mm" for <input datetime-local>
   const formatForDatetimeLocal = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const hours = String(d.getHours()).padStart(2, "0");
     const minutes = String(d.getMinutes()).padStart(2, "0");
-    //const iso = d.toISOString();
-    //return iso.substring(0, 16); // "YYYY-MM-DDTHH:mm"
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  //To ensure seconds on the end
-  const addSeconds = (str) => {
-    return str && str.length === 16 ? str + ":00" : str;
+  // weekday mapping helper: JS getDay() -> ISO weekday (1=Mon..7=Sun)
+  function isoWeekdayOf(jsDate) {
+    const d = jsDate.getDay(); // 0 = Sun
+    return d === 0 ? 7 : d;
   }
 
+  // Expands a DB row into one or more DayPilot instances
+  function expandRowToInstances(row) {
+    const out = [];
+
+    // ONE-OFF (nonrecurring) stored with timestamptz
+    if (!row.recurring) {
+      if (row.nonrecurring_start) {
+        // Use the DB-provided timestamptz directly (it will include tz)
+        out.push({
+          id: `${row.id}`, // unique
+          text: row.event_name,
+          start: row.nonrecurring_start,
+          end: row.nonrecurring_end || row.nonrecurring_start,
+          location: row.location,
+          data: row
+        });
+      }
+      return out;
+    }
+
+    // RECURRING: expand between start_date and end_date for the given weekday
+    // weekday is stored as integer 1-7 (1=Mon)
+    if (row.start_date && row.end_date && row.weekday) {
+      const start = new Date(row.start_date);
+      const end = new Date(row.end_date);
+      const weekday = parseInt(row.weekday, 10);
+
+      let d = new Date(start);
+      while (d <= end) {
+        if (isoWeekdayOf(d) === weekday) {
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const dd = String(d.getDate()).padStart(2, "0");
+          const dateStr = `${yyyy}-${mm}-${dd}`;
+
+          // row.start_time / end_time expected as "HH:MM:SS" or "HH:MM"
+          let startTime = row.start_time || "00:00:00";
+          let endTime = row.end_time || startTime;
+
+          // ensure seconds
+          if (startTime.length === 5) startTime = startTime + ":00";
+          if (endTime.length === 5) endTime = endTime + ":00";
+
+          out.push({
+            id: `${row.id}-${dateStr}`, // unique per instance
+            text: row.event_name,
+            start: makeIso(dateStr, startTime),
+            end: makeIso(dateStr, endTime),
+            location: row.location,
+            data: row
+          });
+        }
+        d.setDate(d.getDate() + 1);
+      }
+    } else {
+      // fallback single instance using start_date/start_time (if present)
+      if (row.start_date) {
+        let st = row.start_time || "00:00:00";
+        let et = row.end_time || st;
+        if (st.length === 5) st += ":00";
+        if (et.length === 5) et += ":00";
+        out.push({
+          id: `${row.id}`,
+          text: row.event_name,
+          start: makeIso(row.start_date, st),
+          end: makeIso(row.start_date, et),
+          location: row.location,
+          data: row
+        });
+      }
+    }
+
+    return out;
+  }
+
+  // Load events from DB and expand recurring rows to instances
+  async function loadEventsFromDB() {
+    if (!userId) {
+      setEvents([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${backendUrl}/calendar?userId=${userId}&_=${Date.now()}`);
+      if (!res.ok) {
+        console.error("Failed fetching calendar", await res.text());
+        return;
+      }
+      const rows = await res.json();
+      let instances = [];
+      for (const r of rows) {
+        const ins = expandRowToInstances(r);
+        instances = instances.concat(ins);
+      }
+      //testing statements
+      //console.log("RAW rows:", rows);
+      //console.log("EXPANDED instances:", instances);
+
+      setEvents(instances);
+    } catch (err) {
+      console.error("Failed to load events:", err);
+    }
+  }
+
+  useEffect(() => {
+    if (userId) loadEventsFromDB();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  // Navigation handler
+  const handleNavigation = (direction) => {
+    const newDate = new Date(value);
+
+    if (direction === "today") {
+      setValue(new Date());
+      return;
+    }
+
+    if (view === "day") {
+      newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+    } else if (view === "week") {
+      newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : direction === "prev" ? -7 : 0));
+    } else if (view === "month") {
+      newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
+    }
+
+    setValue(newDate);
+  };
+
+  // Event interactions: selection, click, add, update, delete
+  // on selection: open modal prefilled for one-off
+  const onTimeRangeSelected = (args) => {
+    // args.start / args.end may be DayPilot objects or ISO strings depending on version.
+    const startIso = args.start ? (args.start.toString ? args.start.toString() : args.start) : "";
+    const endIso = args.end ? (args.end.toString ? args.end.toString() : args.end) : "";
+
+    setNewEventData({
+      dbId: null,
+      text: "",
+      location: "",
+      notes: "",
+      start: formatForDatetimeLocal(startIso), // store local-usable format
+      end: formatForDatetimeLocal(endIso),
+      recurring: false,
+      weekday: "",
+      start_date: "",
+      end_date: "",
+      start_time: "",
+      end_time: "",
+      course_id: ""
+    });
+    setShowModal(true);
+  };
+
+  // on event click: open modal for editing (loads DB row via event.data)
+  const onEventClick = (args) => {
+    const ev = args.e?.data || args.e || args; // defensive
+    const row = ev.data || ev; // expandRowToInstances attached original DB row in data
+
+    // populate form based on whether original row is recurring
+    const recurring = !!row.recurring;
+
+    if (recurring) {
+      setNewEventData({
+        dbId: row.id,
+        text: row.event_name,
+        location: row.location || "",
+        notes: row.notes || "",
+        start: "",
+        end: "",
+        recurring: true,
+        weekday: row.weekday ? String(row.weekday) : "",
+        start_date: row.start_date || "",
+        end_date: row.end_date || "",
+        start_time: row.start_time ? (row.start_time.length === 8 ? row.start_time.slice(0,5) : row.start_time) : "",
+        end_time: row.end_time ? (row.end_time.length === 8 ? row.end_time.slice(0,5) : row.end_time) : "",
+        course_id: row.course_id || ""
+      });
+    } else {
+      setNewEventData({
+        dbId: row.id,
+        text: row.event_name,
+        location: row.location || "",
+        notes: row.notes || "",
+        start: row.nonrecurring_start ? formatForDatetimeLocal(row.nonrecurring_start) : "",
+        end: row.nonrecurring_end ? formatForDatetimeLocal(row.nonrecurring_end) : "",
+        recurring: false,
+        weekday: "",
+        start_date: "",
+        end_date: "",
+        start_time: "",
+        end_time: "",
+        course_id: row.course_id || ""
+      });
+    }
+
+    setShowModal(true);
+  };
+
+  // Add a new event (recurring or one-off)
+  const addEvent = async () => {
+    try {
+      if (!userId) {
+        alert("No user loaded");
+        return;
+      }
+
+      let body = { user_id: userId };
+
+      if (newEventData.recurring) {
+        if (!newEventData.weekday || !newEventData.start_date || !newEventData.end_date || !newEventData.start_time || !newEventData.end_time) {
+          alert("Please fill recurring fields: weekday, start/end date and start/end times.");
+          return;
+        }
+
+        // ensure times are stored as HH:MM:SS
+        const st = newEventData.start_time.length === 5 ? newEventData.start_time + ":00" : newEventData.start_time;
+        const et = newEventData.end_time.length === 5 ? newEventData.end_time + ":00" : newEventData.end_time;
+
+        body = {
+          ...body,
+          event_name: newEventData.text,
+          recurring: true,
+          weekday: parseInt(newEventData.weekday, 10),
+          start_time: st,
+          end_time: et,
+          start_date: newEventData.start_date,
+          end_date: newEventData.end_date,
+          location: newEventData.location,
+          event_type: "custom",
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null,
+          nonrecurring_start: null,
+          nonrecurring_end: null
+        };
+      } else {
+        let startIso = newEventData.start;
+        let endIso = newEventData.end;
+
+        // Fix reversed ranges
+        if (new Date(endIso) < new Date(startIso)) {
+          endIso = startIso;
+        }
+
+        body = {
+          ...body,
+          event_name: newEventData.text,
+          recurring: false,
+          nonrecurring_start: startIso,
+          nonrecurring_end: endIso,
+          location: newEventData.location,
+          event_type: "custom",
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null
+        };
+      }
+      
+      console.log("AddEvent called, userId:", userId);
+      console.log("Event body:", body);
+
+
+      const res = await fetch(`${backendUrl}/calendar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        console.error("Failed to save event:", await res.text());
+        alert("Failed to save event");
+        return;
+      }
+
+      setShowModal(false);
+      await loadEventsFromDB();
+    } catch (err) {
+      console.error(err);
+      alert("Error saving event");
+    }
+  };
+
+  // Update existing DB row (PUT)
+  const updateEvent = async () => {
+    if (!newEventData.dbId) {
+      alert("No event selected to update");
+      return;
+    }
+
+    try {
+      let body = {};
+
+      if (newEventData.recurring) {
+        const st = newEventData.start_time.length === 5 ? newEventData.start_time + ":00" : newEventData.start_time;
+        const et = newEventData.end_time.length === 5 ? newEventData.end_time + ":00" : newEventData.end_time;
+
+        body = {
+          event_name: newEventData.text,
+          recurring: true,
+          weekday: parseInt(newEventData.weekday, 10),
+          start_time: st,
+          end_time: et,
+          start_date: newEventData.start_date,
+          end_date: newEventData.end_date,
+          location: newEventData.location,
+          event_type: "custom",
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null,
+          nonrecurring_start: null,
+          nonrecurring_end: null
+        };
+      } else {
+        body = {
+          event_name: newEventData.text,
+          recurring: false,
+          nonrecurring_start: newEventData.start,
+          nonrecurring_end: newEventData.end,
+          location: newEventData.location,
+          event_type: "custom",
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null
+        };
+      }
+
+      const res = await fetch(`${backendUrl}/calendar/${newEventData.dbId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        console.error("Failed to update event:", await res.text());
+        alert("Failed to update event");
+        return;
+      }
+
+      setShowModal(false);
+      await loadEventsFromDB();
+    } catch (err) {
+      console.error(err);
+      alert("Error updating event");
+    }
+  };
+
+  // Delete existing event row (DELETE)
+  const deleteEvent = async () => {
+    if (!newEventData.dbId) {
+      alert("No event selected to delete");
+      return;
+    }
+
+    if (!window.confirm("Delete this event? This will remove the DB row (all instances for recurring events).")) return;
+
+    try {
+      const res = await fetch(`${backendUrl}/calendar/${newEventData.dbId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) {
+        console.error("Failed to delete:", await res.text());
+        alert("Failed to delete event");
+        return;
+      }
+      setShowModal(false);
+      await loadEventsFromDB();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting event");
+    }
+  };
+
+  // UI rendering
   return (
     <div className="container">
       <Sidebar />
@@ -211,17 +488,42 @@ const handleNavigation = (direction) => {
           </div>
         </div>
 
+        {/* Add Event button */}
+        <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <button
+            className="button"
+            onClick={() => {
+              setNewEventData({
+                dbId: null,
+                text: "",
+                location: "",
+                notes: "",
+                start: formatForDatetimeLocal(new Date().toISOString()),
+                end: formatForDatetimeLocal(new Date(Date.now() + 3600 * 1000).toISOString()),
+                recurring: false,
+                weekday: "",
+                start_date: "",
+                end_date: "",
+                start_time: "",
+                end_time: "",
+                course_id: ""
+              });
+              setShowModal(true);
+            }}>
+            + Add Event
+          </button>
+        </div>
+
         {/* Main content */}
         <div style={styles.mainContent}>
           <div style={styles.calendarSection}>
             <div style={styles.dayPilotWrapper}>
 
-              {/* Show calendar based on view */}
               {view === "day" && (
                 <DayPilotCalendar
                   viewType="Day"
                   events={{ list: events }}
-                  startDate={value}
+                  startDate={value.toISOString().split("T")[0]}
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
                   onEventClick={onEventClick}
@@ -232,7 +534,7 @@ const handleNavigation = (direction) => {
                 <DayPilotCalendar
                   viewType="Week"
                   events={{ list: events }}
-                  startDate={value}
+                  startDate={value.toISOString().split("T")[0]}
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
                   onEventClick={onEventClick}
@@ -254,33 +556,13 @@ const handleNavigation = (direction) => {
               )}
             </div>
           </div>
-
-          {/* Sidebar tasks */}
-          <div style={styles.sidePanel}>
-            <div className="card">
-              <h3>Agenda / Current Tasks</h3>
-              <ul>
-                <li>Finish math homework</li>
-                <li>Submit history essay</li>
-                <li>Prepare for science quiz</li>
-              </ul>
-            </div>
-            <div className="card">
-              <h3>Upcoming Assignments / Events</h3>
-              <ul>
-                <li>Parent-teacher conference – Oct 16</li>
-                <li>Field trip – Oct 18</li>
-                <li>English project due – Oct 20</li>
-              </ul>
-            </div>
-          </div>
         </div>
 
         {/* Modal */}
         {showModal && (
           <div style={modalStyles.overlay}>
             <div style={modalStyles.modal}>
-              <h3>Add New Event</h3>
+              <h3>{newEventData.dbId ? "Edit Event" : "Add New Event"}</h3>
 
               <label style={modalStyles.label}>Event Name *</label>
               <input
@@ -291,21 +573,103 @@ const handleNavigation = (direction) => {
                 style={modalStyles.input}
               />
 
-              <label style={modalStyles.label}>Start Time *</label>
-              <input
-                type="datetime-local"
-                value={formatForDatetimeLocal(newEventData.start)}
-                onChange={e => setNewEventData({ ...newEventData, start: e.target.value })}
+              {/* Course dropdown (optional for both one-off & recurring) */}
+              <label style={modalStyles.label}>Course (optional)</label>
+              <select
                 style={modalStyles.input}
-              />
+                value={newEventData.course_id}
+                onChange={e => setNewEventData({ ...newEventData, course_id: e.target.value })}
+              >
+                <option value="">No Course</option>
+                {courses.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.course_name}
+                  </option>
+                ))}
+              </select>
 
-              <label style={modalStyles.label}>End Time *</label>
-              <input
-                type="datetime-local"
-                value={formatForDatetimeLocal(newEventData.end)}
-                onChange={e => setNewEventData({ ...newEventData, end: e.target.value })}
-                style={modalStyles.input}
-              />
+              {/* Recurring toggle */}
+              <label style={modalStyles.label}>
+                <input
+                  type="checkbox"
+                  checked={newEventData.recurring}
+                  onChange={e => setNewEventData({ ...newEventData, recurring: e.target.checked })}
+                  style={{ marginRight: 8 }}
+                />
+                Recurring Event
+              </label>
+
+              {/* Recurring fields */}
+              {newEventData.recurring ? (
+                <>
+                  <label style={modalStyles.label}>Weekday</label>
+                    <select
+                      style={modalStyles.input}
+                      value={newEventData.weekday}
+                      onChange={e =>
+                        setNewEventData({ ...newEventData, weekday: e.target.value })
+                      }
+                    >
+                      <option value="">Select day</option>
+                      <option value="1">Monday</option>
+                      <option value="2">Tuesday</option>
+                      <option value="3">Wednesday</option>
+                      <option value="4">Thursday</option>
+                      <option value="5">Friday</option>
+                      <option value="6">Saturday</option>
+                      <option value="7">Sunday</option>
+                    </select>
+                  <label style={modalStyles.label}>Start Date</label>
+                  <input
+                    type="date"
+                    value={newEventData.start_date}
+                    onChange={e => setNewEventData({ ...newEventData, start_date: e.target.value })}
+                    style={modalStyles.input}
+                  />
+
+                  <label style={modalStyles.label}>End Date</label>
+                  <input
+                    type="date"
+                    value={newEventData.end_date}
+                    onChange={e => setNewEventData({ ...newEventData, end_date: e.target.value })}
+                    style={modalStyles.input}
+                  />
+
+                  <label style={modalStyles.label}>Start Time</label>
+                  <input
+                    type="time"
+                    value={newEventData.start_time}
+                    onChange={e => setNewEventData({ ...newEventData, start_time: e.target.value })}
+                    style={modalStyles.input}
+                  />
+
+                  <label style={modalStyles.label}>End Time</label>
+                  <input
+                    type="time"
+                    value={newEventData.end_time}
+                    onChange={e => setNewEventData({ ...newEventData, end_time: e.target.value })}
+                    style={modalStyles.input}
+                  />
+                </>
+              ) : (
+                <>
+                  <label style={modalStyles.label}>Start Date & Time *</label>
+                  <input
+                    type="datetime-local"
+                    value={newEventData.start}
+                    onChange={e => setNewEventData({ ...newEventData, start: e.target.value })}
+                    style={modalStyles.input}
+                  />
+
+                  <label style={modalStyles.label}>End Date & Time *</label>
+                  <input
+                    type="datetime-local"
+                    value={newEventData.end}
+                    onChange={e => setNewEventData({ ...newEventData, end: e.target.value })}
+                    style={modalStyles.input}
+                  />
+                </>
+              )}
 
               <label style={modalStyles.label}>Location</label>
               <input
@@ -325,20 +689,30 @@ const handleNavigation = (direction) => {
               />
 
               <div style={{ marginTop: "15px", display: "flex", justifyContent: "space-between" }}>
-                {newEventData.id ? (
-                  <button className="button" onClick={updateEvent}>Save Changes</button>
+                {newEventData.dbId ? (
+                  <>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button className="button" onClick={updateEvent}>Save Changes</button>
+                      <button className="button" onClick={deleteEvent} style={{ backgroundColor: "#f44336", color: "white" }}>Delete</button>
+                    </div>
+                  </>
                 ) : (
-                  <button onClick={addEvent} className="button">Add Event</button>
+                  <button type="button" onClick={addEvent} className="button">Add Event</button>
                 )}
                 <button onClick={() => setShowModal(false)} style={modalStyles.cancelButton}>Cancel</button>
               </div>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
 }
+
+
+
+
 
 const styles = {
   page: {
@@ -394,17 +768,13 @@ const styles = {
   },
   mainContent: {
     display: "flex",
-    gap: "30px",
-    alignItems: "flex-start",
-    marginTop: "10px",
-    width: "100%"
+    justifyContent: "center",
+    width: "100%",
+    marginTop: "10px"
   },
   calendarSection: {
-    flex: "2",
-    maxWidth: "700px",
     width: "100%",
-    overflow: "hidden",
-    boxSizing: "border-box"
+    maxWidth: "900px"
   },
   dayPilotWrapper: {
     width: "100%",
@@ -412,30 +782,6 @@ const styles = {
     boxShadow: "0 0 10px rgba(0,0,0,0.05)",
     borderRadius: "8px",
     overflow: "hidden"
-  },
-  sidePanel: {
-    flex: "1",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px"
-  },
-  agendaBox: {
-    backgroundColor: "#fce4ec",
-    padding: "15px",
-    borderRadius: "12px",
-    boxShadow: "0 0 5px rgba(0,0,0,0.1)"
-  },
-  upcomingBox: {
-    backgroundColor: "#e3f2fd",
-    padding: "15px",
-    borderRadius: "12px",
-    boxShadow: "0 0 5px rgba(0,0,0,0.1)"
-  },
-  placeholder: {
-    padding: "40px",
-    textAlign: "center",
-    color: "#888",
-    fontStyle: "italic"
   },
   monthHeader: {
     fontSize: "1.5rem",
@@ -488,7 +834,7 @@ const modalStyles = {
     backgroundColor: "#fff",
     padding: "20px",
     borderRadius: "8px",
-    width: "320px",
+    width: "360px",
     boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
   },
   label: {

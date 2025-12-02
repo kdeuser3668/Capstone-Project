@@ -128,68 +128,170 @@ router.post("/google/disconnect", async (req, res) => {
 
 // -------------------- Local DB routes --------------------
 
-// GET all events
+// GET all calendar events for a user
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM events ORDER BY date ASC");
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Error fetching all events:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
+    const { userId } = req.query;
+    if (!userId)
+      return res.status(400).json({ message: "Missing userId" });
 
-// GET events for a specific date (YYYY-MM-DD)
-router.get("/:date", async (req, res) => {
-  try {
-    const { date } = req.params;
     const result = await pool.query(
-      "SELECT * FROM events WHERE date = $1 ORDER BY id ASC",
-      [date]
+      `SELECT * FROM calendar_events 
+       WHERE user_id = $1 
+       ORDER BY id ASC`,
+      [userId]
     );
+
     res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching events by date:", err);
+    console.error("Error fetching calendar events:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// POST new event
+// CREATE a calendar event (recurring OR nonrecurring)
 router.post("/", async (req, res) => {
   try {
-    const { title, description, date, time } = req.body;
+    const {
+      user_id,
+      course_id,
+      event_name,
+      recurring,
+      weekday,
+      start_time,
+      end_time,
+      start_date,
+      end_date,
+      location,
+      event_type,
+      notes,
+      nonrecurring_start,
+      nonrecurring_end
+    } = req.body;
 
-    if (!title || !date) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    await pool.query(
-      "INSERT INTO events (title, description, date, time) VALUES ($1, $2, $3, $4)",
-      [title, description || null, date, time || null]
+    const result = await pool.query(
+      `INSERT INTO calendar_events (
+        user_id, course_id, event_name, recurring, weekday,
+        start_time, end_time, start_date, end_date,
+        location, event_type, notes, nonrecurring_start, nonrecurring_end
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      RETURNING *`,
+      [
+        user_id || null,
+        course_id || null,
+        event_name,
+        recurring,
+        weekday || null,
+        start_time || null,
+        end_time || null,
+        start_date || null,
+        end_date || null,
+        location || null,
+        event_type,
+        notes || null,
+        nonrecurring_start || null,
+        nonrecurring_end || null
+      ]
     );
 
-    res.status(201).json({ message: "Event added successfully" });
+    res.json(result.rows[0]);
   } catch (err) {
-    console.error("Error adding event:", err);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error creating calendar event:", err);
+    res.status(500).json({ message: err.message });
   }
 });
 
-// DELETE event by ID
+// DELETE an event by ID (works for both recurring + nonrecurring)
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query("DELETE FROM events WHERE id = $1 RETURNING *", [id]);
+    const result = await pool.query(
+      "DELETE FROM calendar_events WHERE id = $1 RETURNING *",
+      [id]
+    );
 
-    if (result.rows.length === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    res.json({ message: "Event deleted successfully", event: result.rows[0] });
+    res.json({
+      message: "Event deleted successfully",
+      deleted: result.rows[0]
+    });
   } catch (err) {
-    console.error("Error deleting event:", err);
+    console.error("Error deleting calendar event:", err);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+//PUT & UPDATE event by ID
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      course_id,
+      event_name,
+      recurring,
+      weekday,
+      start_time,
+      end_time,
+      start_date,
+      end_date,
+      location,
+      event_type,
+      notes,
+      nonrecurring_start,
+      nonrecurring_end
+    } = req.body;
+
+    const result = await pool.query(
+      `UPDATE calendar_events
+       SET course_id = $1,
+           event_name = $2,
+           recurring = $3,
+           weekday = $4,
+           start_time = $5,
+           end_time = $6,
+           start_date = $7,
+           end_date = $8,
+           location = $9,
+           event_type = $10,
+           notes = $11,
+           nonrecurring_start = $12,
+           nonrecurring_end = $13
+       WHERE id = $14
+       RETURNING *`,
+      [
+        course_id || null,
+        event_name,
+        recurring,
+        weekday || null,
+        start_time || null,
+        end_time || null,
+        start_date || null,
+        end_date || null,
+        location || null,
+        event_type,
+        notes || null,
+        nonrecurring_start || null,
+        nonrecurring_end || null,
+        id
+      ]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    return res.json(result.rows[0]);
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating event:", err);
+    res.status(500).json({ message: err.message });
   }
 });
 

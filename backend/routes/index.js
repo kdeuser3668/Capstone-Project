@@ -19,7 +19,7 @@ router.use('/change-password', changePWRoutes);
 router.use('/change-email', changeEmailRoutes);
 router.use("/notes", notesRoutes);
 router.use("/update-notes", updateNotesRoutes);
-router.use("/api/calendar", calendarRoutes);
+router.use("/calendar", calendarRoutes);
 router.use("/courses", coursesRoutes);
 router.use("/focus", focusRoutes);
 router.use("/tasks", tasksRoutes);

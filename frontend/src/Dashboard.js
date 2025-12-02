@@ -23,7 +23,17 @@ function Dashboard() {
 
   //load events from calendar
   const today = new Date().toISOString().split("T")[0];
-  const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+  //prevents no events stored from crashing app
+  const rawEvents = localStorage.getItem("events");
+  let savedEvents;
+
+  try {
+    savedEvents = rawEvents ? JSON.parse(rawEvents) : [];
+  } catch (e) {
+    console.error("Bad events JSON in localStorage:", rawEvents);
+    savedEvents = [];
+  }
+
 
   const eventsToday = savedEvents.filter(ev => {
     const evDate = ev.start.split("T")[0];
