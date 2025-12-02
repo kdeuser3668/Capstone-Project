@@ -238,19 +238,20 @@ function FocusSession () {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     const userId = storedUser?.id;
 
+    //courses arent populating
+    //load courses
     useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const response = await fetch(`${backendUrl}/get-courses?userId=${userId}`);
-                if (!response.ok) throw new Error("Failed to fetch courses");
-                const data = await response.json();
-                setUserCourses(data);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-        fetchCourses();
-    }, []);
+        if (!userId) return;
+
+        fetch(`${backendUrl}/courses?userId=${userId}`)
+          .then(res => res.json())
+          .then(data => {
+              console.log("Fetched courses:", data);
+              setUserCourses(Array.isArray(data) ? data : []); // fallback to empty array
+          })
+          .catch(err => console.error("Failed to load courses:", err));
+    }, [userId]);
+
 
     useEffect(() => {
         const fetchSessions = async () => {
