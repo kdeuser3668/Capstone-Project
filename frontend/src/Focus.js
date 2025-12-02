@@ -71,16 +71,25 @@ export function Timer () {
     useEffect(() => {
         const saved = JSON.parse(localStorage.getItem("focusTimer"));
         if (saved) {
-            const {startTime, duration, isActive} = saved;
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const remainingTime = duration - elapsed;
+            const {startTime, duration, remaining, isActive} = saved;
 
-            if (remainingTime > 0) {
-                setRemaining(remainingTime);
-                setIsActive(isActive);
-                setHasStarted(true);
+            if (isActive) {
+                const elapsed = Math.floor((Date.not() - startTime) / 1000);
+                const newRemaining = duration - elapsed;
+
+                if (newRemaining > 0) {
+                    setRemaining(newRemaining);
+                    setIsActive(true);
+                    setHasStarted(true);
+                } else {
+                    localStorage.removeItem("focusTimer");
+                }
             } else {
-                localStorage.removeItem("focusTimer")
+                if (remaining > 0) {
+                    setRemaining(remaining);
+                    setIsActive(false);
+                    setHasStarted(true);
+                }
             }
         }
     }, []);
@@ -143,7 +152,7 @@ export function Timer () {
         clearInterval(intervalRef.current);
         const saved = JSON.parse(localStorage.getItem("focusTimer"));
         if (saved) {
-            localStorage.setItem("focusTimer", JSON.stringify({...saved, isActive: false}));
+            localStorage.setItem("focusTimer", JSON.stringify({...saved, isActive: false, remaining: remaining}));
         }
     };
 
