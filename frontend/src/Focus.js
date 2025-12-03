@@ -182,7 +182,7 @@ export function Timer () {
                     min="0"
                     value={hours}
                     onChange={(e) => setHours(e.target.value)}
-                    style={styles.input}
+                    style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "30%", margin: "2px"}}
                 />
                 <input
                     type="number"
@@ -190,22 +190,22 @@ export function Timer () {
                     min="0"
                     value={minutes}
                     onChange={(e) => setMinutes(e.target.value)}
-                    style={styles.input}
+                    style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "30%", margin: "2px"}}
                 />
 
                 <h2 style={{color: "#000000ff", fontSize: "50px"}}>{getTime(remaining)}</h2>
                 {isActive ? (
-                    <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={pauseTimer}>Pause Timer</button>
+                    <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={pauseTimer}>Pause Timer</button>
                 ) : (
-                    <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={startTimer}>Start Timer</button>
+                    <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={startTimer}>Start Timer</button>
                 )}
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={resetTimer}> Reset Timer </button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={resetTimer}> Reset Timer </button>
             </div>
             <hr style={{color: "#000000ff", width: "100%", borderWidth: "1px"}}/>
             <div style={styles.buttonGroup}>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(15)}>Quick Study</button>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(25)}>Pomodoro</button>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(50)}>Deep Focus</button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={() => startPreset(15)}>Quick Study</button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={() => startPreset(25)}>Pomodoro</button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={() => startPreset(50)}>Deep Focus</button>
             </div>
         </div>
     );
@@ -214,12 +214,12 @@ export function Timer () {
 //Music player function - could add an option to let users upload their own mp3 files
 function MusicPlayer () {
     const audioRef = useRef(null);
-    const [selectedTrack, setSelectedTrack] = useState("/Calm_Meditation_Music.mp3");
+    const [selectedTrack, setSelectedTrack] = useState("Select Track");
 
     return (
         <div style={{display: "flex", flexDirection: "column", alignItems: "center"}} >
             <select style={styles.select} value={selectedTrack} onChange={(e) => setSelectedTrack(e.target.value)}>
-                <option>Select Track</option>
+                <option disabled>Select Track</option>
                 <option value="/Calm_Meditation_Music.mp3">Calm Meditation</option>
                 <option value="/Immersive_Meditation_Music.mp3">Immersive Meditation</option>
                 <option value="/Lofi_Focus_Music.mp3">Lofi Focus</option>
@@ -270,7 +270,9 @@ function FocusSession () {
                 const sessions = data.map(s => ({
                     ...s,
                     title: s.event_name || "Untitled Focus Session",
-                    course: s.course_name || s.course_code || "No Course Set"
+                    course: s.course_name || s.course_code || "No Course Set",
+                    start: s.nonrecurring_start,
+                    end: s.nonrecurring_end
                 }));
                 setSessions(sessions);
             } catch (err) {
@@ -282,6 +284,14 @@ function FocusSession () {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        //Gives error if end date is before start date
+        const startDate = new Date(form.start);
+        const endDate = new Date(form.end);
+        if (endDate <= startDate) {
+            alert("End time must be after start time");
+            return
+        }
 
         const newSession = {
             user_id: userId,
