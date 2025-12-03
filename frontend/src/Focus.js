@@ -71,16 +71,25 @@ export function Timer () {
     useEffect(() => {
         const saved = JSON.parse(localStorage.getItem("focusTimer"));
         if (saved) {
-            const {startTime, duration, isActive} = saved;
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const remainingTime = duration - elapsed;
+            const {startTime, duration, remaining, isActive} = saved;
 
-            if (remainingTime > 0) {
-                setRemaining(remainingTime);
-                setIsActive(isActive);
-                setHasStarted(true);
+            if (isActive) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const newRemaining = duration - elapsed;
+
+                if (newRemaining > 0) {
+                    setRemaining(newRemaining);
+                    setIsActive(true);
+                    setHasStarted(true);
+                } else {
+                    localStorage.removeItem("focusTimer");
+                }
             } else {
-                localStorage.removeItem("focusTimer")
+                if (remaining > 0) {
+                    setRemaining(remaining);
+                    setIsActive(false);
+                    setHasStarted(true);
+                }
             }
         }
     }, []);
@@ -143,7 +152,7 @@ export function Timer () {
         clearInterval(intervalRef.current);
         const saved = JSON.parse(localStorage.getItem("focusTimer"));
         if (saved) {
-            localStorage.setItem("focusTimer", JSON.stringify({...saved, isActive: false}));
+            localStorage.setItem("focusTimer", JSON.stringify({...saved, isActive: false, remaining: remaining}));
         }
     };
 
@@ -173,7 +182,7 @@ export function Timer () {
                     min="0"
                     value={hours}
                     onChange={(e) => setHours(e.target.value)}
-                    style={styles.input}
+                    style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "30%", margin: "2px"}}
                 />
                 <input
                     type="number"
@@ -181,22 +190,22 @@ export function Timer () {
                     min="0"
                     value={minutes}
                     onChange={(e) => setMinutes(e.target.value)}
-                    style={styles.input}
+                    style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "30%", margin: "2px"}}
                 />
 
                 <h2 style={{color: "#000000ff", fontSize: "50px"}}>{getTime(remaining)}</h2>
                 {isActive ? (
-                    <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={pauseTimer}>Pause Timer</button>
+                    <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={pauseTimer}>Pause Timer</button>
                 ) : (
-                    <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={startTimer}>Start Timer</button>
+                    <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={startTimer}>Start Timer</button>
                 )}
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={resetTimer}> Reset Timer </button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={resetTimer}> Reset Timer </button>
             </div>
             <hr style={{color: "#000000ff", width: "100%", borderWidth: "1px"}}/>
             <div style={styles.buttonGroup}>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(15)}>Quick Study</button>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(25)}>Pomodoro</button>
-                <button style={{padding: "1rem", margin: ".5rem"}} className="button" onClick={() => startPreset(50)}>Deep Focus</button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={() => startPreset(15)}>Quick Study</button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={() => startPreset(25)}>Pomodoro</button>
+                <button style={{padding: ".5rem", margin: ".5rem"}} className="button" onClick={() => startPreset(50)}>Deep Focus</button>
             </div>
         </div>
     );
@@ -205,12 +214,12 @@ export function Timer () {
 //Music player function - could add an option to let users upload their own mp3 files
 function MusicPlayer () {
     const audioRef = useRef(null);
-    const [selectedTrack, setSelectedTrack] = useState("/Calm_Meditation_Music.mp3");
+    const [selectedTrack, setSelectedTrack] = useState("Select Track");
 
     return (
         <div style={{display: "flex", flexDirection: "column", alignItems: "center"}} >
             <select style={styles.select} value={selectedTrack} onChange={(e) => setSelectedTrack(e.target.value)}>
-                <option>Select Track</option>
+                <option disabled>Select Track</option>
                 <option value="/Calm_Meditation_Music.mp3">Calm Meditation</option>
                 <option value="/Immersive_Meditation_Music.mp3">Immersive Meditation</option>
                 <option value="/Lofi_Focus_Music.mp3">Lofi Focus</option>
@@ -261,7 +270,9 @@ function FocusSession () {
                 const sessions = data.map(s => ({
                     ...s,
                     title: s.event_name || "Untitled Focus Session",
-                    course: s.course_name || s.course_code || "No Course Set"
+                    course: s.course_name || s.course_code || "No Course Set",
+                    start: s.nonrecurring_start,
+                    end: s.nonrecurring_end
                 }));
                 setSessions(sessions);
             } catch (err) {
@@ -274,11 +285,24 @@ function FocusSession () {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const localToISO = (value) => {
+            if (!value) return null;
+            return new Date(value).toISOString();
+        };
+
+        //Gives error if end date is before start date
+        const startDate = new Date(form.start);
+        const endDate = new Date(form.end);
+        if (endDate <= startDate) {
+            alert("End time must be after start time");
+            return
+        }
+
         const newSession = {
             user_id: userId,
             title: form.title,
-            start: form.start,
-            end: form.end,
+            start: localToISO(form.start),
+            end: localToISO(form.end),
             course_id: form.course_id,
             notes: form.notes
         };
@@ -293,7 +317,15 @@ function FocusSession () {
             if (!response.ok) throw new Error("Failed to save session");
 
             const savedSession = await response.json();
-            setSessions([...sessions, savedSession]);
+            const normalized = {
+                id: savedSession.id,
+                title: savedSession.event_name || form.title,
+                course: savedSession.course_name,
+                start: savedSession.nonrecurring_start,
+                end: savedSession.nonrecurring_end,
+                notes: savedSession.notes || form.notes
+            };
+            setSessions([...sessions, normalized]);
             setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
             setShowForm(false);
         } catch (err) {
@@ -320,8 +352,8 @@ function FocusSession () {
     };
 
     const upcomingSessions = sessions
-        .filter((s) => new Date(s.nonrecurring_start) >= new Date())
-        .sort((a, b) => new Date(a.nonrecurring_start) - new Date(b.nonrecurring_start));
+        .filter((s) => new Date(s.start) >= new Date())
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
 
     return (
         <div>
@@ -394,8 +426,8 @@ function FocusSession () {
                 upcomingSessions.map((s) => (
                     <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
                         <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
-                        <p className="p"><strong>Start:</strong> {new Date(s.nonrecurring_start).toLocaleString()}</p>
-                        <p><strong>End:</strong> {new Date(s.nonrecurring_end).toLocaleString()}</p>
+                        <p className="p"><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
+                        <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
                         {s.course && <p><strong>Course:</strong> {s.course}</p>}
                         {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
                         <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>

@@ -40,8 +40,8 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        const startUTC = new Date(start);
-        const endUTC = new Date(end);
+        //const startUTC = new Date(start);
+        //const endUTC = new Date(end);
 
         const query = `
             INSERT INTO calendar_events (
@@ -57,8 +57,8 @@ router.post('/', async (req, res) => {
             course_id,
             title,
             false,          // recurring always false
-            startUTC.toISOString(),
-            endUTC.toISOString(),
+            start,
+            end,
             null,           // location always empty
             'focus',        // event_type
             notes || ''
