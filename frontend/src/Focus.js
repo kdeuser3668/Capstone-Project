@@ -74,7 +74,7 @@ export function Timer () {
             const {startTime, duration, remaining, isActive} = saved;
 
             if (isActive) {
-                const elapsed = Math.floor((Date.not() - startTime) / 1000);
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const newRemaining = duration - elapsed;
 
                 if (newRemaining > 0) {
@@ -285,6 +285,11 @@ function FocusSession () {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const localToISO = (value) => {
+            if (!value) return null;
+            return new Date(value).toISOString();
+        };
+
         //Gives error if end date is before start date
         const startDate = new Date(form.start);
         const endDate = new Date(form.end);
@@ -296,8 +301,8 @@ function FocusSession () {
         const newSession = {
             user_id: userId,
             title: form.title,
-            start: form.start,
-            end: form.end,
+            start: localToISO(form.start),
+            end: localToISO(form.end),
             course_id: form.course_id,
             notes: form.notes
         };
@@ -312,7 +317,15 @@ function FocusSession () {
             if (!response.ok) throw new Error("Failed to save session");
 
             const savedSession = await response.json();
-            setSessions([...sessions, savedSession]);
+            const normalized = {
+                id: savedSession.id,
+                title: savedSession.event_name || form.title,
+                course: savedSession.course_name,
+                start: savedSession.nonrecurring_start,
+                end: savedSession.nonrecurring_end,
+                notes: savedSession.notes || form.notes
+            };
+            setSessions([...sessions, normalized]);
             setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
             setShowForm(false);
         } catch (err) {
@@ -339,8 +352,8 @@ function FocusSession () {
     };
 
     const upcomingSessions = sessions
-        .filter((s) => new Date(s.nonrecurring_start) >= new Date())
-        .sort((a, b) => new Date(a.nonrecurring_start) - new Date(b.nonrecurring_start));
+        .filter((s) => new Date(s.start) >= new Date())
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
 
     return (
         <div>
@@ -413,8 +426,8 @@ function FocusSession () {
                 upcomingSessions.map((s) => (
                     <div key={s.id} className="card" style={{padding: "10px", margin: "5px "}}>
                         <h4 style={{ padding: "0px", marginBottom: "1px" }}>{s.title}</h4>
-                        <p className="p"><strong>Start:</strong> {new Date(s.nonrecurring_start).toLocaleString()}</p>
-                        <p><strong>End:</strong> {new Date(s.nonrecurring_end).toLocaleString()}</p>
+                        <p className="p"><strong>Start:</strong> {new Date(s.start).toLocaleString()}</p>
+                        <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
                         {s.course && <p><strong>Course:</strong> {s.course}</p>}
                         {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
                         <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>
