@@ -54,10 +54,8 @@ const Sidebar = () => {
         <NavLink to="/focus" style={({ isActive }) => isCollapsed ? { ...activeStyle, padding: "0", textAlign: "center" } : isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Focus"}</NavLink>
         <NavLink to="/notes" style={({ isActive }) => isCollapsed ? { ...activeStyle, padding: "0", textAlign: "center" } : isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Notes"}</NavLink>
         <NavLink to="/tasks" style={({ isActive }) => isCollapsed ? { ...activeStyle, padding: "0", textAlign: "center" } : isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Tasks"}</NavLink>
+        <NavLink to="/canvas" style={({ isActive }) => isCollapsed ? { ...activeStyle, padding: "0", textAlign: "center" } : isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Canvas"}</NavLink>
         <NavLink to="/settings" style={({ isActive }) => isCollapsed ? { ...activeStyle, padding: "0", textAlign: "center" } : isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>{isCollapsed ? "" : "Settings"}</NavLink>
-        <NavLink to="/canvas" style={({ isActive }) => isCollapsed ? { ...activeStyle, padding: "0", textAlign: "center" } : isActive ? { ...linkStyle, ...activeStyle } : linkStyle}>
-        {isCollapsed ? "" : "Canvas"}
-        </NavLink>
 
       </div>
 
