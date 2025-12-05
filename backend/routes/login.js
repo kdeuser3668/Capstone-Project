@@ -27,8 +27,8 @@ router.post('/', async (req, res) => {
       return res.status(401).json({ message: 'Invalid password.' });
     }
 
-    //login message, look into removal without breaking anything
     res.status(200).json({
+      message: 'Login successful.',
       user: {
         id: user.id,
         username: user.username,
