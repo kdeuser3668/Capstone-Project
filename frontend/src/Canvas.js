@@ -19,7 +19,7 @@ export default function CanvasPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("http://localhost:5050/canvas/save-token", {
+      const res = await fetch("https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend/canvas/save-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: 1, canvasToken: token }),
@@ -42,7 +42,7 @@ export default function CanvasPage() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch("http://localhost:5050/canvas/courses/1");
+      const res = await fetch("https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend/canvas/courses/1");
       const data = await res.json();
       if (data.success) {
         setCourses(data.courses);

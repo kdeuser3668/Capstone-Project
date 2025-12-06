@@ -192,32 +192,34 @@ useEffect(() => {
             <h2 className="h2">Your Day</h2>
             <h3 className="h3">Tasks</h3>
             {tasksDueToday.length === 0 ? (
-              <p className="p">No tasks due today.</p>
-            ) : (  
-              <ul className="ul">
-              {tasksDueToday.map(task => (
-                <li className="li" key={task.id}>
-                  <strong>{task.task}</strong>
-                  <br />
-                  Priority: {task.priority}
-                  <br />
-                  Due: {formatTaskTime(task.deadline)}
-                </li>
-              ))}
-            </ul>
-            )}
+                <p className="p">No tasks due today.</p>
+              ) : (
+                <div>
+                  {tasksDueToday.map(task => (
+                    <p className="p" key={task.id} style={{ marginBottom: "1rem" }}>
+                      <div className="card" style={{ border: "solid 1px lightgrey", boxShadow: "none", padding: '1rem'}}>
+                      <strong>{task.task}</strong><br />
+                      Priority: {task.priority}<br />
+                      Due: {formatTaskTime(task.deadline)}
+                      </div>
+                    </p>
+                  ))}
+                </div>
+              )}
             <h3 className="h3">Calendar</h3>
             {eventsToday.length === 0? (
               <p className="p">No events today.</p>
             ): (
-              <ul className="ul">
+              <div>
                 {eventsToday.map(ev => (
-                  <li className="li" key={ev.id}>
+                  <p className="p" key={ev.id}>
+                    <div className="card" style={{ border: "solid 1px lightgrey", boxShadow: "none", padding: '1rem'}}>
                     <strong>{ev.text}</strong><br />
                     {to12Hour(ev.start.split("T")[1].slice(0,5))} - {to12Hour(ev.end.split("T")[1].slice(0,5))}
-                  </li>
+                    </div>
+                  </p>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
 
@@ -237,7 +239,9 @@ useEffect(() => {
             <h2 className="h2">{username || "User"}'s Courses</h2>
             {courses.length === 0 && <p className="p" style={{color: "gray"}}>No courses added yet.</p>}
                 {courses.map(c => (
+                <div>
                   <p className="p" key={c.id}>
+                  <div className="card" style={{ border: "solid 1px lightgrey", boxShadow: "none", padding: '1rem'}}>
                     <strong>{c.course_name}</strong>
                     <br />
                     {c.course_code}
@@ -248,7 +252,9 @@ useEffect(() => {
                     <br />
                     <button className="button" style={{margin: ".5rem"}} onClick={() => {setEditingCourse(c); setShowPopup(true);}}>Edit</button>
                     <button className="button" style={{margin: ".5rem"}} onClick={() => {deleteCourse(c.id)}}>Delete</button>
+                    </div>
                   </p>
+                </div>
                 ))}
             </div>
             <Courses 

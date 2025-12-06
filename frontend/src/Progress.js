@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
 
-// NEED LOCALHOST:5050 CHANGED
-// https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend
-// MIGHT WORK ^^ UNSURE THO
-
 export function Progress(){
     const [stats, setStats] = useState({
         total: 0,
@@ -20,7 +16,8 @@ export function Progress(){
 
         const fetchStats = async() => {
             try{
-                const res = await fetch(`http://localhost:5050/tasks?userId=${userId}`);
+                //changed https://localhost:5050 to backend link, testing if works
+                const res = await fetch(`https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend/tasks?userId=${userId}`);
                 const raw = await res.json();
 
                 const data = raw.map(t => ({
