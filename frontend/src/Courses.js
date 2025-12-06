@@ -25,6 +25,16 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
     }, [editingCourse])
     
     async function handleSave(){
+        if (
+            !course_name.trim() ||
+            !course_code.trim() ||
+            !instructor_name.trim() ||
+            !course_semester.trim()
+        ) {
+            alert("All fields are required");
+            return;
+        } 
+
         const courseData = {
             id: editingCourse ? editingCourse.id : undefined,
             course_name, 
@@ -56,13 +66,13 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
             {showPopup && (
                 <div>
                     <h3 style={{ textAlign:"center" }}>{ editingCourse ? "Edit Course" : "Add Course"}</h3>
-                    <input placeholder="Course Name" value={course_name} onChange={(e) => setCourseName(e.target.value)}/>
+                    <input placeholder="Course Name" value={course_name} style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "auto", margin: "2px"}} onChange={(e) => setCourseName(e.target.value)}/>
                     <br />
-                    <input placeholder="Course Code" value={course_code} onChange={(e) => setCourseCode(e.target.value)}/>
+                    <input placeholder="Course Code" value={course_code} style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "auto", margin: "2px"}} onChange={(e) => setCourseCode(e.target.value)}/>
                     <br />
-                    <input placeholder="Instructor's Name" value={instructor_name} onChange={(e) => setInstructorName(e.target.value)}/>
+                    <input placeholder="Instructor's Name" value={instructor_name} style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "auto", margin: "2px"}} onChange={(e) => setInstructorName(e.target.value)}/>
                     <br />
-                    <input placeholder="Semester" value={course_semester} onChange={(e) => setCourseSemester(e.target.value)}/>
+                    <input placeholder="Semester" value={course_semester} style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "auto", margin: "2px"}} onChange={(e) => setCourseSemester(e.target.value)}/>
                     <br />
                     <button className="button" style={{margin: ".5rem"}} onClick={handleSave}>Save</button>
 

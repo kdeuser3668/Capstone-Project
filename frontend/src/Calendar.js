@@ -67,8 +67,11 @@ function Calendar() {
 
   // make ISO "YYYY-MM-DDTHH:MM:SS"
   function makeIso(dateStr, timeStr) {
-  const d = new Date(`${dateStr}T${timeStr}`);
-  return `${dateStr}T${timeStr}`;  //DayPilot-friendly
+    if (!dateStr) return null;
+    let t = timeStr || "00:00:00";
+    if (t.length === 5) t = t + ":00";
+    const d = new Date(`${dateStr}T${t}`);
+    return d.toISOString();  //DayPilot-friendly
   }
 
   // Convert datetime-local value (YYYY-MM-DDTHH:mm) to ISO string
@@ -91,6 +94,13 @@ function Calendar() {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  //function to format time correctly in input section on calendar
+  const formatTimeForInput = (timeStr) => {
+    if (!timeStr) return "";
+    if (timeStr.length >= 5) return timeStr.slice(0,5);
+    return timeStr;
+  }
+
   // weekday mapping helper: JS getDay() -> ISO weekday (1=Mon..7=Sun)
   function isoWeekdayOf(jsDate) {
     const d = jsDate.getDay(); // 0 = Sun
@@ -108,8 +118,8 @@ function Calendar() {
         out.push({
           id: `${row.id}`, // unique
           text: row.event_name,
-          start: row.nonrecurring_start,
-          end: row.nonrecurring_end || row.nonrecurring_start,
+          start: new Date(row.nonrecurring_start).toISOString(),
+          end: new Date(row.nonrecurring_end || row.nonrecurring_start).toISOString(),
           location: row.location,
           data: row
         });
@@ -237,8 +247,8 @@ function Calendar() {
       text: "",
       location: "",
       notes: "",
-      start: formatForDatetimeLocal(startIso), // store local-usable format
-      end: formatForDatetimeLocal(endIso),
+      start: formatForDatetimeLocal(args.start), // store local-usable format
+      end: formatForDatetimeLocal(args.end),
       recurring: false,
       weekday: "",
       start_date: "",
@@ -270,8 +280,8 @@ function Calendar() {
         weekday: row.weekday ? String(row.weekday) : "",
         start_date: row.start_date || "",
         end_date: row.end_date || "",
-        start_time: row.start_time ? (row.start_time.length === 8 ? row.start_time.slice(0,5) : row.start_time) : "",
-        end_time: row.end_time ? (row.end_time.length === 8 ? row.end_time.slice(0,5) : row.end_time) : "",
+        start_time: row.start_time ? row.start_time.slice(0,5) : "",
+        end_time: row.end_time ? row.end_time.slice(0,5) : "",
         course_id: row.course_id || ""
       });
     } else {
@@ -538,6 +548,7 @@ function Calendar() {
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
                   onEventClick={onEventClick}
+                  {...{ key: value }}
                 />
               )}
 

@@ -143,6 +143,9 @@ function MakeNotes(){
           setTitle("");
           setContent("");
         })
+        .then(() => {
+          window.location.reload(); //forces reload so date appears
+        })
         .catch((err) => {
           console.error(err);
           window.alert("Error saving note");
