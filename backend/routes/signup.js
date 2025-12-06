@@ -22,6 +22,7 @@ router.post('/', async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
+    // possibly the fix for the signup err? have to push to test 
     const newUser = await pool.query(
       'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
       [username, email, hashedPassword]
