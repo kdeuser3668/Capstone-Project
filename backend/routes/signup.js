@@ -22,22 +22,20 @@ router.post('/', async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3)',
+    const newUser = await pool.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
       [username, email, hashedPassword]
     );
 
+    const user = newUser.rows[0];
+
     res.status(201).json({
       message: 'User registered successfully.',
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
-     });
+      user: user
+    });
 
   } catch (error) {
-    console.error('Signup error:', error.message, error.stack);
+    console.error('Signup error:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
