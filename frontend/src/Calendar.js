@@ -469,38 +469,23 @@ function Calendar() {
   return (
     <div className="container">
       <Sidebar />
-      <div className="main-content page">
+      <div className="main-content">
         {/* Header */}
-        <div style={styles.header}>
-          <h1 className="h1">Calendar</h1>
-          <h3 className="h3">
-            {monthNames[value.getMonth()]} {value.getFullYear()}
-          </h3>
-        </div>
-
-        {/* Navigation */}
-        <div style={styles.controlsWrapper}>
-          <div style={styles.navBar}>
-            <button className="button" onClick={() => handleNavigation("prev")}>← Prev</button>
-            <button className="button" onClick={() => handleNavigation("today")}>Today</button>
-            <button className="button" onClick={() => handleNavigation("next")}>Next →</button>
+        <div 
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: "1rem",
+          }}>
+          <div>
+            <h1 className="h1">Calendar</h1>
+            <h3 className="h3">
+              {monthNames[value.getMonth()]} {value.getFullYear()}
+            </h3>
           </div>
-
-          <div style={styles.viewTabs}>
-            {["day", "week", "month"].map((v) => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={`button ${view === v ? styles.active-view : ""}`}
-              >
-                {v.charAt(0).toUpperCase() + v.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Add Event button */}
-        <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <div style={{  display: "flex", justifyContent: "flex-end",  }}>
           <button
             className="button"
             onClick={() => {
@@ -523,6 +508,28 @@ function Calendar() {
             }}>
             + Add Event
           </button>
+        </div>
+      </div>
+
+        {/* Navigation */}
+        <div style={styles.controlsWrapper}>
+          <div style={styles.navBar}>
+            <button className="button" onClick={() => handleNavigation("prev")}>← Prev</button>
+            <button className="button" onClick={() => handleNavigation("today")}>Today</button>
+            <button className="button" onClick={() => handleNavigation("next")}>Next →</button>
+          </div>
+
+          <div style={styles.viewTabs}>
+            {["day", "week", "month"].map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`button ${view === v ? styles.active-view : ""}`}
+              >
+                {v.charAt(0).toUpperCase() + v.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Main content */}

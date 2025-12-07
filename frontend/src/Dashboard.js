@@ -181,7 +181,7 @@ useEffect(() => {
 
           {!showForm && (
             <button onClick={() => {setEditingCourse(null); setShowPopup(true);}} className="button">
-              Add Course
+              + Add Course
             </button>
           )}
           </div>
