@@ -63,7 +63,6 @@ function Dashboard() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         console.log("raw backend tasks:", data);
-        // map backend fields to frontend expectation:
         const mapped = data.map(t => ({
           id: t.id,
           task: t.assignment_name,
@@ -130,7 +129,7 @@ useEffect(() => {
   try {
     const courseToSave = {
       ...course,
-      user_id: userId   // <-- always send this
+      user_id: userId
     };
 
     console.log("SAVECOURSE SENDS:", courseToSave);

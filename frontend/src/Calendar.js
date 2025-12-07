@@ -540,53 +540,63 @@ function Calendar() {
             {monthNames[value.getMonth()]} {value.getFullYear()}
           </h3>
         </div>
-
-        {/* Navigation */}
-        <div style={styles.controlsWrapper}>
-          <div style={styles.navBar}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          gap: "20px",
+          marginBottom: "20px",
+          flexWrap: "nowrap" // puts all buttons in line w/ each other
+        }}>
+          {/* left: nav buttons */}
+          <div style={{ display: "flex", gap: "10px" }}>
             <button className="button" onClick={() => handleNavigation("prev")}>← Prev</button>
             <button className="button" onClick={() => handleNavigation("today")}>Today</button>
             <button className="button" onClick={() => handleNavigation("next")}>Next →</button>
           </div>
 
-          <div style={styles.viewTabs}>
+          {/* center: view tabs */}
+          <div style={{ display: "flex", gap: "10px" }}>
             {["day", "week", "month"].map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`button ${view === v ? styles.active-view : ""}`}
+                className={`button ${view === v ? styles.activeView : ""}`}
               >
                 {v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
             ))}
           </div>
+
+          {/* right: add Event */}
+          <div>
+            <button
+              className="button"
+              onClick={() => {
+                setNewEventData({
+                  dbId: null,
+                  text: "",
+                  location: "",
+                  notes: "",
+                  start: formatForDatetimeLocal(new Date().toISOString()),
+                  end: formatForDatetimeLocal(new Date(Date.now() + 3600 * 1000).toISOString()),
+                  recurring: false,
+                  weekday: "",
+                  start_date: "",
+                  end_date: "",
+                  start_time: "",
+                  end_time: "",
+                  course_id: ""
+                });
+                setShowModal(true);
+              }}
+            >
+              + Add Event
+            </button>
+          </div>
         </div>
 
-        {/* Add Event button */}
-        <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-          <button
-            className="button"
-            onClick={() => {
-              setNewEventData({
-                dbId: null,
-                text: "",
-                location: "",
-                notes: "",
-                start: formatForDatetimeLocal(new Date().toISOString()),
-                end: formatForDatetimeLocal(new Date(Date.now() + 3600 * 1000).toISOString()),
-                recurring: false,
-                weekday: "",
-                start_date: "",
-                end_date: "",
-                start_time: "",
-                end_time: "",
-                course_id: ""
-              });
-              setShowModal(true);
-            }}>
-            + Add Event
-          </button>
-        </div>
 
         {/* Main content */}
         <div style={styles.mainContent}>
