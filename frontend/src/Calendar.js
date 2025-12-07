@@ -261,11 +261,6 @@ function Calendar() {
     }
   }
 
-  useEffect(() => {
-    if (userId) loadEventsFromDB();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
-
   // Navigation handler
   const handleNavigation = (direction) => {
     const newDate = new Date(value);
@@ -286,10 +281,8 @@ function Calendar() {
     setValue(newDate);
   };
 
-  // Event interactions: selection, click, add, update, delete
-  // on selection: open modal prefilled for one-off
+  // Event functions
   const onTimeRangeSelected = (args) => {
-    // args.start / args.end may be DayPilot objects or ISO strings depending on version.
     const startIso = args.start ? (args.start.toString ? args.start.toString() : args.start) : "";
     const endIso = args.end ? (args.end.toString ? args.end.toString() : args.end) : "";
 
@@ -317,7 +310,7 @@ function Calendar() {
     const row = ev.data || ev;
     const recurring = !!row.recurring;
     const course = courses.find(c => c.id === row.course_id);
-    const courseColor = course?.color_code || "#a7d0fb";
+    const courseColor = course?.color_code || "#a7d0fb"; // default course color
 
     if (recurring) {
       setNewEventData({
@@ -398,9 +391,10 @@ function Calendar() {
         let startIso = newEventData.start;
         let endIso = newEventData.end;
 
-        // Fix reversed ranges
-        if (new Date(endIso) < new Date(startIso)) {
-          endIso = startIso;
+        // ERROR CHECK: end must be after start
+        if (new Date(endIso) <= new Date(startIso)) {
+          alert("End time must be after start time");
+          return; // stop submission
         }
 
         body = {
@@ -481,6 +475,25 @@ function Calendar() {
           course_id: newEventData.course_id || null
         };
       }
+
+      if (!newEventData.recurring) {
+        if (new Date(newEventData.end) <= new Date(newEventData.start)) {
+          alert("End time must be after start time");
+          return;
+        }
+
+        body = {
+          event_name: newEventData.text,
+          recurring: false,
+          nonrecurring_start: newEventData.start,
+          nonrecurring_end: newEventData.end,
+          location: newEventData.location,
+          event_type: "custom",
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null
+        };
+      }
+
 
       const res = await fetch(`${backendUrl}/calendar/${newEventData.dbId}`, {
         method: "PUT",
