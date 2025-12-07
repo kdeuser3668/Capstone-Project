@@ -9,6 +9,8 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
     const [course_code, setCourseCode] = useState("");
     const [instructor_name, setInstructorName] = useState("");
     const [course_semester, setCourseSemester] = useState("");
+    const [color_code, setColorCode] = useState("#a7d0fb"); // default color
+
 
     useEffect(() => {
         if (editingCourse){
@@ -16,11 +18,13 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
             setCourseCode(editingCourse.course_code);
             setInstructorName(editingCourse.instructor_name);
             setCourseSemester(editingCourse.course_semester);
+            setColorCode(editingCourse.color_code || "#a7d0fb");
         }else{
             setCourseName("");
             setCourseCode("");
             setInstructorName("");
             setCourseSemester("");
+            setColorCode("#a7d0fb");
         }
     }, [editingCourse])
     
@@ -40,9 +44,13 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
             course_name, 
             course_code, 
             instructor_name, 
-            course_semester
+            course_semester,
+            color_code
         };
         
+        // colorcode testing
+        console.log("COURSE POPUP SENDS:", courseData);
+
         await saveCourse(courseData);
     }
 
@@ -73,6 +81,8 @@ export function Courses({showPopup, setShowPopup, saveCourse, editingCourse, del
                     <input placeholder="Instructor's Name" value={instructor_name} style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "auto", margin: "2px"}} onChange={(e) => setInstructorName(e.target.value)}/>
                     <br />
                     <input placeholder="Semester" value={course_semester} style={{borderWidth: "1px", borderColor: "#abababff", textAlign: "center", padding: "2px", fontSize: "15px", borderRadius: "4px", width: "auto", margin: "2px"}} onChange={(e) => setCourseSemester(e.target.value)}/>
+                    <br />
+                    <input type="color" value={color_code} style={{borderWidth:"1px", borderColor:"#abababff", padding:"2px", width:"50px", height:"30px", margin:"2px"}} onChange={e => setColorCode(e.target.value)}/>
                     <br />
                     <button className="button" style={{margin: ".5rem"}} onClick={handleSave}>Save</button>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Sidebar from './Sidebar';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
@@ -9,10 +9,25 @@ function Calendar() {
   const [view, setView] = useState("month");
 
   const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const userId = storedUser?.id;
+  const rawUser = localStorage.getItem("user");
+  let storedUser = null;
+
+  try {
+    storedUser = rawUser ? JSON.parse(rawUser) : null;
+  } catch (err) {
+    console.error("Invalid user JSON:", rawUser);
+    storedUser = null;
+  }
+
+  const userId = storedUser?.id || null;
+
 
   const [courses, setCourses] = useState([]);
+  const [events, setEvents] = useState([]);
+
+  const courseColorMap = useMemo(() => {
+    return Object.fromEntries(courses.map(c => [String(c.id), c.color_code]));
+  }, [courses]);
 
   useEffect(() => {
     if (!userId) return;
@@ -22,18 +37,42 @@ function Calendar() {
       .catch(e => console.error("failed to load courses", e));
   }, [userId]);
 
-  const [events, setEvents] = useState([]);
+  // ensure course colors stay updated when courses change
   useEffect(() => {
-    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
-    if (savedEvents.length > 0) {
-      setEvents(savedEvents);
+    if (courses.length && events.length) {
+      setEvents(prevEvents =>
+        prevEvents.map(ev => ({
+          ...ev,
+          backColor: courseColorMap[String(ev.course_id)] || "#a7d0fb",
+          barColor: courseColorMap[String(ev.course_id)] || "#a7d0fb",
+        }))
+      );
     }
-  }, []);
-  
-  // Save events whenever they change
+  }, [courses, courseColorMap]);
+
   useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events));
-  }, [events]);
+  try {
+    const raw = localStorage.getItem("events");
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) {
+      setEvents(parsed);
+    }
+  } catch (err) {
+    console.error("Invalid events JSON:", err);
+    setEvents([]);
+  }
+  }, []);
+
+  
+  useEffect(() => {
+  if (!userId) return;
+  if (courses.length > 0) {
+    loadEventsFromDB();
+  }
+  }, [userId, courses]);
+
+  
+
 
   const [showModal, setShowModal] = useState(false);
   const [newEventData, setNewEventData] = useState({
@@ -51,7 +90,8 @@ function Calendar() {
     end_date: "",
     start_time: "",    // "HH:MM"
     end_time: "",      // "HH:MM"
-    course_id: ""
+    course_id: "",
+    color_code: ""
   });
 
   const monthNames = [
@@ -111,6 +151,9 @@ function Calendar() {
   function expandRowToInstances(row) {
     const out = [];
 
+    // get course color
+    const courseColor = courseColorMap[String(row.course_id)] || "#a7d0fb";
+
     // ONE-OFF (nonrecurring) stored with timestamptz
     if (!row.recurring) {
       if (row.nonrecurring_start) {
@@ -119,8 +162,12 @@ function Calendar() {
           id: `${row.id}`, // unique
           text: row.event_name,
           start: new Date(row.nonrecurring_start).toISOString(),
-          end: new Date(row.nonrecurring_end || row.nonrecurring_start).toISOString(),
+          end: row.nonrecurring_end
+            ? new Date(row.nonrecurring_end).toISOString()
+            : new Date(row.nonrecurring_start).toISOString(),
           location: row.location,
+          backColor: courseColor,
+          barColor: courseColor,
           data: row
         });
       }
@@ -156,6 +203,8 @@ function Calendar() {
             start: makeIso(dateStr, startTime),
             end: makeIso(dateStr, endTime),
             location: row.location,
+            backColor: courseColor,
+            barColor: courseColor,
             data: row
           });
         }
@@ -174,6 +223,8 @@ function Calendar() {
           start: makeIso(row.start_date, st),
           end: makeIso(row.start_date, et),
           location: row.location,
+          backColor: courseColor,
+          barColor: courseColor,
           data: row
         });
       }
@@ -262,11 +313,11 @@ function Calendar() {
 
   // on event click: open modal for editing (loads DB row via event.data)
   const onEventClick = (args) => {
-    const ev = args.e?.data || args.e || args; // defensive
-    const row = ev.data || ev; // expandRowToInstances attached original DB row in data
-
-    // populate form based on whether original row is recurring
+    const ev = args.e?.data || args.e || args;
+    const row = ev.data || ev;
     const recurring = !!row.recurring;
+    const course = courses.find(c => c.id === row.course_id);
+    const courseColor = course?.color_code || "#a7d0fb";
 
     if (recurring) {
       setNewEventData({
@@ -282,7 +333,8 @@ function Calendar() {
         end_date: row.end_date || "",
         start_time: row.start_time ? row.start_time.slice(0,5) : "",
         end_time: row.end_time ? row.end_time.slice(0,5) : "",
-        course_id: row.course_id || ""
+        course_id: row.course_id || "",
+        course_color: courseColor
       });
     } else {
       setNewEventData({
@@ -298,7 +350,8 @@ function Calendar() {
         end_date: "",
         start_time: "",
         end_time: "",
-        course_id: row.course_id || ""
+        course_id: row.course_id || "",
+        color_code: courseColor
       });
     }
 
@@ -339,7 +392,7 @@ function Calendar() {
           notes: newEventData.notes,
           course_id: newEventData.course_id || null,
           nonrecurring_start: null,
-          nonrecurring_end: null
+          nonrecurring_end: null,
         };
       } else {
         let startIso = newEventData.start;

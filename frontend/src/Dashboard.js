@@ -16,6 +16,7 @@ function Dashboard() {
 
   const [editingCourse, setEditingCourse] = useState(null);
   const [courses, setCourses] = useState([]);
+  //const [courseColor, setCourseColor] = useState(editingCourse?.color_code || "#a7d0fb");
   const [showPopup, setShowPopup] = useState(false);
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -126,36 +127,45 @@ useEffect(() => {
   }, []);
 
   async function saveCourse(course) {
-    try{
-      let saved;
-      if (course.id){
-        //update
-        const res = await fetch(`${backendUrl}/courses/${course.id}`,{
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(course),
-        });
-        saved = await res.json();
-        setCourses(prev => prev.map(c => c.id === saved.id ? saved : c));
+  try {
+    const courseToSave = {
+      ...course,
+      user_id: userId   // <-- always send this
+    };
 
-      }else{
-        //new
-        const res = await fetch(`${backendUrl}/courses/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({...course, user_id: userId})
-        });
-        saved = await res.json();
-        setCourses(prev => [...prev, saved]);
-      }
+    console.log("SAVECOURSE SENDS:", courseToSave);
 
-      setShowPopup(false);
-      setEditingCourse(null);
-    }catch(err){
-      console.error("Failed to save course:", err);
-      alert("Failed to save course")
+    let saved;
+
+    if (course.id) {
+      // UPDATE
+      const res = await fetch(`${backendUrl}/courses/${course.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(courseToSave),
+      });
+      saved = await res.json();
+      setCourses(prev => prev.map(c => (c.id === saved.id ? saved : c)));
+    } else {
+      // CREATE
+      const res = await fetch(`${backendUrl}/courses/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(courseToSave),
+      });
+      saved = await res.json();
+      setCourses(prev => [...prev, saved]);
     }
+
+    setShowPopup(false);
+    setEditingCourse(null);
+  } catch (err) {
+    console.error("Failed to save course:", err);
+    alert("Failed to save course");
   }
+  }
+
+
 
   async function deleteCourse(id) {
     await fetch(`${backendUrl}/courses/${id}`, {method:"DELETE"});
