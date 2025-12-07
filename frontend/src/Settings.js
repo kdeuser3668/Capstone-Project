@@ -446,7 +446,7 @@ return (
                 </form>
             </div>
             <div className="card">
-                <p style={{ marginTop: "1rem", color: textColor }}>Connect to Google Calendar</p>
+                <p style={{ marginTop: "1rem", color: textColor }}>Connect to Google Calendar (Verification Status: Pending)</p>
                 <input
                     type="text"
                     placeholder="Enter Gmail Address"
@@ -455,7 +455,8 @@ return (
                     required
                     />
                     {googleConnected ? (<button className="button" onClick={handleGoogleDisconnect}>Disconnect Google Calendar</button>) : 
-                    (<button className="button" onClick={handleGoogleLogin}>Connect</button>)}
+                    // uncomment when google approves app: (<button className="button" onClick={handleGoogleLogin}>Connect</button>)}
+                    (<button className="button" style={{ marginTop: "1rem"}} onClick={handleGoogleLogin}>Currently Unavaliable</button>)}
             </div>
         </div>
         </div>
