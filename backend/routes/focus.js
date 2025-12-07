@@ -89,4 +89,32 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, start, end, course_id, notes } = req.body;
+
+        if (!title || !start || !end || !course_id) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        const result = await pool.query(
+            `UPDATE calendar_events
+             SET event_name = $1,
+                 nonrecurring_start = $2,
+                 nonrecurring_end = $3,
+                 course_id = $4,
+                 notes = $5
+             WHERE id = $6
+             RETURNING *`,
+            [title, start, end, course_id, notes || '', id]
+        );
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 export default router;
