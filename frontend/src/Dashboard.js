@@ -22,23 +22,34 @@ function Dashboard() {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.id;
 
-  //load events from calendar
-  const today = new Date().toISOString().split("T")[0];
-  //prevents no events stored from crashing app
-  const rawEvents = localStorage.getItem("events");
-  let savedEvents;
+  // get local "YYYY-MM-DD" for today
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, "0");
+const dd = String(today.getDate()).padStart(2, "0");
+const todayStr = `${yyyy}-${mm}-${dd}`;
 
-  try {
-    savedEvents = rawEvents ? JSON.parse(rawEvents) : [];
-  } catch (e) {
-    console.error("Bad events JSON in localStorage:", rawEvents);
-    savedEvents = [];
-  }
+// parse stored events safely
+const rawEvents = localStorage.getItem("events");
+let savedEvents = [];
+try {
+  savedEvents = rawEvents ? JSON.parse(rawEvents) : [];
+} catch (e) {
+  console.error("Bad events JSON in localStorage:", rawEvents);
+  savedEvents = [];
+}
 
-  const eventsToday = savedEvents.filter(ev => {
-    const evDate = ev.start.split("T")[0];
-    return evDate === today;
-  })
+// filter events for today (local date)
+const eventsToday = savedEvents.filter(ev => {
+  if (!ev.start) return false;
+  const evDate = new Date(ev.start);
+  const evYear = evDate.getFullYear();
+  const evMonth = String(evDate.getMonth() + 1).padStart(2, "0");
+  const evDay = String(evDate.getDate()).padStart(2, "0");
+  const evLocalDateStr = `${evYear}-${evMonth}-${evDay}`;
+  return evLocalDateStr === todayStr;
+});
+
 
   function to12Hour(time){
     let [hour, minute] = time.split(":");
