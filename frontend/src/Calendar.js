@@ -21,9 +21,21 @@ function Calendar() {
 
   const userId = storedUser?.id || null;
 
+  const now = new Date();
+  const inOneHour = new Date(now.getTime() + 3600 * 1000);
 
   const [courses, setCourses] = useState([]);
   const [events, setEvents] = useState([]);
+
+  //save and pull events for dashboard
+  useEffect(() => {
+    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
+    setEvents(savedEvents)
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("events", JSON.stringify(events));
+  }, [events]);
 
   const courseColorMap = useMemo(() => {
     return Object.fromEntries(courses.map(c => [String(c.id), c.color_code]));
@@ -131,7 +143,8 @@ function Calendar() {
     const day = String(d.getDate()).padStart(2, "0");
     const hours = String(d.getHours()).padStart(2, "0");
     const minutes = String(d.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    const seconds = String(d.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   };
 
   //function to format time correctly in input section on calendar
@@ -161,10 +174,10 @@ function Calendar() {
         out.push({
           id: `${row.id}`, // unique
           text: row.event_name,
-          start: new Date(row.nonrecurring_start).toISOString(),
+          start: formatForDatetimeLocal(new Date(row.nonrecurring_start)),
           end: row.nonrecurring_end
-            ? new Date(row.nonrecurring_end).toISOString()
-            : new Date(row.nonrecurring_start).toISOString(),
+            ? formatForDatetimeLocal(new Date(row.nonrecurring_end))
+            : formatForDatetimeLocal(new Date(row.nonrecurring_start)),          
           location: row.location,
           backColor: courseColor,
           barColor: courseColor,
@@ -200,8 +213,9 @@ function Calendar() {
           out.push({
             id: `${row.id}-${dateStr}`, // unique per instance
             text: row.event_name,
-            start: makeIso(dateStr, startTime),
-            end: makeIso(dateStr, endTime),
+            start: formatForDatetimeLocal(new Date(makeIso(dateStr, startTime))),
+            end: formatForDatetimeLocal(new Date(makeIso(dateStr, endTime))),
+
             location: row.location,
             backColor: courseColor,
             barColor: courseColor,
@@ -545,7 +559,7 @@ function Calendar() {
   return (
     <div className="container">
       <Sidebar />
-      <div className="main-content page">
+      <div className="main-content">
         {/* Header */}
         <div style={styles.header}>
           <h1 className="h1">Calendar</h1>
@@ -592,8 +606,10 @@ function Calendar() {
                   text: "",
                   location: "",
                   notes: "",
-                  start: formatForDatetimeLocal(new Date().toISOString()),
-                  end: formatForDatetimeLocal(new Date(Date.now() + 3600 * 1000).toISOString()),
+
+                  start: formatForDatetimeLocal(now),
+                  end: formatForDatetimeLocal(inOneHour),
+
                   recurring: false,
                   weekday: "",
                   start_date: "",
@@ -620,7 +636,7 @@ function Calendar() {
                 <DayPilotCalendar
                   viewType="Day"
                   events={{ list: events }}
-                  startDate={value.toISOString().split("T")[0]}
+                  startDate={value.toLocaleDateString("en-CA")}
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
                   onEventClick={onEventClick}
@@ -632,7 +648,7 @@ function Calendar() {
                 <DayPilotCalendar
                   viewType="Week"
                   events={{ list: events }}
-                  startDate={value.toISOString().split("T")[0]}
+                  startDate={value.toLocaleDateString("en-CA")}
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
                   onEventClick={onEventClick}
@@ -646,7 +662,7 @@ function Calendar() {
                   </h3>
                   <DayPilotMonth
                     events={{ list: events }}
-                    startDate={value.toISOString().split("T")[0]}
+                    startDate={value.toLocaleDateString("en-CA")}
                     onTimeRangeSelected={onTimeRangeSelected}
                     onEventClick={onEventClick}
                   />
