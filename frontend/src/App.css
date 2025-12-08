@@ -122,6 +122,17 @@ li{
   cursor: pointer;
   font-size: 16px;
   
+}
+
+.input {
+  border-width: 1px; 
+  border-color: #abababff; 
+  text-align: center;
+  padding: 2px;
+  font-size: 15px;
+  border-radius: 4px;
+  width: 30%;
+  margin: 2px;
 };
 /*  margin-bottom: 1rem;
   background-color: transparent;

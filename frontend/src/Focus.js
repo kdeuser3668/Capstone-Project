@@ -243,6 +243,7 @@ function FocusSession () {
         notes: ""
     });
     const [showForm, setShowForm] = useState(false);
+    const [editSessionId, setEditSessionId] = useState(null);
 
     const storedUser = JSON.parse(localStorage.getItem('user'));
     const userId = storedUser?.id;
@@ -282,56 +283,78 @@ function FocusSession () {
         fetchSessions();
     }, [userId]);
 
+    const startEditSession = (session) => {
+        setForm({
+            title: session.title,
+            start: session.start.slice(0,16), // for datetime-local input
+            end: session.end.slice(0,16),
+            course_id: session.course_id || "", 
+            notes: session.notes || ""
+        });
+        setEditSessionId(session.id);
+        setShowForm(true);
+    };
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const localToISO = (value) => {
-            if (!value) return null;
-            return new Date(value).toISOString();
-        };
+    const localToISO = (value) => {
+        if (!value) return null;
+        return new Date(value).toISOString();
+    };
 
-        //Gives error if end date is before start date
-        const startDate = new Date(form.start);
-        const endDate = new Date(form.end);
-        if (endDate <= startDate) {
-            alert("End time must be after start time");
-            return
-        }
+    const startDate = new Date(form.start);
+    const endDate = new Date(form.end);
+    if (endDate <= startDate) {
+        alert("End time must be after start time");
+        return;
+    }
 
-        const newSession = {
-            user_id: userId,
-            title: form.title,
-            start: localToISO(form.start),
-            end: localToISO(form.end),
-            course_id: form.course_id,
-            notes: form.notes
-        };
+    const sessionData = {
+        user_id: userId,
+        title: form.title,
+        start: localToISO(form.start),
+        end: localToISO(form.end),
+        course_id: form.course_id,
+        notes: form.notes
+    };
 
-        try {
+    try {
+        if (editSessionId) {
+            // UPDATE existing session
+            const response = await fetch(`${backendUrl}/focus/${editSessionId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(sessionData)
+            });
+            if (!response.ok) throw new Error("Failed to update session");
+
+            const updated = await response.json();
+            setSessions((prev) =>
+                prev.map((s) => (s.id === editSessionId ? updated : s))
+            );
+        } else {
+            // CREATE new session
             const response = await fetch(`${backendUrl}/focus`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newSession)
+                body: JSON.stringify(sessionData)
             });
-
             if (!response.ok) throw new Error("Failed to save session");
 
-            const savedSession = await response.json();
-            const normalized = {
-                id: savedSession.id,
-                title: savedSession.event_name || form.title,
-                course: savedSession.course_name,
-                start: savedSession.nonrecurring_start,
-                end: savedSession.nonrecurring_end,
-                notes: savedSession.notes || form.notes
-            };
-            setSessions([...sessions, normalized]);
-            setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
-            setShowForm(false);
-        } catch (err) {
-            console.error(err);
+            const saved = await response.json();
+            setSessions([...sessions, saved]);
         }
+
+        setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
+        setEditSessionId(null);
+        setShowForm(false);
+    } catch (err) {
+        console.error(err);
+    }
     };
+
+
 
     const removeSession = async (id) => {
         try {
@@ -430,7 +453,8 @@ function FocusSession () {
                         <p><strong>End:</strong> {new Date(s.end).toLocaleString()}</p>
                         {s.course && <p><strong>Course:</strong> {s.course}</p>}
                         {s.notes && <p><strong>Notes:</strong> {s.notes}</p>}
-                        <button className="button" style={{ backgroundColor: "#ff7272", marginTop: "1rem", fontSize: "0.9rem", }} onClick={() => removeSession(s.id)}>Delete</button>
+                        <button className="button" style={{margin: ".5rem"}} onClick={() => startEditSession(s)}>Edit</button>
+                        <button className="button" style={{margin: ".5rem"}} onClick={() => removeSession(s.id)}>Delete</button>
                     </div>
                 ))
                 )}

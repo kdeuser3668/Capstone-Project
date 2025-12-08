@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Sidebar from './Sidebar';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
@@ -9,10 +9,25 @@ function Calendar() {
   const [view, setView] = useState("month");
 
   const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const userId = storedUser?.id;
+  const rawUser = localStorage.getItem("user");
+  let storedUser = null;
+
+  try {
+    storedUser = rawUser ? JSON.parse(rawUser) : null;
+  } catch (err) {
+    console.error("Invalid user JSON:", rawUser);
+    storedUser = null;
+  }
+
+  const userId = storedUser?.id || null;
+
 
   const [courses, setCourses] = useState([]);
+  const [events, setEvents] = useState([]);
+
+  const courseColorMap = useMemo(() => {
+    return Object.fromEntries(courses.map(c => [String(c.id), c.color_code]));
+  }, [courses]);
 
   useEffect(() => {
     if (!userId) return;
@@ -22,18 +37,42 @@ function Calendar() {
       .catch(e => console.error("failed to load courses", e));
   }, [userId]);
 
-  const [events, setEvents] = useState([]);
+  // ensure course colors stay updated when courses change
   useEffect(() => {
-    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
-    if (savedEvents.length > 0) {
-      setEvents(savedEvents);
+    if (courses.length && events.length) {
+      setEvents(prevEvents =>
+        prevEvents.map(ev => ({
+          ...ev,
+          backColor: courseColorMap[String(ev.course_id)] || "#a7d0fb",
+          barColor: courseColorMap[String(ev.course_id)] || "#a7d0fb",
+        }))
+      );
     }
-  }, []);
-  
-  // Save events whenever they change
+  }, [courses, courseColorMap]);
+
   useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events));
-  }, [events]);
+  try {
+    const raw = localStorage.getItem("events");
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) {
+      setEvents(parsed);
+    }
+  } catch (err) {
+    console.error("Invalid events JSON:", err);
+    setEvents([]);
+  }
+  }, []);
+
+  
+  useEffect(() => {
+  if (!userId) return;
+  if (courses.length > 0) {
+    loadEventsFromDB();
+  }
+  }, [userId, courses]);
+
+  
+
 
   const [showModal, setShowModal] = useState(false);
   const [newEventData, setNewEventData] = useState({
@@ -51,7 +90,8 @@ function Calendar() {
     end_date: "",
     start_time: "",    // "HH:MM"
     end_time: "",      // "HH:MM"
-    course_id: ""
+    course_id: "",
+    color_code: ""
   });
 
   const monthNames = [
@@ -67,8 +107,11 @@ function Calendar() {
 
   // make ISO "YYYY-MM-DDTHH:MM:SS"
   function makeIso(dateStr, timeStr) {
-  const d = new Date(`${dateStr}T${timeStr}`);
-  return `${dateStr}T${timeStr}`;  //DayPilot-friendly
+    if (!dateStr) return null;
+    let t = timeStr || "00:00:00";
+    if (t.length === 5) t = t + ":00";
+    const d = new Date(`${dateStr}T${t}`);
+    return d.toISOString();  //DayPilot-friendly
   }
 
   // Convert datetime-local value (YYYY-MM-DDTHH:mm) to ISO string
@@ -91,6 +134,13 @@ function Calendar() {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  //function to format time correctly in input section on calendar
+  const formatTimeForInput = (timeStr) => {
+    if (!timeStr) return "";
+    if (timeStr.length >= 5) return timeStr.slice(0,5);
+    return timeStr;
+  }
+
   // weekday mapping helper: JS getDay() -> ISO weekday (1=Mon..7=Sun)
   function isoWeekdayOf(jsDate) {
     const d = jsDate.getDay(); // 0 = Sun
@@ -101,6 +151,9 @@ function Calendar() {
   function expandRowToInstances(row) {
     const out = [];
 
+    // get course color
+    const courseColor = courseColorMap[String(row.course_id)] || "#a7d0fb";
+
     // ONE-OFF (nonrecurring) stored with timestamptz
     if (!row.recurring) {
       if (row.nonrecurring_start) {
@@ -108,9 +161,13 @@ function Calendar() {
         out.push({
           id: `${row.id}`, // unique
           text: row.event_name,
-          start: row.nonrecurring_start,
-          end: row.nonrecurring_end || row.nonrecurring_start,
+          start: new Date(row.nonrecurring_start).toISOString(),
+          end: row.nonrecurring_end
+            ? new Date(row.nonrecurring_end).toISOString()
+            : new Date(row.nonrecurring_start).toISOString(),
           location: row.location,
+          backColor: courseColor,
+          barColor: courseColor,
           data: row
         });
       }
@@ -146,6 +203,8 @@ function Calendar() {
             start: makeIso(dateStr, startTime),
             end: makeIso(dateStr, endTime),
             location: row.location,
+            backColor: courseColor,
+            barColor: courseColor,
             data: row
           });
         }
@@ -164,6 +223,8 @@ function Calendar() {
           start: makeIso(row.start_date, st),
           end: makeIso(row.start_date, et),
           location: row.location,
+          backColor: courseColor,
+          barColor: courseColor,
           data: row
         });
       }
@@ -200,11 +261,6 @@ function Calendar() {
     }
   }
 
-  useEffect(() => {
-    if (userId) loadEventsFromDB();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
-
   // Navigation handler
   const handleNavigation = (direction) => {
     const newDate = new Date(value);
@@ -225,10 +281,8 @@ function Calendar() {
     setValue(newDate);
   };
 
-  // Event interactions: selection, click, add, update, delete
-  // on selection: open modal prefilled for one-off
+  // Event functions
   const onTimeRangeSelected = (args) => {
-    // args.start / args.end may be DayPilot objects or ISO strings depending on version.
     const startIso = args.start ? (args.start.toString ? args.start.toString() : args.start) : "";
     const endIso = args.end ? (args.end.toString ? args.end.toString() : args.end) : "";
 
@@ -237,8 +291,8 @@ function Calendar() {
       text: "",
       location: "",
       notes: "",
-      start: formatForDatetimeLocal(startIso), // store local-usable format
-      end: formatForDatetimeLocal(endIso),
+      start: formatForDatetimeLocal(args.start), // store local-usable format
+      end: formatForDatetimeLocal(args.end),
       recurring: false,
       weekday: "",
       start_date: "",
@@ -252,11 +306,11 @@ function Calendar() {
 
   // on event click: open modal for editing (loads DB row via event.data)
   const onEventClick = (args) => {
-    const ev = args.e?.data || args.e || args; // defensive
-    const row = ev.data || ev; // expandRowToInstances attached original DB row in data
-
-    // populate form based on whether original row is recurring
+    const ev = args.e?.data || args.e || args;
+    const row = ev.data || ev;
     const recurring = !!row.recurring;
+    const course = courses.find(c => c.id === row.course_id);
+    const courseColor = course?.color_code || "#a7d0fb"; // default course color
 
     if (recurring) {
       setNewEventData({
@@ -270,9 +324,10 @@ function Calendar() {
         weekday: row.weekday ? String(row.weekday) : "",
         start_date: row.start_date || "",
         end_date: row.end_date || "",
-        start_time: row.start_time ? (row.start_time.length === 8 ? row.start_time.slice(0,5) : row.start_time) : "",
-        end_time: row.end_time ? (row.end_time.length === 8 ? row.end_time.slice(0,5) : row.end_time) : "",
-        course_id: row.course_id || ""
+        start_time: row.start_time ? row.start_time.slice(0,5) : "",
+        end_time: row.end_time ? row.end_time.slice(0,5) : "",
+        course_id: row.course_id || "",
+        course_color: courseColor
       });
     } else {
       setNewEventData({
@@ -288,7 +343,8 @@ function Calendar() {
         end_date: "",
         start_time: "",
         end_time: "",
-        course_id: row.course_id || ""
+        course_id: row.course_id || "",
+        color_code: courseColor
       });
     }
 
@@ -329,15 +385,16 @@ function Calendar() {
           notes: newEventData.notes,
           course_id: newEventData.course_id || null,
           nonrecurring_start: null,
-          nonrecurring_end: null
+          nonrecurring_end: null,
         };
       } else {
         let startIso = newEventData.start;
         let endIso = newEventData.end;
 
-        // Fix reversed ranges
-        if (new Date(endIso) < new Date(startIso)) {
-          endIso = startIso;
+        // ERROR CHECK: end must be after start
+        if (new Date(endIso) <= new Date(startIso)) {
+          alert("End time must be after start time");
+          return; // stop submission
         }
 
         body = {
@@ -419,6 +476,25 @@ function Calendar() {
         };
       }
 
+      if (!newEventData.recurring) {
+        if (new Date(newEventData.end) <= new Date(newEventData.start)) {
+          alert("End time must be after start time");
+          return;
+        }
+
+        body = {
+          event_name: newEventData.text,
+          recurring: false,
+          nonrecurring_start: newEventData.start,
+          nonrecurring_end: newEventData.end,
+          location: newEventData.location,
+          event_type: "custom",
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null
+        };
+      }
+
+
       const res = await fetch(`${backendUrl}/calendar/${newEventData.dbId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -471,6 +547,7 @@ function Calendar() {
       <Sidebar />
       <div className="main-content">
         {/* Header */}
+<<<<<<< HEAD
         <div 
           style={{
             display: "flex",
@@ -520,17 +597,79 @@ function Calendar() {
           </div>
 
           <div style={styles.viewTabs}>
+=======
+        <div style={styles.header}>
+          <h1 className="h1">Calendar</h1>
+          <h3 className="h3">
+            {monthNames[value.getMonth()]} {value.getFullYear()}
+          </h3>
+        </div>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          gap: "20px",
+          marginBottom: "20px",
+          flexWrap: "nowrap" // puts all buttons in line w/ each other
+        }}>
+          {/* left: nav buttons */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button className="button" onClick={() => handleNavigation("prev")}>← Prev</button>
+            <button className="button" onClick={() => handleNavigation("today")}>Today</button>
+            <button className="button" onClick={() => handleNavigation("next")}>Next →</button>
+          </div>
+
+          {/* center: view tabs */}
+          <div style={{ display: "flex", gap: "10px" }}>
+>>>>>>> ab26b2c2e2608bda8f32f40bdad2dd575d446c5e
             {["day", "week", "month"].map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
+<<<<<<< HEAD
                 className={`button ${view === v ? styles.active-view : ""}`}
+=======
+                className={`button ${view === v ? styles.activeView : ""}`}
+>>>>>>> ab26b2c2e2608bda8f32f40bdad2dd575d446c5e
               >
                 {v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
             ))}
           </div>
+<<<<<<< HEAD
         </div>
+=======
+
+          {/* right: add Event */}
+          <div>
+            <button
+              className="button"
+              onClick={() => {
+                setNewEventData({
+                  dbId: null,
+                  text: "",
+                  location: "",
+                  notes: "",
+                  start: formatForDatetimeLocal(new Date().toISOString()),
+                  end: formatForDatetimeLocal(new Date(Date.now() + 3600 * 1000).toISOString()),
+                  recurring: false,
+                  weekday: "",
+                  start_date: "",
+                  end_date: "",
+                  start_time: "",
+                  end_time: "",
+                  course_id: ""
+                });
+                setShowModal(true);
+              }}
+            >
+              + Add Event
+            </button>
+          </div>
+        </div>
+
+>>>>>>> ab26b2c2e2608bda8f32f40bdad2dd575d446c5e
 
         {/* Main content */}
         <div style={styles.mainContent}>
@@ -545,6 +684,7 @@ function Calendar() {
                   durationBarVisible={false}
                   onTimeRangeSelected={onTimeRangeSelected}
                   onEventClick={onEventClick}
+                  {...{ key: value }}
                 />
               )}
 
