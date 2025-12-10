@@ -1,143 +1,490 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Sidebar from './Sidebar';
 import { DayPilotCalendar, DayPilotMonth } from "@daypilot/daypilot-lite-react";
 import { DayPilot } from "@daypilot/daypilot-lite-react";
 import './App.css';
 
-function Calendar() {
-  const [value, setValue] = useState(new Date());
-  const [view, setView] = useState("month");
-
-  const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
-  const rawUser = localStorage.getItem("user");
-  let storedUser = null;
-
-  try {
-    storedUser = rawUser ? JSON.parse(rawUser) : null;
-  } catch (err) {
-    console.error("Invalid user JSON:", rawUser);
-    storedUser = null;
-  }
-
-  const userId = storedUser?.id || null;
-
-  const now = new Date();
-  const inOneHour = new Date(now.getTime() + 3600 * 1000);
-
-  const [courses, setCourses] = useState([]);
+function useCalendarEvents({ backendUrl, userId }) {
   const [events, setEvents] = useState([]);
-
-  //save and pull events for dashboard
-  useEffect(() => {
-    const savedEvents = JSON.parse(localStorage.getItem("events")) || [];
-    setEvents(savedEvents)
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events));
-  }, [events]);
+  const [courses, setCourses] = useState([]);
 
   const courseColorMap = useMemo(() => {
     return Object.fromEntries(courses.map(c => [String(c.id), c.color_code]));
   }, [courses]);
 
+  // Helpers
+  const ensureIsoString = (v) => {
+    if (!v && v !== 0) return null;
+
+    // if it's already a Date object
+    if (v instanceof Date) return v.toISOString();
+
+    // if it's a number (timestamp)
+    if (typeof v === "number") {
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+
+    // if it's an object with toISOString
+    if (typeof v === "object" && typeof v.toISOString === "function") {
+      return v.toISOString();
+    }
+
+    if (typeof v === "string") {
+      let s = v.trim();
+
+      // Common DB format "YYYY-MM-DD HH:MM:SS" -> normalize to "YYYY-MM-DDTHH:MM:SS"
+      // Replace first space with T if it's between date and time.
+      if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?/.test(s)) {
+        s = s.replace(" ", "T");
+      }
+
+      // If there's no timezone info (no Z and no +HH:MM), assume UTC by appending Z
+      if (!/[zZ]$/.test(s) && !/[+\-]\d{2}:\d{2}$/.test(s)) {
+        s = s + "Z";
+      }
+
+      //test
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+
+    return null;
+  };
+
+  // Convert ISO (with timezone) -> value suitable for <input datetime-local>
+  const isoToDatetimeLocal = (iso) => {
+    if (!iso) return "";
+    // Accept Date objects as well
+    let normalizedIso = iso;
+    if (iso instanceof Date) normalizedIso = iso.toISOString();
+    const d = new Date(normalizedIso);
+    if (isNaN(d.getTime())) return "";
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`; // seconds not required for inputs
+  };
+
+  // Convert datetime-local value (local wall-clock) to ISO string (UTC)
+  const datetimeLocalToIso = (local) => {
+    if (!local) return null;
+    // local is like "YYYY-MM-DDTHH:MM" or "YYYY-MM-DDTHH:MM:SS"
+    const d = new Date(local);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  };
+
+  // Build a local "YYYY-MM-DDTHH:MM:SS" string (no timezone) for DayPilot to read as local time
+  const buildLocalTimestamp = (dateStr, timeStr) => {
+    if (!dateStr) return null;
+    let time = timeStr || '00:00:00';
+    if (time.length === 5) time = time + ':00';
+    return `${dateStr}T${time}`; // no Z — interpreted as local
+  };
+
+  // Expand non-recurring DB row to DayPilot event
+  const expandSingle = (row) => {
+    const color = courseColorMap[String(row.course_id)] || '#a7d0fb';
+
+    // if DB provided nonrecurring_start as a native string/ISO, pass it through;
+    // if DayPilot prefers local timestamps, passing ISO with timezone preserves absolute instant.
+    return [{
+      id: `${row.id}`,
+      text: row.event_name,
+      start: row.nonrecurring_start || null,
+      end: row.nonrecurring_end || row.nonrecurring_start || null,
+      location: row.location,
+      backColor: color,
+      barColor: color,
+      data: row // keep original DB row available under data
+    }];
+  };
+
+  // Expand recurring DB row into instances
+  const expandRecurring = (row) => {
+    const out = [];
+    const color = courseColorMap[String(row.course_id)] || '#a7d0fb';
+
+    if (!row.start_date || !row.end_date || !row.weekday) return out;
+
+    const start = new Date(row.start_date);
+    const end = new Date(row.end_date);
+    const weekday = parseInt(row.weekday, 10);
+
+    let d = new Date(start);
+    while (d <= end) {
+      const jsWeek = d.getDay(); // 0 Sun
+      const isoWeekday = jsWeek === 0 ? 7 : jsWeek;
+      if (isoWeekday === weekday) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+
+        const startTime = row.start_time || '00:00:00';
+        const endTime = row.end_time || startTime;
+
+        out.push({
+          id: `${row.id}-${dateStr}`,
+          text: row.event_name,
+          // use local timestamps (no timezone)
+          start: buildLocalTimestamp(dateStr, startTime),
+          end: buildLocalTimestamp(dateStr, endTime),
+          location: row.location,
+          backColor: color,
+          barColor: color,
+          data: row // original DB row included
+        });
+      }
+      d.setDate(d.getDate() + 1);
+    }
+
+    return out;
+  };
+
+  const expandRowToInstances = (row) => {
+    return row.recurring ? expandRecurring(row) : expandSingle(row);
+  };
+
+  // Load courses
   useEffect(() => {
     if (!userId) return;
-    fetch(`${backendUrl}/courses?userId=${userId}`)
-      .then(r => r.json())
-      .then(setCourses)
-      .catch(e => console.error("failed to load courses", e));
-  }, [userId]);
+    (async () => {
+      try {
+        const res = await fetch(`${backendUrl}/courses?userId=${userId}`);
+        if (!res.ok) throw new Error('Failed to load courses');
+        const data = await res.json();
+        setCourses(data || []);
+      } catch (err) {
+        console.error('Failed to load courses', err);
+      }
+    })();
+  }, [backendUrl, userId]);
 
-  // ensure course colors stay updated when courses change
-  useEffect(() => {
-    if (courses.length && events.length) {
-      setEvents(prevEvents =>
-        prevEvents.map(ev => ({
-          ...ev,
-          backColor: courseColorMap[String(ev.course_id)] || "#a7d0fb",
-          barColor: courseColorMap[String(ev.course_id)] || "#a7d0fb",
-        }))
-      );
+  // Load events from DB and expand
+  const loadEvents = useCallback(async () => {
+    if (!userId) {
+      setEvents([]);
+      return;
     }
-  }, [courses, courseColorMap]);
 
-  useEffect(() => {
-  try {
-    const raw = localStorage.getItem("events");
-    const parsed = raw ? JSON.parse(raw) : [];
-    if (Array.isArray(parsed)) {
-      setEvents(parsed);
+    try {
+      const res = await fetch(`${backendUrl}/calendar?userId=${userId}&_=${Date.now()}`);
+      if (!res.ok) {
+        console.error('Failed fetching calendar', await res.text());
+        return;
+      }
+      const rows = await res.json();
+      let instances = [];
+      for (const r of rows) {
+        instances = instances.concat(expandRowToInstances(r));
+      }
+      setEvents(instances);
+    } catch (err) {
+      console.error('Failed to load events:', err);
     }
-  } catch (err) {
-    console.error("Invalid events JSON:", err);
-    setEvents([]);
-  }
-  }, []);
+  }, [backendUrl, userId, courseColorMap]);
 
-  
   useEffect(() => {
-  if (!userId) return;
-  if (courses.length > 0) {
-    loadEventsFromDB();
-  }
-  }, [userId, courses]);
+    if (userId) {
+      loadEvents();
+    }
+  }, [userId, loadEvents]);
 
-  
+  // Add event (DB handles storage)
+  const addEvent = async (payload) => {
+    if (!userId) throw new Error('No user');
+    const res = await fetch(`${backendUrl}/calendar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await loadEvents();
+  };
+
+  const updateEvent = async (id, payload) => {
+    const res = await fetch(`${backendUrl}/calendar/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await loadEvents();
+  };
+
+  const deleteEvent = async (id) => {
+    const res = await fetch(`${backendUrl}/calendar/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(await res.text());
+    await loadEvents();
+  };
+
+  return {
+    events,
+    setEvents,
+    courses,
+    setCourses,
+    loadEvents,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    // helpers for UI
+    isoToDatetimeLocal,
+    datetimeLocalToIso,
+    buildLocalTimestamp,
+    ensureIsoString
+  };
+}
 
 
+function Calendar() {
+  const backendUrl = "https://plannerpal-ex34i.ondigitalocean.app/capstone-project-backend";
+  const rawUser = localStorage.getItem('user');
+  let storedUser = null;
+  try { storedUser = rawUser ? JSON.parse(rawUser) : null; } catch (e) { storedUser = null; }
+  const userId = storedUser?.id || null;
+
+  const now = new Date();
+  const inOneHour = new Date(now.getTime() + 3600 * 1000);
+
+  const [value, setValue] = useState(new Date());
+  const [view, setView] = useState('month');
   const [showModal, setShowModal] = useState(false);
-  const [newEventData, setNewEventData] = useState({
-    dbId: null,         // ID of calendar row (for editing)
-    text: "",
-    location: "",
-    notes: "",
-    // one-off:
-    start: "",
-    end: "",
-    // recurring:
-    recurring: false,
-    weekday: "",       // 1..7
-    start_date: "",
-    end_date: "",
-    start_time: "",    // "HH:MM"
-    end_time: "",      // "HH:MM"
-    course_id: "",
-    color_code: ""
-  });
+  const [newEventData, setNewEventData] = useState({});
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+  const {
+    events,
+    courses,
+    loadEvents,
+    addEvent: apiAddEvent,
+    updateEvent: apiUpdateEvent,
+    deleteEvent: apiDeleteEvent,
+    isoToDatetimeLocal,
+    datetimeLocalToIso,
+    ensureIsoString
+  } = useCalendarEvents({ backendUrl, userId });
 
-  // Helpers: time & instance expansion
-  function normalizeTime(t) {
-    if (!t) return "00:00:00";
-    return String(t).split(".")[0];
-  }
+  const addEvent = async () => {
+    try {
+      if (!userId) { alert('No user loaded'); return; }
 
-  // make ISO "YYYY-MM-DDTHH:MM:SS"
-  function makeIso(dateStr, timeStr) {
-    if (!dateStr) return null;
-    let t = timeStr || "00:00:00";
-    if (t.length === 5) t = t + ":00";
-    const d = new Date(`${dateStr}T${t}`);
-    return d.toISOString();  //DayPilot-friendly
-  }
+      let body = { user_id: userId };
 
-  // Convert datetime-local value (YYYY-MM-DDTHH:mm) to ISO string
-  function dtLocalToIso(dtLocal) {
-    if (!dtLocal) return null;
-    // create Date from local string and convert to ISO (timestamptz)
-    const d = new Date(dtLocal);
-    return d.toISOString();
-  }
+      if (newEventData.recurring) {
+        if (!newEventData.weekday || !newEventData.start_date || !newEventData.end_date || !newEventData.start_time || !newEventData.end_time) {
+          alert('Please fill recurring fields');
+          return;
+        }
+        body = {
+          ...body,
+          event_name: newEventData.text,
+          recurring: true,
+          weekday: parseInt(newEventData.weekday, 10),
+          start_time: newEventData.start_time.length === 5 ? newEventData.start_time + ':00' : newEventData.start_time,
+          end_time: newEventData.end_time.length === 5 ? newEventData.end_time + ':00' : newEventData.end_time,
+          start_date: newEventData.start_date,
+          end_date: newEventData.end_date,
+          location: newEventData.location,
+          event_type: 'custom',
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null,
+          nonrecurring_start: null,
+          nonrecurring_end: null
+        };
+      } else {
+        // convert local -> ISO for storage
+        const ns = datetimeLocalToIso(newEventData.start);
+        const ne = datetimeLocalToIso(newEventData.end);
+        if (!ns || !ne) { alert('Invalid start or end time'); return; }
+        if (new Date(ne) <= new Date(ns)) { alert('End must be after start'); return; }
+        body = {
+          ...body,
+          event_name: newEventData.text,
+          recurring: false,
+          nonrecurring_start: ns,
+          nonrecurring_end: ne,
+          location: newEventData.location,
+          event_type: 'custom',
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null
+        };
+      }
 
-  // Convert ISO to "YYYY-MM-DDTHH:mm" for <input datetime-local>
-  const formatForDatetimeLocal = (dateStr) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
+      await apiAddEvent(body);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert('Error saving event');
+    }
+  };
+
+  const updateEvent = async () => {
+    try {
+      if (!newEventData.dbId) { alert('No event selected'); return; }
+
+      let body = {};
+      if (newEventData.recurring) {
+        body = {
+          event_name: newEventData.text,
+          recurring: true,
+          weekday: parseInt(newEventData.weekday, 10),
+          start_time: newEventData.start_time.length === 5 ? newEventData.start_time + ':00' : newEventData.start_time,
+          end_time: newEventData.end_time.length === 5 ? newEventData.end_time + ':00' : newEventData.end_time,
+          start_date: newEventData.start_date,
+          end_date: newEventData.end_date,
+          location: newEventData.location,
+          event_type: 'custom',
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null,
+          nonrecurring_start: null,
+          nonrecurring_end: null
+        };
+      } else {
+        const ns = datetimeLocalToIso(newEventData.start);
+        const ne = datetimeLocalToIso(newEventData.end);
+        if (!ns || !ne) { alert('Invalid start or end time'); return; }
+        if (new Date(ne) <= new Date(ns)) { alert('End must be after start'); return; }
+        body = {
+          event_name: newEventData.text,
+          recurring: false,
+          nonrecurring_start: ns,
+          nonrecurring_end: ne,
+          location: newEventData.location,
+          event_type: 'custom',
+          notes: newEventData.notes,
+          course_id: newEventData.course_id || null
+        };
+      }
+
+      await apiUpdateEvent(newEventData.dbId, body);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert('Error updating event');
+    }
+  };
+
+  const deleteEvent = async () => {
+    if (!newEventData.dbId) { alert('No event selected'); return; }
+    if (!window.confirm('Delete this event? This will remove all instances of the event selected (includes recurring).')) return;
+    try {
+      await apiDeleteEvent(newEventData.dbId);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting event');
+    }
+  };
+
+  // Modal defaults for Add Event
+  const openAddModal = () => {
+    setNewEventData({
+      dbId: null,
+      text: '',
+      location: '',
+      notes: '',
+      start: isoToDatetimeLocal(now.toISOString()),
+      end: isoToDatetimeLocal(inOneHour.toISOString()),
+      recurring: false,
+      weekday: '',
+      start_date: '',
+      end_date: '',
+      start_time: '',
+      end_time: '',
+      course_id: ''
+    });
+    setShowModal(true);
+  };
+
+  // Handlers
+  const onTimeRangeSelected = (args) => {
+    // args.start/args.end might be Date objects or ISO strings depending on DayPilot
+    const startIso = ensureIsoString(args.start?.toString ? args.start.toString() : args.start);
+    const endIso = ensureIsoString(args.end?.toString ? args.end.toString() : args.end);
+
+    setNewEventData({
+      dbId: null,
+      text: '',
+      location: '',
+      notes: '',
+      start: isoToDatetimeLocal(startIso),
+      end: isoToDatetimeLocal(endIso),
+      recurring: false,
+      course_id: ''
+    });
+    setShowModal(true);
+  };
+
+  // Use the original DB row (if present) when opening edit modal.
+  const onEventClick = (args) => {
+    // DayPilot may provide:
+    // args.e.data -> the event instance (with .data = original row for recurring)
+    // args.e.data.data -> original DB row (for recurring instances we added)
+    // args.e -> sometimes contains the DB row directly
+    const ev = args.e || args;
+    const raw = ev?.data?.data || ev?.data || ev;
+
+    // If raw is one of the expanded instances (has start/end but no DB fields),
+    // try to fall back to the original row stored in ev.data
+    const dbRow = ev?.data?.data ? ev.data.data : (raw && raw.event_name ? raw : (ev?.data || ev));
+
+    const recurring = !!dbRow.recurring;
+
+    if (recurring) {
+      setNewEventData({
+        dbId: dbRow.id,
+        text: dbRow.event_name || "",
+        location: dbRow.location || '',
+        notes: dbRow.notes || '',
+        recurring: true,
+        weekday: dbRow.weekday ? String(dbRow.weekday) : '',
+        start_date: dbRow.start_date || '',
+        end_date: dbRow.end_date || '',
+        start_time: dbRow.start_time ? dbRow.start_time.slice(0,5) : '',
+        end_time: dbRow.end_time ? dbRow.end_time.slice(0,5) : '',
+        course_id: dbRow.course_id || ''
+      });
+    } else {
+      // Normalize value to ISO string first, then to datetime-local
+      const ns = ensureIsoString(dbRow.nonrecurring_start);
+      const ne = ensureIsoString(dbRow.nonrecurring_end || dbRow.nonrecurring_start);
+
+      setNewEventData({
+        dbId: dbRow.id,
+        text: dbRow.event_name || "",
+        location: dbRow.location || '',
+        notes: dbRow.notes || '',
+        start: isoToDatetimeLocal(ns),
+        end: isoToDatetimeLocal(ne),
+        recurring: false,
+        course_id: dbRow.course_id || ''
+      });
+    }
+
+    setShowModal(true);
+  };
+
+  // Navigation
+  const handleNavigation = (direction) => {
+    const newDate = new Date(value);
+    if (direction === 'today') { setValue(new Date()); return; }
+    if (view === 'day') newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+    if (view === 'week') newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
+    if (view === 'month') newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+    setValue(newDate);
+  };
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  // Provide formatForDatetimeLocal for your unchanged JSX (it returns a valid datetime-local string when passed a Date)
+  const formatForDatetimeLocal = (dateObj) => {
+    if (!dateObj) return "";
+    const d = (dateObj instanceof Date) ? dateObj : new Date(dateObj);
+    if (isNaN(d.getTime())) return "";
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
@@ -145,414 +492,6 @@ function Calendar() {
     const minutes = String(d.getMinutes()).padStart(2, "0");
     const seconds = String(d.getSeconds()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  };
-
-  //function to format time correctly in input section on calendar
-  const formatTimeForInput = (timeStr) => {
-    if (!timeStr) return "";
-    if (timeStr.length >= 5) return timeStr.slice(0,5);
-    return timeStr;
-  }
-
-  // weekday mapping helper: JS getDay() -> ISO weekday (1=Mon..7=Sun)
-  function isoWeekdayOf(jsDate) {
-    const d = jsDate.getDay(); // 0 = Sun
-    return d === 0 ? 7 : d;
-  }
-
-  // Expands a DB row into one or more DayPilot instances
-  function expandRowToInstances(row) {
-    const out = [];
-
-    // get course color
-    const courseColor = courseColorMap[String(row.course_id)] || "#a7d0fb";
-
-    // ONE-OFF (nonrecurring) stored with timestamptz
-    if (!row.recurring) {
-      if (row.nonrecurring_start) {
-        // Use the DB-provided timestamptz directly (it will include tz)
-        out.push({
-          id: `${row.id}`, // unique
-          text: row.event_name,
-          start: formatForDatetimeLocal(new Date(row.nonrecurring_start)),
-          end: row.nonrecurring_end
-            ? formatForDatetimeLocal(new Date(row.nonrecurring_end))
-            : formatForDatetimeLocal(new Date(row.nonrecurring_start)),          
-          location: row.location,
-          backColor: courseColor,
-          barColor: courseColor,
-          data: row
-        });
-      }
-      return out;
-    }
-
-    // RECURRING: expand between start_date and end_date for the given weekday
-    // weekday is stored as integer 1-7 (1=Mon)
-    if (row.start_date && row.end_date && row.weekday) {
-      const start = new Date(row.start_date);
-      const end = new Date(row.end_date);
-      const weekday = parseInt(row.weekday, 10);
-
-      let d = new Date(start);
-      while (d <= end) {
-        if (isoWeekdayOf(d) === weekday) {
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const dd = String(d.getDate()).padStart(2, "0");
-          const dateStr = `${yyyy}-${mm}-${dd}`;
-
-          // row.start_time / end_time expected as "HH:MM:SS" or "HH:MM"
-          let startTime = row.start_time || "00:00:00";
-          let endTime = row.end_time || startTime;
-
-          // ensure seconds
-          if (startTime.length === 5) startTime = startTime + ":00";
-          if (endTime.length === 5) endTime = endTime + ":00";
-
-          out.push({
-            id: `${row.id}-${dateStr}`, // unique per instance
-            text: row.event_name,
-            start: formatForDatetimeLocal(new Date(makeIso(dateStr, startTime))),
-            end: formatForDatetimeLocal(new Date(makeIso(dateStr, endTime))),
-
-            location: row.location,
-            backColor: courseColor,
-            barColor: courseColor,
-            data: row
-          });
-        }
-        d.setDate(d.getDate() + 1);
-      }
-    } else {
-      // fallback single instance using start_date/start_time (if present)
-      if (row.start_date) {
-        let st = row.start_time || "00:00:00";
-        let et = row.end_time || st;
-        if (st.length === 5) st += ":00";
-        if (et.length === 5) et += ":00";
-        out.push({
-          id: `${row.id}`,
-          text: row.event_name,
-          start: makeIso(row.start_date, st),
-          end: makeIso(row.start_date, et),
-          location: row.location,
-          backColor: courseColor,
-          barColor: courseColor,
-          data: row
-        });
-      }
-    }
-
-    return out;
-  }
-
-  // Load events from DB and expand recurring rows to instances
-  async function loadEventsFromDB() {
-    if (!userId) {
-      setEvents([]);
-      return;
-    }
-    try {
-      const res = await fetch(`${backendUrl}/calendar?userId=${userId}&_=${Date.now()}`);
-      if (!res.ok) {
-        console.error("Failed fetching calendar", await res.text());
-        return;
-      }
-      const rows = await res.json();
-      let instances = [];
-      for (const r of rows) {
-        const ins = expandRowToInstances(r);
-        instances = instances.concat(ins);
-      }
-      //testing statements
-      //console.log("RAW rows:", rows);
-      //console.log("EXPANDED instances:", instances);
-
-      setEvents(instances);
-    } catch (err) {
-      console.error("Failed to load events:", err);
-    }
-  }
-
-  // Navigation handler
-  const handleNavigation = (direction) => {
-    const newDate = new Date(value);
-
-    if (direction === "today") {
-      setValue(new Date());
-      return;
-    }
-
-    if (view === "day") {
-      newDate.setDate(newDate.getDate() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
-    } else if (view === "week") {
-      newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : direction === "prev" ? -7 : 0));
-    } else if (view === "month") {
-      newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : direction === "prev" ? -1 : 0));
-    }
-
-    setValue(newDate);
-  };
-
-  // Event functions
-  const onTimeRangeSelected = (args) => {
-    const startIso = args.start ? (args.start.toString ? args.start.toString() : args.start) : "";
-    const endIso = args.end ? (args.end.toString ? args.end.toString() : args.end) : "";
-
-    setNewEventData({
-      dbId: null,
-      text: "",
-      location: "",
-      notes: "",
-      start: formatForDatetimeLocal(args.start), // store local-usable format
-      end: formatForDatetimeLocal(args.end),
-      recurring: false,
-      weekday: "",
-      start_date: "",
-      end_date: "",
-      start_time: "",
-      end_time: "",
-      course_id: ""
-    });
-    setShowModal(true);
-  };
-
-  // on event click: open modal for editing (loads DB row via event.data)
-  const onEventClick = (args) => {
-    const ev = args.e?.data || args.e || args;
-    const row = ev.data || ev;
-    const recurring = !!row.recurring;
-    const course = courses.find(c => c.id === row.course_id);
-    const courseColor = course?.color_code || "#a7d0fb"; // default course color
-
-    if (recurring) {
-      setNewEventData({
-        dbId: row.id,
-        text: row.event_name,
-        location: row.location || "",
-        notes: row.notes || "",
-        start: "",
-        end: "",
-        recurring: true,
-        weekday: row.weekday ? String(row.weekday) : "",
-        start_date: row.start_date || "",
-        end_date: row.end_date || "",
-        start_time: row.start_time ? row.start_time.slice(0,5) : "",
-        end_time: row.end_time ? row.end_time.slice(0,5) : "",
-        course_id: row.course_id || "",
-        course_color: courseColor
-      });
-    } else {
-      setNewEventData({
-        dbId: row.id,
-        text: row.event_name,
-        location: row.location || "",
-        notes: row.notes || "",
-        start: row.nonrecurring_start ? formatForDatetimeLocal(row.nonrecurring_start) : "",
-        end: row.nonrecurring_end ? formatForDatetimeLocal(row.nonrecurring_end) : "",
-        recurring: false,
-        weekday: "",
-        start_date: "",
-        end_date: "",
-        start_time: "",
-        end_time: "",
-        course_id: row.course_id || "",
-        color_code: courseColor
-      });
-    }
-
-    setShowModal(true);
-  };
-
-  // Add a new event (recurring or one-off)
-  const addEvent = async () => {
-    try {
-      if (!userId) {
-        alert("No user loaded");
-        return;
-      }
-
-      let body = { user_id: userId };
-
-      if (newEventData.recurring) {
-        if (!newEventData.weekday || !newEventData.start_date || !newEventData.end_date || !newEventData.start_time || !newEventData.end_time) {
-          alert("Please fill recurring fields: weekday, start/end date and start/end times.");
-          return;
-        }
-
-        // ensure times are stored as HH:MM:SS
-        const st = newEventData.start_time.length === 5 ? newEventData.start_time + ":00" : newEventData.start_time;
-        const et = newEventData.end_time.length === 5 ? newEventData.end_time + ":00" : newEventData.end_time;
-
-        body = {
-          ...body,
-          event_name: newEventData.text,
-          recurring: true,
-          weekday: parseInt(newEventData.weekday, 10),
-          start_time: st,
-          end_time: et,
-          start_date: newEventData.start_date,
-          end_date: newEventData.end_date,
-          location: newEventData.location,
-          event_type: "custom",
-          notes: newEventData.notes,
-          course_id: newEventData.course_id || null,
-          nonrecurring_start: null,
-          nonrecurring_end: null,
-        };
-      } else {
-        let startIso = newEventData.start;
-        let endIso = newEventData.end;
-
-        // ERROR CHECK: end must be after start
-        if (new Date(endIso) <= new Date(startIso)) {
-          alert("End time must be after start time");
-          return; // stop submission
-        }
-
-        body = {
-          ...body,
-          event_name: newEventData.text,
-          recurring: false,
-          nonrecurring_start: startIso,
-          nonrecurring_end: endIso,
-          location: newEventData.location,
-          event_type: "custom",
-          notes: newEventData.notes,
-          course_id: newEventData.course_id || null
-        };
-      }
-      
-      console.log("AddEvent called, userId:", userId);
-      console.log("Event body:", body);
-
-
-      const res = await fetch(`${backendUrl}/calendar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        console.error("Failed to save event:", await res.text());
-        alert("Failed to save event");
-        return;
-      }
-
-      setShowModal(false);
-      await loadEventsFromDB();
-    } catch (err) {
-      console.error(err);
-      alert("Error saving event");
-    }
-  };
-
-  // Update existing DB row (PUT)
-  const updateEvent = async () => {
-    if (!newEventData.dbId) {
-      alert("No event selected to update");
-      return;
-    }
-
-    try {
-      let body = {};
-
-      if (newEventData.recurring) {
-        const st = newEventData.start_time.length === 5 ? newEventData.start_time + ":00" : newEventData.start_time;
-        const et = newEventData.end_time.length === 5 ? newEventData.end_time + ":00" : newEventData.end_time;
-
-        body = {
-          event_name: newEventData.text,
-          recurring: true,
-          weekday: parseInt(newEventData.weekday, 10),
-          start_time: st,
-          end_time: et,
-          start_date: newEventData.start_date,
-          end_date: newEventData.end_date,
-          location: newEventData.location,
-          event_type: "custom",
-          notes: newEventData.notes,
-          course_id: newEventData.course_id || null,
-          nonrecurring_start: null,
-          nonrecurring_end: null
-        };
-      } else {
-        body = {
-          event_name: newEventData.text,
-          recurring: false,
-          nonrecurring_start: newEventData.start,
-          nonrecurring_end: newEventData.end,
-          location: newEventData.location,
-          event_type: "custom",
-          notes: newEventData.notes,
-          course_id: newEventData.course_id || null
-        };
-      }
-
-      if (!newEventData.recurring) {
-        if (new Date(newEventData.end) <= new Date(newEventData.start)) {
-          alert("End time must be after start time");
-          return;
-        }
-
-        body = {
-          event_name: newEventData.text,
-          recurring: false,
-          nonrecurring_start: newEventData.start,
-          nonrecurring_end: newEventData.end,
-          location: newEventData.location,
-          event_type: "custom",
-          notes: newEventData.notes,
-          course_id: newEventData.course_id || null
-        };
-      }
-
-
-      const res = await fetch(`${backendUrl}/calendar/${newEventData.dbId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        console.error("Failed to update event:", await res.text());
-        alert("Failed to update event");
-        return;
-      }
-
-      setShowModal(false);
-      await loadEventsFromDB();
-    } catch (err) {
-      console.error(err);
-      alert("Error updating event");
-    }
-  };
-
-  // Delete existing event row (DELETE)
-  const deleteEvent = async () => {
-    if (!newEventData.dbId) {
-      alert("No event selected to delete");
-      return;
-    }
-
-    if (!window.confirm("Delete this event? This will remove the DB row (all instances for recurring events).")) return;
-
-    try {
-      const res = await fetch(`${backendUrl}/calendar/${newEventData.dbId}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) {
-        console.error("Failed to delete:", await res.text());
-        alert("Failed to delete event");
-        return;
-      }
-      setShowModal(false);
-      await loadEventsFromDB();
-    } catch (err) {
-      console.error(err);
-      alert("Error deleting event");
-    }
   };
 
   // UI rendering
