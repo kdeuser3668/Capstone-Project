@@ -341,9 +341,10 @@ function FocusSession () {
                 body: JSON.stringify(sessionData)
             });
             if (!response.ok) throw new Error("Failed to save session");
-
             const saved = await response.json();
             setSessions([...sessions, saved]);
+            
+            window.location.reload(); //forces reload so date appears
         }
 
         setForm({ title: "", start: "", end: "", course_id: "", notes: "" });
@@ -352,7 +353,7 @@ function FocusSession () {
     } catch (err) {
         console.error(err);
     }
-    };
+};
 
 
 
