@@ -333,6 +333,8 @@ function FocusSession () {
             setSessions((prev) =>
                 prev.map((s) => (s.id === editSessionId ? updated : s))
             );
+
+            window.location.reload(); //forces reload so date appears
         } else {
             // CREATE new session
             const response = await fetch(`${backendUrl}/focus`, {
